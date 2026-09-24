@@ -1,0 +1,668 @@
+/*
+  Pooja Fashion Shop — White & Navy Blue Dress & Billing Authentication UI
+  Completely Responsive Across All Devices:
+  - Mobile Phones (320px - 639px, iOS & Android with Safe Touch Targets & Zero Auto-Zoom)
+  - Tablets Portrait (640px - 1023px, Centered Boutique Card Elevation)
+  - Desktops & Landscape Tablets (1024px+, 100vh Zero-Scroll Split Cover View)
+  - Short Viewports (< 720px height, Adaptive Micro-Spacing)
+*/
+
+:root {
+  --navy-950: #070d1f;
+  --navy-900: #0f1c3f;
+  --navy-850: #13224f;
+  --navy-800: #172a5f;
+  --navy-700: #1e3a8a;
+  --navy-600: #2563eb;
+  --navy-200: #c7d2fe;
+  --navy-100: #e0e7ff;
+  --navy-50: #f0f4fc;
+
+  --color-white: #ffffff;
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-400: #94a3b8;
+  --color-slate-600: #475569;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+}
+
+/* Base Container */
+.pooja-auth {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-white);
+  color: var(--color-slate-900);
+  -webkit-text-size-adjust: 100%;
+}
+
+/* ---------------- Mobile Banner (Phones & Tablets) ---------------- */
+
+.pooja-auth__mobile-banner {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 130px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 16px rgba(15, 28, 63, 0.16);
+}
+
+.pooja-auth__mobile-banner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+}
+
+.pooja-auth__mobile-banner-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(7, 13, 31, 0.2) 0%,
+    rgba(7, 13, 31, 0.88) 100%
+  );
+  display: flex;
+  align-items: flex-end;
+  padding: 12px 14px;
+}
+
+.pooja-auth__mobile-banner-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  padding: 4px 12px;
+  border-radius: 100px;
+  backdrop-filter: blur(4px);
+}
+
+/* ---------------- Form Panel ---------------- */
+
+.pooja-auth__form-panel {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px 36px;
+  background: var(--color-white);
+}
+
+.pooja-auth__form-inner {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.pooja-auth__brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.pooja-auth__brand-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, var(--navy-900) 0%, var(--navy-700) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(15, 28, 63, 0.2);
+  flex-shrink: 0;
+}
+
+.pooja-auth__brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.pooja-auth__brand-name {
+  font-family: var(--font-display, "Outfit", sans-serif);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--navy-900);
+  line-height: 1.2;
+}
+
+.pooja-auth__brand-tag {
+  font-size: 10.5px;
+  color: var(--navy-700);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pooja-auth__title {
+  font-family: var(--font-display, "Outfit", sans-serif);
+  font-size: clamp(24px, 4.5vw, 28px);
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 6px;
+  color: var(--navy-900);
+}
+
+.pooja-auth__subtitle {
+  color: var(--color-slate-600);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0 0 20px;
+}
+
+.pooja-auth__form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pooja-auth__field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.pooja-auth__label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pooja-auth__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--navy-900);
+}
+
+.pooja-auth__forgot {
+  font-size: 11.5px;
+  color: var(--navy-700);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.pooja-auth__forgot:hover {
+  text-decoration: underline;
+}
+
+.pooja-auth__input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.pooja-auth__input-icon {
+  position: absolute;
+  left: 12px;
+  width: 17px;
+  height: 17px;
+  color: var(--color-slate-400);
+  pointer-events: none;
+}
+
+.pooja-auth__input {
+  width: 100%;
+  height: 44px;
+  padding: 0 14px 0 40px;
+  border: 1px solid var(--color-slate-200);
+  border-radius: 9px;
+  font-size: 16px; /* 16px prevents iOS Safari from auto-zooming viewport */
+  font-family: inherit;
+  color: var(--color-slate-900);
+  background: var(--color-slate-50);
+  transition: all 0.15s ease;
+}
+
+@media (min-width: 1024px) {
+  .pooja-auth__input {
+    height: 42px;
+    font-size: 13.5px;
+  }
+}
+
+.pooja-auth__input:focus {
+  outline: none;
+  background: var(--color-white);
+  border-color: var(--navy-700);
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.15);
+}
+
+.pooja-auth__input--password {
+  padding-right: 44px;
+}
+
+.pooja-auth__password-toggle {
+  position: absolute;
+  right: 4px;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
+  color: var(--color-slate-400);
+  cursor: pointer;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s;
+}
+
+.pooja-auth__password-toggle:hover {
+  color: var(--navy-900);
+}
+
+.pooja-auth__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.pooja-auth__submit {
+  height: 46px;
+  border: none;
+  border-radius: 9px;
+  background: linear-gradient(135deg, var(--navy-900) 0%, var(--navy-800) 100%);
+  color: var(--color-white);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(15, 28, 63, 0.22);
+  transition: all 0.15s ease;
+  margin-top: 4px;
+}
+
+.pooja-auth__submit:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--navy-850) 0%, var(--navy-700) 100%);
+  box-shadow: 0 6px 16px rgba(15, 28, 63, 0.3);
+  transform: translateY(-0.5px);
+}
+
+.pooja-auth__submit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.pooja-auth__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.pooja-auth__spinner {
+  width: 15px;
+  height: 15px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: var(--color-white);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Demo box */
+.pooja-auth__demo-box {
+  margin-top: 18px;
+  padding: 12px;
+  border-radius: 9px;
+  background: var(--navy-50);
+  border: 1px dashed var(--navy-200);
+}
+
+.pooja-auth__demo-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pooja-auth__demo-button {
+  margin-top: 8px;
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  background: var(--color-white);
+  border: 1px solid var(--navy-700);
+  color: var(--navy-900);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.pooja-auth__demo-button:hover {
+  background: var(--navy-900);
+  color: var(--color-white);
+}
+
+.pooja-auth__footer {
+  margin-top: 18px;
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--color-slate-400);
+}
+
+/* ---------------- Right Panel: Visual (Hidden on Phones) ---------------- */
+
+.pooja-auth__visual-panel {
+  display: none;
+}
+
+/* =========================================================================
+   BREAKPOINT 1: TABLETS PORTRAIT (640px to 1023px)
+   ========================================================================= */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .pooja-auth {
+    background: var(--color-slate-50);
+    align-items: center;
+    justify-content: center;
+    padding: 36px 24px;
+  }
+
+  .pooja-auth__form-panel {
+    max-width: 460px;
+    background: var(--color-white);
+    border-radius: 16px;
+    box-shadow: 0 12px 36px rgba(15, 28, 63, 0.08);
+    border: 1px solid var(--color-slate-200);
+    padding: 32px 36px;
+  }
+
+  .pooja-auth__mobile-banner {
+    height: 150px;
+  }
+}
+
+/* =========================================================================
+   BREAKPOINT 2: DESKTOPS & LANDSCAPE TABLETS (1024px and wider)
+   ========================================================================= */
+@media (min-width: 1024px) {
+  .pooja-auth {
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: minmax(430px, 490px) 1fr;
+  }
+
+  .pooja-auth__mobile-banner {
+    display: none; /* Hide mobile banner on desktop in favor of full visual column */
+  }
+
+  .pooja-auth__form-panel {
+    height: 100%;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    padding: 24px 36px;
+    border-right: 1px solid var(--color-slate-200);
+  }
+
+  .pooja-auth__visual-panel {
+    display: flex;
+    position: relative;
+    height: 100%;
+    max-height: 100vh;
+    background: var(--navy-950);
+    color: var(--color-white);
+    overflow: hidden;
+    padding: 32px 48px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .pooja-auth__visual-photo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 35%;
+    pointer-events: none;
+  }
+
+  .pooja-auth__visual-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      145deg,
+      rgba(7, 13, 31, 0.72) 0%,
+      rgba(15, 28, 63, 0.82) 45%,
+      rgba(7, 13, 31, 0.96) 100%
+    );
+    backdrop-filter: blur(1.5px);
+  }
+
+  .pooja-auth__visual-content {
+    position: relative;
+    z-index: 10;
+    max-width: 490px;
+    width: 100%;
+  }
+
+  .pooja-auth__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 100px;
+    background: rgba(224, 231, 255, 0.12);
+    border: 1px solid rgba(199, 210, 254, 0.28);
+    color: var(--navy-100);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    margin-bottom: 12px;
+    backdrop-filter: blur(4px);
+  }
+
+  .pooja-auth__visual-heading {
+    font-family: var(--font-display, "Outfit", sans-serif);
+    font-size: clamp(24px, 2.7vw, 34px);
+    font-weight: 700;
+    line-height: 1.18;
+    margin: 0 0 8px;
+    color: var(--color-white);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  }
+
+  .pooja-auth__visual-subtext {
+    font-size: 13px;
+    line-height: 1.5;
+    color: #cbd5e1;
+    margin: 0 0 18px;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  }
+
+  .pooja-auth__dress-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .pooja-auth__dress-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 100px;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(8px);
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #ffffff;
+    line-height: 1;
+  }
+
+  .pooja-auth__billing-invoice {
+    background: var(--color-white);
+    border-radius: 12px;
+    padding: 16px 18px;
+    color: var(--color-slate-900);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+  }
+
+  .pooja-auth__billing-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 8px;
+    border-bottom: 1.5px dashed #cbd5e1;
+    margin-bottom: 10px;
+  }
+
+  .pooja-auth__billing-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .pooja-auth__billing-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+  }
+
+  .pooja-auth__billing-footer {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .pooja-auth__billing-subrow {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--color-slate-600);
+  }
+
+  .pooja-auth__billing-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    background: var(--navy-50);
+    border-radius: 7px;
+    margin-top: 4px;
+    border: 1px solid var(--navy-100);
+  }
+
+  .pooja-auth__barcode-strip {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .pooja-auth__barcode-lines {
+    height: 12px;
+    flex: 1;
+    margin: 0 12px;
+    background: repeating-linear-gradient(
+      90deg,
+      #0f1c3f 0px,
+      #0f1c3f 2px,
+      transparent 2px,
+      transparent 4px,
+      #0f1c3f 4px,
+      #0f1c3f 5px,
+      transparent 5px,
+      transparent 8px
+    );
+  }
+}
+
+/* =========================================================================
+   BREAKPOINT 3: COMPACT HEIGHT SCREENS (< 700px height on Desktop)
+   ========================================================================= */
+@media (min-width: 1024px) and (max-height: 720px) {
+  .pooja-auth__form-panel {
+    padding: 16px 28px;
+  }
+
+  .pooja-auth__brand {
+    margin-bottom: 12px;
+  }
+
+  .pooja-auth__title {
+    font-size: 22px;
+    margin-bottom: 4px;
+  }
+
+  .pooja-auth__subtitle {
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+
+  .pooja-auth__form {
+    gap: 10px;
+  }
+
+  .pooja-auth__input {
+    height: 38px;
+    font-size: 13px;
+  }
+
+  .pooja-auth__submit {
+    height: 40px;
+  }
+
+  .pooja-auth__demo-box {
+    margin-top: 12px;
+    padding: 10px;
+  }
+
+  .pooja-auth__visual-panel {
+    padding: 20px 36px;
+  }
+
+  .pooja-auth__visual-heading {
+    font-size: 24px;
+    margin-bottom: 6px;
+  }
+
+  .pooja-auth__visual-subtext {
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+
+  .pooja-auth__dress-chips {
+    margin-bottom: 14px;
+  }
+
+  .pooja-auth__billing-invoice {
+    padding: 12px 14px;
+  }
+}
