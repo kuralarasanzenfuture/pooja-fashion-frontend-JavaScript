@@ -22,5 +22,9 @@ export const ROUTES = {
   REPORTS: "/reports",
 
   SETTINGS: "/settings",
+
+  COMPANY: "/company",
+  COMPANY_PROFILE: "/company/profile",
+  COMPANY_VIEW: "/company/:id",
 };
 

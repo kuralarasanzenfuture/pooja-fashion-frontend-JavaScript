@@ -1,0 +1,414 @@
+/* =========================================================
+   GLOBAL LUXURY BUTTON - POOJA FASHION POS
+   Designed for High-End Boutique Aesthetics & Utility
+========================================================= */
+
+.common-button {
+  position: relative;
+  z-index: 0;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: inherit;
+  font-weight: 600;
+  line-height: 1.25;
+  text-decoration: none;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 0.75rem; /* 12px luxury rounded */
+  border: 1px solid transparent;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+}
+
+.common-button:focus-visible {
+  outline: 2px solid #1e3a8a;
+  outline-offset: 2px;
+}
+
+.common-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed !important;
+  pointer-events: none;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* =========================================================
+   BUTTON ICON & SPINNER HELPERS
+========================================================= */
+
+.button-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.button-label {
+  display: inline-flex;
+  align-items: center;
+}
+
+.button-spinner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.button-spinner svg {
+  width: 1rem;
+  height: 1rem;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================================
+   STANDARD LUXURY BOUTIQUE VARIANTS
+========================================================= */
+
+/* ---------- Primary: DaisyUI Theme Primary & High Contrast ---------- */
+.common-button.primary {
+  background: var(--color-primary, linear-gradient(135deg, #0a1128 0%, #0f1c3f 50%, #1e3a8a 100%));
+  color: var(--color-primary-content, #ffffff);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.25);
+}
+
+.common-button.primary:hover:not(:disabled) {
+  filter: brightness(1.12);
+  box-shadow: 0 6px 20px -2px rgba(0, 0, 0, 0.35);
+  transform: translateY(-1.5px);
+}
+
+.common-button.primary:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* ---------- Gold: Royal Champagne & Velvet Gold ---------- */
+.common-button.gold {
+  background: linear-gradient(135deg, #fce043 0%, #d4af37 60%, #b8860b 100%);
+  color: #0a1128;
+  border-color: #d4af37;
+  font-weight: 700;
+  box-shadow: 0 4px 14px -2px rgba(212, 175, 55, 0.4);
+}
+
+.common-button.gold:hover:not(:disabled) {
+  background: linear-gradient(135deg, #fff176 0%, #dfb743 60%, #c4941d 100%);
+  box-shadow: 0 6px 22px -2px rgba(212, 175, 55, 0.6);
+  transform: translateY(-1.5px);
+}
+
+/* ---------- Secondary: Adaptive Theme Surface ---------- */
+.common-button.secondary {
+  background: var(--color-base-100, #ffffff);
+  color: var(--color-base-content, #0f1c3f);
+  border-color: var(--color-base-300, #e2e8f0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.common-button.secondary:hover:not(:disabled) {
+  background: var(--color-base-200, #f8fafc);
+  color: var(--color-primary, #1e3a8a);
+  border-color: var(--color-primary, #cbd5e1);
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1.5px);
+}
+
+/* ---------- Outline: Adaptive Theme Contour ---------- */
+.common-button.outline {
+  background: transparent;
+  color: var(--color-base-content, #0f1c3f);
+  border-color: var(--color-base-300, rgba(15, 28, 63, 0.3));
+}
+
+.common-button.outline:hover:not(:disabled) {
+  background: var(--color-base-200, rgba(255, 255, 255, 0.1));
+  color: var(--color-primary, #1e3a8a);
+  border-color: var(--color-primary, #1e3a8a);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1.5px);
+}
+
+/* ---------- Success: Rich Emerald Silk ---------- */
+.common-button.success {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: #ffffff;
+  border-color: rgba(5, 150, 105, 0.3);
+  box-shadow: 0 4px 12px -2px rgba(5, 150, 105, 0.3);
+}
+
+.common-button.success:hover:not(:disabled) {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 6px 18px -2px rgba(5, 150, 105, 0.45);
+  transform: translateY(-1.5px);
+}
+
+/* ---------- Danger: Velvet Crimson Rose ---------- */
+.common-button.danger {
+  background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+  color: #ffffff;
+  border-color: rgba(225, 29, 72, 0.3);
+  box-shadow: 0 4px 12px -2px rgba(225, 29, 72, 0.35);
+}
+
+.common-button.danger:hover:not(:disabled) {
+  background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+  box-shadow: 0 6px 18px -2px rgba(225, 29, 72, 0.5);
+  transform: translateY(-1.5px);
+}
+
+/* ---------- Ghost: Minimalist & Clean ---------- */
+.common-button.ghost {
+  background: transparent;
+  color: var(--color-base-content, #64748b);
+  opacity: 0.8;
+  border-color: transparent;
+}
+
+.common-button.ghost:hover:not(:disabled) {
+  background: var(--color-base-200, #f1f5f9);
+  color: var(--color-base-content, #0f1c3f);
+  opacity: 1;
+}
+
+/* =========================================================
+   DYNAMIC ANIMATED GRADIENT & CLIP-PATH VARIANTS
+========================================================= */
+
+.common-button.gradient-one,
+.common-button.gradient-two,
+.common-button.gradient-three,
+.common-button.clip-four,
+.common-button.clip-five,
+.common-button.clip-six {
+  position: relative;
+  border: none;
+}
+
+.common-button.gradient-one::before,
+.common-button.gradient-two::before,
+.common-button.gradient-three::before,
+.common-button.clip-four::before,
+.common-button.clip-five::before,
+.common-button.clip-six::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+}
+
+/* ---------- Gradient One: Electric Glow ---------- */
+.common-button.gradient-one {
+  background-color: #f9ff00;
+  color: #1a1a1a;
+  box-shadow: 0 3px 12px rgba(249, 255, 0, 0.3);
+}
+
+.common-button.gradient-one::before {
+  background: linear-gradient(to right, #f9ff00, #00ff00);
+  transform: scaleX(0);
+  transform-origin: 100% 0%;
+  transition: 0.4s cubic-bezier(0.86, 0.01, 0.15, 0.99);
+}
+
+.common-button.gradient-one:hover:not(:disabled) {
+  color: #000000;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+}
+
+.common-button.gradient-one:hover:not(:disabled)::before {
+  transform: scaleX(1.1) scaleY(1.1);
+}
+
+/* ---------- Gradient Two: Royal Amethyst ---------- */
+.common-button.gradient-two {
+  background: #efcfff;
+  color: #4c1d95;
+}
+
+.common-button.gradient-two::before {
+  background: linear-gradient(to right, #efcfff, #af6fff, #efcfff);
+  transform: scaleX(0);
+  opacity: 0;
+  transform-origin: 50% 50%;
+  transition: 0.4s cubic-bezier(0.86, 0.01, 0.15, 0.99);
+}
+
+.common-button.gradient-two:hover:not(:disabled) {
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(175, 111, 255, 0.4);
+}
+
+.common-button.gradient-two:hover:not(:disabled)::before {
+  transform: scaleX(1);
+  opacity: 1;
+}
+
+/* ---------- Gradient Three: Emerald Mint ---------- */
+.common-button.gradient-three {
+  background: #08aa61;
+  color: #ffffff;
+}
+
+.common-button.gradient-three::before {
+  background: linear-gradient(to bottom, #88daa1, #08aa61);
+  transform: scaleY(0);
+  transform-origin: 0% 0%;
+  transition: 0.4s cubic-bezier(0.86, 0.01, 0.15, 0.99);
+}
+
+.common-button.gradient-three:hover:not(:disabled) {
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(8, 170, 97, 0.4);
+}
+
+.common-button.gradient-three:hover:not(:disabled)::before {
+  transform: scaleY(1);
+}
+
+/* ---------- Clip Path Four: Flame Orange Swipe ---------- */
+.common-button.clip-four {
+  background: #ffffff;
+  color: #0f1c3f;
+  border: 1px solid #fed7aa;
+}
+
+.common-button.clip-four::before {
+  background: rgb(255, 90, 20);
+  clip-path: inset(0 100% 0 0);
+  opacity: 1;
+  transition: 0.35s ease;
+}
+
+.common-button.clip-four:hover:not(:disabled) {
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(255, 90, 20, 0.3);
+}
+
+.common-button.clip-four:hover:not(:disabled)::before {
+  clip-path: inset(0 0 0 0);
+}
+
+/* ---------- Clip Path Five: Sapphire Polygon ---------- */
+.common-button.clip-five {
+  background: #ffffff;
+  color: #0f1c3f;
+  border: 1px solid #bfdbfe;
+}
+
+.common-button.clip-five::before {
+  background: rgb(20, 120, 255);
+  clip-path: polygon(50% 0, 50% 0, 50% 50%, 50% 100%, 50% 100%, 50% 50%);
+  opacity: 1;
+  transition: 0.35s ease;
+}
+
+.common-button.clip-five:hover:not(:disabled) {
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(20, 120, 255, 0.3);
+}
+
+.common-button.clip-five:hover:not(:disabled)::before {
+  clip-path: polygon(25% -70%, 75% -70%, 120% 50%, 75% 170%, 25% 170%, -20% 50%);
+}
+
+/* ---------- Clip Path Six: Dynamic Theme Circular Wave Effect ---------- */
+.common-button.clip-six {
+  background: var(--color-base-100, #ffffff);
+  color: var(--color-primary, #7e22ce);
+  border: 1.5px solid var(--color-primary, #d8b4fe);
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.common-button.clip-six::before {
+  background: var(--color-primary, linear-gradient(135deg, #a855f7 0%, #9900cc 50%, #7e22ce 100%));
+  clip-path: circle(0% at 50% 50%);
+  opacity: 1;
+  transition: clip-path 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.common-button.clip-six:hover:not(:disabled) {
+  color: var(--color-primary-content, #ffffff);
+  border-color: var(--color-primary, #9900cc);
+  box-shadow: 0 6px 20px -2px rgba(0, 0, 0, 0.35);
+  transform: translateY(-1.5px);
+}
+
+.common-button.clip-six:hover:not(:disabled)::before {
+  clip-path: circle(130% at 50% 50%);
+}
+
+.common-button.clip-six:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* =========================================================
+   BUTTON SIZES
+========================================================= */
+
+.common-button.btn-xs {
+  font-size: 0.8125rem; /* 13px */
+  padding: 0.35rem 0.75rem;
+  border-radius: 0.5rem;
+  gap: 0.35rem;
+}
+
+.common-button.btn-sm {
+  font-size: 0.875rem; /* 14px */
+  padding: 0.45rem 1rem;
+  border-radius: 0.625rem;
+  gap: 0.45rem;
+}
+
+.common-button.btn-md {
+  font-size: 0.9375rem; /* 15px */
+  padding: 0.55rem 1.35rem;
+  border-radius: 0.75rem;
+  gap: 0.5rem;
+}
+
+.common-button.btn-lg {
+  font-size: 1.0625rem; /* 17px */
+  padding: 0.75rem 1.75rem;
+  border-radius: 0.875rem;
+  gap: 0.65rem;
+}
+
+.common-button.btn-xl {
+  font-size: 1.1875rem; /* 19px */
+  padding: 0.95rem 2.2rem;
+  border-radius: 1rem;
+  gap: 0.75rem;
+}
+
+/* =========================================================
+   LAYOUT UTILITIES
+========================================================= */
+
+.common-button.full-width {
+  width: 100%;
+}

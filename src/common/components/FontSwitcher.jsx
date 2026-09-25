@@ -100,20 +100,20 @@ export default function FontSwitcher({ className = "" }) {
           e.stopPropagation();
           setIsOpen((prev) => !prev);
         }}
-        className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all cursor-pointer select-none focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]/20 group ${
+        className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all cursor-pointer select-none focus:outline-none focus:ring-2 focus:ring-primary/20 group ${
           isOpen
-            ? "bg-[#f0f4fc] border-[#c7d2fe] shadow-xs ring-1 ring-[#c7d2fe]/50"
-            : "bg-gradient-to-r from-[#f0f4fc] to-[#e8eefa] hover:bg-[#e0e7ff] border-[#c7d2fe] hover:border-[#1e3a8a]/50 text-[#0f1c3f]"
+            ? "bg-base-200 border-primary shadow-xs ring-1 ring-primary/40 text-base-content"
+            : "bg-base-200 hover:bg-base-300 border-base-300 text-base-content"
         }`}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
       >
-        <Sparkles className="w-3.5 h-3.5 text-[#1e3a8a] shrink-0 group-hover:rotate-12 transition-transform" />
-        <span className="text-xs font-bold text-[#0f1c3f] tracking-tight">
+        <Sparkles className="w-3.5 h-3.5 text-primary shrink-0 group-hover:rotate-12 transition-transform" />
+        <span className="text-xs font-bold text-base-content tracking-tight">
           {selectedPreset.name}
         </span>
         <ChevronDown
-          className={`w-3.5 h-3.5 text-[#1e3a8a] opacity-70 group-hover:opacity-100 transition-transform duration-250 ${
+          className={`w-3.5 h-3.5 opacity-70 group-hover:opacity-100 transition-transform duration-250 ${
             isOpen ? "rotate-180" : ""
           }`}
         />
@@ -122,14 +122,14 @@ export default function FontSwitcher({ className = "" }) {
       {/* DaisyUI Dropdown Menu Content */}
       {isOpen && (
         <div
-          className="dropdown-content absolute right-0 top-full z-50 mt-2 w-76 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl shadow-[#0f1c3f]/15 border border-slate-200/90 p-2 text-slate-800 animate-in fade-in zoom-in-95 duration-150"
+          className="dropdown-content absolute right-0 top-full z-50 mt-2 w-76 bg-base-100 text-base-content backdrop-blur-xl rounded-2xl shadow-2xl border border-base-300 p-2 animate-in fade-in zoom-in-95 duration-150"
         >
           {/* Header */}
-          <div className="px-3 py-2 border-b border-slate-100 flex items-center justify-between">
-            <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 font-mono flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-[#1e3a8a]" /> Boutique Fonts
+          <div className="px-3 py-2 border-b border-base-200 flex items-center justify-between">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-base-content/60 font-mono flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-primary" /> Boutique Fonts
             </span>
-            <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+            <span className="text-[10px] text-emerald-600 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
               Live Preview
             </span>
           </div>
@@ -147,16 +147,16 @@ export default function FontSwitcher({ className = "" }) {
                     onClick={() => handleSelectFont(opt.id)}
                     className={`w-full !flex !items-center !justify-between p-2.5 rounded-xl transition-all text-left cursor-pointer ${
                       isSelected
-                        ? "!bg-[#0f1c3f] !text-white shadow-xs font-bold"
-                        : "hover:bg-slate-100/80 text-slate-700 hover:text-slate-900"
+                        ? "!bg-primary !text-primary-content shadow-xs font-bold"
+                        : "hover:bg-base-200 text-base-content/80 hover:text-base-content"
                     }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <div
                         className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
                           isSelected
-                            ? "bg-white/15 text-white"
-                            : "bg-slate-100 text-slate-500"
+                            ? "bg-primary-content/20 text-primary-content"
+                            : "bg-base-200 text-base-content/70"
                         }`}
                       >
                         <Icon className="w-3.5 h-3.5" />

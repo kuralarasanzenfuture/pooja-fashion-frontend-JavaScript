@@ -68,10 +68,10 @@ export default function ProfileDropdown() {
         }}
         aria-expanded={isOpen}
         aria-haspopup="true"
-        className={`flex items-center gap-2.5 p-1 sm:px-2.5 sm:py-1.5 rounded-2xl border transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]/20 group ${
+        className={`flex items-center gap-2.5 p-1 sm:px-2.5 sm:py-1.5 rounded-2xl border transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 group ${
           isOpen
-            ? "bg-[#f0f4fc] border-[#c7d2fe] shadow-sm ring-1 ring-[#c7d2fe]/50"
-            : "bg-white/90 hover:bg-slate-50/90 border-slate-200/90 hover:border-slate-300 hover:shadow-2xs"
+            ? "bg-primary/15 border-primary/30 shadow-sm"
+            : "bg-base-200 hover:bg-base-300 border-base-300 hover:shadow-2xs"
         }`}
       >
         <div className="relative">
@@ -79,23 +79,23 @@ export default function ProfileDropdown() {
             {displayName.slice(0, 2)}
           </div>
           <span
-            className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white ring-1 ring-emerald-400/40"
+            className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-base-100 ring-1 ring-emerald-400/40"
             title="Online & Cookie Authenticated"
           />
         </div>
 
         <div className="hidden md:flex flex-col text-left">
-          <span className="text-xs font-bold text-slate-900 leading-tight group-hover:text-[#1e3a8a] transition-colors">
+          <span className="text-xs font-bold text-base-content leading-tight group-hover:text-primary transition-colors">
             {displayName}
           </span>
-          <span className="text-[10px] uppercase font-bold text-[#1e3a8a] tracking-wider flex items-center gap-1 mt-0.5">
+          <span className="text-[10px] uppercase font-bold text-primary tracking-wider flex items-center gap-1 mt-0.5">
             <ShieldCheck className="w-2.5 h-2.5" /> {userRole}
           </span>
         </div>
 
         <ChevronDown
-          className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-250 ${
-            isOpen ? "rotate-180 text-[#0f1c3f]" : "group-hover:text-slate-600"
+          className={`w-3.5 h-3.5 text-base-content/50 transition-transform duration-250 ${
+            isOpen ? "rotate-180 text-primary" : "group-hover:text-base-content"
           }`}
         />
       </button>

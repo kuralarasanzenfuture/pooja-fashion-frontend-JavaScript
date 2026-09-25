@@ -38,4 +38,11 @@ export const queryKeys = {
     all: ["employees"],
     list: (params) => ["employees", "list", params],
   },
+
+  companies: {
+    all: ["companies"],
+    list: (params) => ["companies", "list", params],
+    detail: (id) => ["companies", "detail", id],
+    byCode: (code) => ["companies", "byCode", code],
+  },
 };

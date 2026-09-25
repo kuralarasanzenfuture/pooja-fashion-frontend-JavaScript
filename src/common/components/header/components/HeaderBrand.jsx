@@ -33,20 +33,20 @@ export default function HeaderBrand({
 
         <div className="flex flex-col">
           <div className="flex items-center gap-1.5">
-            <span className="font-extrabold text-[#0f1c3f] tracking-tight text-base sm:text-lg leading-none font-display group-hover:text-[#1e3a8a] transition-colors">
+            <span className="font-extrabold text-base-content tracking-tight text-base sm:text-lg leading-none font-display group-hover:text-primary transition-colors">
               {appConfig.name}
             </span>
-            <span className="hidden sm:inline-block px-1.5 py-0.2 rounded-md bg-amber-50 border border-amber-200/80 text-amber-800 text-[9px] font-bold uppercase tracking-widest font-mono">
+            <span className="hidden sm:inline-block px-1.5 py-0.2 rounded-md bg-amber-500/15 border border-amber-400/30 text-amber-500 text-[9px] font-bold uppercase tracking-widest font-mono">
               LUXE
             </span>
           </div>
 
           <div className="flex items-center gap-1.5 mt-1">
-            <span className="text-[11px] text-[#1e3a8a] font-semibold tracking-wide truncate max-w-[140px] sm:max-w-[200px]">
+            <span className="text-[11px] text-primary font-semibold tracking-wide truncate max-w-[140px] sm:max-w-[200px]">
               {storeName || "Main Showroom"}
             </span>
-            <span className="w-1 h-1 rounded-full bg-slate-300 hidden sm:inline-block" />
-            <span className="text-[10px] text-slate-400 font-mono hidden sm:inline-block">
+            <span className="w-1 h-1 rounded-full bg-base-300 hidden sm:inline-block" />
+            <span className="text-[10px] text-base-content/50 font-mono hidden sm:inline-block">
               POS Terminal
             </span>
           </div>

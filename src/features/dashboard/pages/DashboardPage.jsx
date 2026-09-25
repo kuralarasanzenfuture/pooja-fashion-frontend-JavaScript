@@ -205,11 +205,10 @@ export default function DashboardPage() {
                     </td>
                     <td className="py-3 text-right">
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold ${
-                          bill.status === "Paid"
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold ${bill.status === "Paid"
                             ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
                             : "bg-amber-50 text-amber-800 border border-amber-200"
-                        }`}
+                          }`}
                       >
                         {bill.status}
                       </span>

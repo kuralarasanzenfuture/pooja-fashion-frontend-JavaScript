@@ -1,9 +1,13 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import LoginPage from "../features/auth/pages/LoginPage.jsx";
 import DashboardPage from "../features/dashboard/pages/DashboardPage.jsx";
 import DashboardLayout from "../common/layouts/DashboardLayout.jsx";
 import ModulePlaceholder from "../common/components/ModulePlaceholder.jsx";
 import SettingsPage from "../common/pages/settings/SettingsPage.jsx";
+import CompanyPage from "../features/company/pages/CompanyPage.jsx";
+import CompanyViewPage from "../features/company/pages/CompanyViewPage.jsx";
+import NotFoundPage from "../common/pages/404/NotFoundPage.jsx";
+import Error500Page from "../common/pages/500/Error500Page.jsx";
 import ProtectedRoute from "./ProtectedRoute.jsx";
 import PublicRoute from "./PublicRoute.jsx";
 import { ROUTES } from "../constants/routes.js";
@@ -112,12 +116,19 @@ export default function AppRoutes() {
             }
           />
           <Route path={ROUTES.SETTINGS} element={<SettingsPage />} />
+          <Route path={ROUTES.COMPANY} element={<CompanyPage />} />
+          <Route path="/company/profile" element={<CompanyViewPage isProfileMode={true} />} />
+          <Route path="/company/view/:id" element={<CompanyViewPage />} />
+          <Route path="/company/:id" element={<CompanyViewPage />} />
         </Route>
       </Route>
 
 
+      {/* Error routes */}
+      <Route path="/500" element={<Error500Page />} />
+
       {/* Fallback wildcard */}
-      <Route path="*" element={<Navigate to={ROUTES.DASHBOARD} replace />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

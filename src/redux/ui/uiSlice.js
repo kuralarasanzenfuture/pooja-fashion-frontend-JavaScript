@@ -1,14 +1,16 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const savedFont = typeof window !== "undefined" ? localStorage.getItem("pooja_app_font") || "outfit" : "outfit";
+const savedTheme = typeof window !== "undefined" ? localStorage.getItem("pooja_app_theme") || "light" : "light";
 if (typeof document !== "undefined") {
   document.documentElement.setAttribute("data-font", savedFont);
+  document.documentElement.setAttribute("data-theme", savedTheme);
 }
 
 const initialState = {
   sidebarOpen: true,
   mobileSidebarOpen: false,
-  theme: "light",
+  theme: savedTheme,
   loading: false,
   fontFamily: savedFont,
 };
@@ -31,6 +33,12 @@ const uiSlice = createSlice({
 
     setTheme: (state, action) => {
       state.theme = action.payload;
+      if (typeof window !== "undefined") {
+        localStorage.setItem("pooja_app_theme", action.payload);
+      }
+      if (typeof document !== "undefined") {
+        document.documentElement.setAttribute("data-theme", action.payload);
+      }
     },
 
     setFontFamily: (state, action) => {
