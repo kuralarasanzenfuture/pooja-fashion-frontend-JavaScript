@@ -32,8 +32,21 @@ export default function ProfileMenuContent({
       <div className="p-4 bg-base-200/50">
         <div className="flex items-start gap-3">
           <div className="relative shrink-0">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0f1c3f] to-[#1e3a8a] text-white flex items-center justify-center text-sm font-bold tracking-wide shadow-md shadow-[#0f1c3f]/20">
-              {displayName.slice(0, 2).toUpperCase()}
+            <div className="w-12 h-12 rounded-xl bg-base-200 border border-base-300 overflow-hidden flex items-center justify-center text-sm font-bold tracking-wide shadow-md relative">
+              <img
+                src={user?.avatarUrl || "/images/pooja-fashion-logo.jpg"}
+                alt={displayName}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                  if (e.currentTarget.nextElementSibling) {
+                    e.currentTarget.nextElementSibling.style.display = "flex";
+                  }
+                }}
+              />
+              <span className="hidden w-full h-full items-center justify-center bg-primary text-primary-content font-bold text-sm">
+                {displayName.slice(0, 2).toUpperCase()}
+              </span>
             </div>
             <span
               className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-base-100 ring-1 ring-emerald-400/40"
@@ -78,21 +91,21 @@ export default function ProfileMenuContent({
       {/* Navigation & Quick Actions */}
       <div className="p-2 space-y-0.5">
         <Link
-          to={ROUTES.SETTINGS}
+          to="/settings?tab=fonts"
           onClick={onClose}
           className="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-base-content bg-base-200/60 hover:bg-base-200 transition-colors group cursor-pointer border border-base-300"
         >
           <div className="flex items-center gap-2.5">
             <Settings className="w-4 h-4 text-primary group-hover:rotate-45 transition-transform" />
-            <span className="font-bold text-base-content">Settings & Typography</span>
+            <span className="font-bold text-base-content">Typeset & Typography</span>
           </div>
           <span className="text-[10px] font-bold text-primary bg-base-100 px-2 py-0.5 rounded-md border border-base-300">
-            Fonts & POS
+            shadcn
           </span>
         </Link>
 
         <Link
-          to={ROUTES.DASHBOARD}
+          to="/settings?tab=profile"
           onClick={onClose}
           className="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-base-content/80 hover:text-base-content hover:bg-base-200 transition-colors group cursor-pointer"
         >
@@ -104,25 +117,37 @@ export default function ProfileMenuContent({
         </Link>
 
         <Link
-          to={ROUTES.EMPLOYEES}
+          to="/settings?tab=themes"
           onClick={onClose}
           className="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-base-content/80 hover:text-base-content hover:bg-base-200 transition-colors group cursor-pointer"
         >
           <div className="flex items-center gap-2.5">
             <Sparkles className="w-4 h-4 text-base-content/50 group-hover:text-primary transition-colors" />
-            <span>Staff & Counter Permissions</span>
+            <span>DaisyUI Themes</span>
+          </div>
+          <span className="text-[10px] text-primary font-bold">29 themes</span>
+        </Link>
+
+        <Link
+          to="/settings?tab=store"
+          onClick={onClose}
+          className="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-base-content/80 hover:text-base-content hover:bg-base-200 transition-colors group cursor-pointer"
+        >
+          <div className="flex items-center gap-2.5">
+            <Store className="w-4 h-4 text-base-content/50 group-hover:text-primary transition-colors" />
+            <span>Store Branding & POS</span>
           </div>
           <ExternalLink className="w-3 h-3 text-base-content/50 opacity-0 group-hover:opacity-100 transition-opacity" />
         </Link>
 
         <Link
-          to={ROUTES.REPORTS}
+          to="/settings?tab=security"
           onClick={onClose}
           className="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-base-content/80 hover:text-base-content hover:bg-base-200 transition-colors group cursor-pointer"
         >
           <div className="flex items-center gap-2.5">
             <KeyRound className="w-4 h-4 text-base-content/50 group-hover:text-primary transition-colors" />
-            <span>Security & Login Sessions</span>
+            <span>Security & Sessions</span>
           </div>
           <span className="text-[10px] font-medium text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded">
             Cookie Auth

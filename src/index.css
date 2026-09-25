@@ -1,6 +1,24 @@
 @import "tailwindcss";
+@import "./typeset.css";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
+
 @plugin "daisyui" {
   themes: light --default, dark --prefersdark, cupcake, bumblebee, emerald, corporate, synthwave, retro, cyberpunk, valentine, aqua, lofi, pastel, fantasy, wireframe, black, luxury, dracula, cmyk, autumn, business, acid, lemonade, night, coffee, winter, dim, nord, sunset;
+}
+
+:root {
+  --font-geist: 'Geist Variable', sans-serif;
+  --font-geist-mono: 'Geist Mono Variable', monospace;
+}
+
+.typeset-docs {
+  --typeset-font-body: var(--font-geist, sans-serif);
+  --typeset-font-heading: var(--font-geist, sans-serif);
+  --typeset-font-mono: var(--font-geist-mono, monospace);
+  --typeset-size: 15px;
+  --typeset-leading: 1.75;
+  --typeset-flow: 1.25em;
 }
 
 /* =========================================================
@@ -8,32 +26,129 @@
    ========================================================= */
 
 :root {
-  --font-family:
-    "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    sans-serif;
+  --font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body: var(--font-family);
+  --font-display: var(--font-family);
+  --app-font-size: 15px;
+  --app-line-height: 1.6;
+}
+
+html {
+  font-size: var(--app-font-size, 15px) !important;
+}
+
+body {
+  font-size: var(--app-font-size, 15px);
+  line-height: var(--app-line-height, 1.6);
+}
+
+button:not([class*="text-"]),
+input:not([class*="text-"]),
+select:not([class*="text-"]),
+textarea:not([class*="text-"]) {
+  font-size: inherit;
+}
+
+/* Real-time Font Size Scaling Targets across entire application */
+html[data-font-size="13px"] {
+  --app-font-size: 13px;
+  font-size: 13px !important;
+}
+
+html[data-font-size="14px"] {
+  --app-font-size: 14px;
+  font-size: 14px !important;
+}
+
+html[data-font-size="15px"] {
+  --app-font-size: 15px;
+  font-size: 15px !important;
+}
+
+html[data-font-size="16px"] {
+  --app-font-size: 16px;
+  font-size: 16px !important;
+}
+
+html[data-font-size="18px"] {
+  --app-font-size: 18px;
+  font-size: 18px !important;
+}
+
+html[data-font-size="20px"] {
+  --app-font-size: 20px;
+  font-size: 20px !important;
+}
+
+/* Real-time Font Switching Targets */
+html[data-font="geist"] {
+  --font-family: var(--font-geist, 'Geist Variable', sans-serif);
   --font-body: var(--font-family);
   --font-display: var(--font-family);
 }
 
-/* Real-time Font Switching Targets - Keep Body and Headings 100% UNIFIED */
+html[data-font="geist-mono"] {
+  --font-family: var(--font-geist-mono, 'Geist Mono Variable', monospace);
+  --font-body: var(--font-family);
+  --font-display: var(--font-family);
+}
+
 html[data-font="jakarta"] {
-  --font-family:
-    "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    sans-serif;
+  --font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-body: var(--font-family);
   --font-display: var(--font-family);
 }
 
 html[data-font="outfit"] {
-  --font-family:
-    "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-family: "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-body: var(--font-family);
   --font-display: var(--font-family);
 }
 
 html[data-font="inter"] {
-  --font-family:
-    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body: var(--font-family);
+  --font-display: var(--font-family);
+}
+
+html[data-font="noto-sans"] {
+  --font-family: "Noto Sans", sans-serif;
+  --font-body: var(--font-family);
+  --font-display: var(--font-family);
+}
+
+html[data-font="nunito-sans"] {
+  --font-family: "Nunito Sans", sans-serif;
+  --font-body: var(--font-family);
+  --font-display: var(--font-family);
+}
+
+html[data-font="figtree"] {
+  --font-family: "Figtree", sans-serif;
+  --font-body: var(--font-family);
+  --font-display: var(--font-family);
+}
+
+html[data-font="roboto"] {
+  --font-family: "Roboto", sans-serif;
+  --font-body: var(--font-family);
+  --font-display: var(--font-family);
+}
+
+html[data-font="raleway"] {
+  --font-family: "Raleway", sans-serif;
+  --font-body: var(--font-family);
+  --font-display: var(--font-family);
+}
+
+html[data-font="dm-sans"] {
+  --font-family: "DM Sans", sans-serif;
+  --font-body: var(--font-family);
+  --font-display: var(--font-family);
+}
+
+html[data-font="public-sans"] {
+  --font-family: "Public Sans", sans-serif;
   --font-body: var(--font-family);
   --font-display: var(--font-family);
 }
@@ -44,65 +159,124 @@ html[data-font="luxury"] {
   --font-display: "Playfair Display", Georgia, serif;
 }
 
-/* Enforce the exact same font family across EVERY single HTML element */
-html,
+/* Enforce font family across UI elements (excluding .typeset containers) */
 body,
 button,
 input,
 optgroup,
 select,
-textarea,
-p,
-span,
-div,
-a,
-label,
-table,
-th,
-td,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-.font-display {
-  font-family:
-    var(--font-body),
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    sans-serif !important;
+textarea {
+  font-family: var(--font-body), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-html[data-font="luxury"] h1,
-html[data-font="luxury"] h2,
-html[data-font="luxury"] h3,
+/* Enforce font family & display across all app headings */
+h1:not(.typeset *),
+h2:not(.typeset *),
+h3:not(.typeset *),
+h4:not(.typeset *),
+h5:not(.typeset *),
+h6:not(.typeset *),
+.font-display {
+  font-family: var(--font-display, var(--font-body)), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+p:not(.typeset *),
+span:not(.typeset *),
+div:not(.typeset *):not(.font-mono),
+a:not(.typeset *),
+label:not(.typeset *),
+table:not(.typeset *),
+th:not(.typeset *),
+td:not(.typeset *) {
+  font-family: var(--font-body), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+code:not(.typeset *),
+pre:not(.typeset *),
+kbd:not(.typeset *),
+samp:not(.typeset *),
+.font-mono {
+  font-family: var(--font-geist-mono, monospace) !important;
+}
+
+html[data-font="luxury"] h1:not(.typeset *),
+html[data-font="luxury"] h2:not(.typeset *),
+html[data-font="luxury"] h3:not(.typeset *),
 html[data-font="luxury"] .font-luxury {
   font-family: var(--font-display), Georgia, serif !important;
+}
+
+/* =========================================================
+   shadcn / typeset Container-Aware Typography Rhythm Engine
+   ========================================================= */
+.typeset {
+  font-family: var(--typeset-font-body, var(--font-geist, sans-serif)) !important;
+  font-size: var(--typeset-size, 15px) !important;
+  line-height: var(--typeset-leading, 1.75) !important;
+}
+
+.typeset p,
+.typeset span,
+.typeset li,
+.typeset td,
+.typeset th,
+.typeset blockquote {
+  font-family: var(--typeset-font-body, inherit) !important;
+  line-height: var(--typeset-leading, 1.75) !important;
+}
+
+.typeset h1,
+.typeset h2,
+.typeset h3,
+.typeset h4,
+.typeset h5,
+.typeset h6 {
+  font-family: var(--typeset-font-heading, inherit) !important;
+}
+
+.typeset code,
+.typeset pre,
+.typeset kbd,
+.typeset samp {
+  font-family: var(--typeset-font-mono, monospace) !important;
 }
 
 /* Sleek custom scrollbars */
 .scrollbar-thin {
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
+  scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
 }
 .scrollbar-thin::-webkit-scrollbar {
   width: 5px;
   height: 5px;
 }
+.scrollbar-thin::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
 .scrollbar-thin::-webkit-scrollbar-track {
   background: transparent;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: rgba(148, 163, 184, 0.35);
   border-radius: 9999px;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: rgba(148, 163, 184, 0.6);
+}
+
+/* Hide scrollbar completely while retaining smooth scroll */
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
 }
 
 /* Fix DaisyUI 5 dropdown compatibility with React state */

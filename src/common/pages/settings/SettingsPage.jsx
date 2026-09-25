@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   Type,
   User,
@@ -6,6 +7,7 @@ import {
   ShieldCheck,
   Settings as SettingsIcon,
   Palette,
+  Sparkles,
 } from "lucide-react";
 import PageHeader from "../../components/PageHeader.jsx";
 import {
@@ -18,14 +20,57 @@ import {
 
 const TABS = [
   { id: "themes", label: "DaisyUI Themes", icon: Palette, description: "All 29 curated theme palettes" },
-  { id: "fonts", label: "Typography & Fonts", icon: Type, description: "Switch fonts & boutique style" },
+  { id: "fonts", label: "Typeset & Typography", icon: Type, description: "shadcn typeset studio & font rhythm" },
   { id: "profile", label: "Profile & Account", icon: User, description: "Staff operator identity" },
   { id: "store", label: "Store & POS Branding", icon: Store, description: "Branch, GSTIN, receipt notes" },
   { id: "security", label: "Security & Sessions", icon: ShieldCheck, description: "Cookie auth & passwords" },
 ];
 
+const TAB_ALIASES = {
+  general: "store",
+  pos: "store",
+  invoice: "store",
+  tax: "store",
+  payment: "store",
+  currency: "store",
+  datetime: "store",
+  receipt: "store",
+  printer: "store",
+  notif: "store",
+  system: "fonts",
+  typeset: "fonts",
+  typography: "fonts",
+  password: "security",
+  sessions: "security",
+  account: "profile",
+};
+
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState("fonts");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlTab = searchParams.get("tab");
+
+  const resolveTab = (tab) => {
+    if (!tab) return "fonts";
+    const directMatch = TABS.find((t) => t.id === tab);
+    if (directMatch) return directMatch.id;
+    return TAB_ALIASES[tab] || "fonts";
+  };
+
+  const [activeTab, setActiveTab] = useState(() => resolveTab(urlTab));
+
+  useEffect(() => {
+    if (urlTab) {
+      const resolved = resolveTab(urlTab);
+      if (resolved !== activeTab) {
+        setActiveTab(resolved);
+      }
+    }
+  }, [urlTab]);
+
+  const handleTabChange = (newTabId) => {
+    setActiveTab(newTabId);
+    setSearchParams({ tab: newTabId });
+  };
 
   return (
     <div className="space-y-6">
@@ -56,7 +101,7 @@ export default function SettingsPage() {
                   <button
                     key={tab.id}
                     type="button"
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => handleTabChange(tab.id)}
                     className={`w-full flex items-start gap-3 p-3 rounded-2xl text-left transition-all cursor-pointer ${
                       isActive
                         ? "bg-primary text-primary-content shadow-sm shadow-primary/25 font-bold"
@@ -101,7 +146,7 @@ export default function SettingsPage() {
         </aside>
 
         {/* Right Active Tab Content Area */}
-        <main className="flex-1 p-6 md:p-8 bg-base-100">
+        <main className="flex-1 p-6 md:p-8 bg-base-100 min-w-0">
           {activeTab === "themes" && <ThemeSettings />}
           {activeTab === "fonts" && <FontSettings />}
           {activeTab === "profile" && <ProfileSettings />}

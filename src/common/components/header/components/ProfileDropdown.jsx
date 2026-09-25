@@ -75,8 +75,21 @@ export default function ProfileDropdown() {
         }`}
       >
         <div className="relative">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0a1128] via-[#0f1c3f] to-[#1e3a8a] text-white flex items-center justify-center text-xs font-bold uppercase shadow-sm border border-white/20 group-hover:scale-105 transition-transform">
-            {displayName.slice(0, 2)}
+          <div className="w-8 h-8 rounded-xl bg-base-200 border border-base-300 overflow-hidden flex items-center justify-center text-xs font-bold uppercase shadow-sm group-hover:scale-105 transition-transform">
+            <img
+              src={currentUser?.avatarUrl || "/images/pooja-fashion-logo.jpg"}
+              alt={displayName}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+                if (e.currentTarget.nextElementSibling) {
+                  e.currentTarget.nextElementSibling.style.display = "flex";
+                }
+              }}
+            />
+            <span className="hidden w-full h-full items-center justify-center bg-primary text-primary-content font-bold text-xs">
+              {displayName.slice(0, 2)}
+            </span>
           </div>
           <span
             className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-base-100 ring-1 ring-emerald-400/40"

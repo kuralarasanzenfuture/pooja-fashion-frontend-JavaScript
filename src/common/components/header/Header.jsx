@@ -62,7 +62,7 @@ export default function Header({
           </Link>
 
           {/* Typography Switcher */}
-          <FontSwitcher />
+          {/* <FontSwitcher /> */}
 
           {/* DaisyUI Theme Switcher */}
           <ThemeSwitcher />
