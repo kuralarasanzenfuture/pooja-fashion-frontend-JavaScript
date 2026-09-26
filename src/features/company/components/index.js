@@ -4,3 +4,7 @@ export { default as CompanyModal } from "./CompanyModal.jsx";
 export { default as CompanyDetailModal } from "./CompanyDetailModal.jsx";
 export { default as CompanyStatusModal } from "./CompanyStatusModal.jsx";
 export { default as CompanyDeleteModal } from "./CompanyDeleteModal.jsx";
+export { default as CompanyFilterDrawer } from "./CompanyFilterDrawer.jsx";
+export { default as CompanyAddressModal } from "./CompanyAddressModal.jsx";
+export { default as CompanyAddressDeleteModal } from "./CompanyAddressDeleteModal.jsx";
+export { default as CompanyAddressesTab } from "./CompanyAddressesTab.jsx";

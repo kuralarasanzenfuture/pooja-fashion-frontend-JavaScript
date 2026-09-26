@@ -19,6 +19,22 @@ import {
 } from "lucide-react";
 import { Button } from "../../../common/components/ui/buttons/index.js";
 import ImageViewerModal from "../../../common/components/ui/ImageViewerModal.jsx";
+import { DropdownSelect } from "../../../common/components/ui/select/index.js";
+
+const TIMEZONE_OPTIONS = [
+  { value: "Asia/Kolkata", label: "Asia/Kolkata (IST +05:30)", description: "India Standard Time" },
+  { value: "Asia/Dubai", label: "Asia/Dubai (GST +04:00)", description: "Gulf Standard Time" },
+  { value: "Asia/Singapore", label: "Asia/Singapore (SGT +08:00)", description: "Singapore Time" },
+  { value: "Europe/London", label: "Europe/London (GMT/BST)", description: "UK Time" },
+  { value: "America/New_York", label: "America/New_York (EST/EDT)", description: "Eastern Time" },
+];
+
+const FY_OPTIONS = [
+  { value: 4, label: "April (Standard Indian Fiscal)", description: "April 1 – March 31 (Standard GST)" },
+  { value: 1, label: "January (Calendar Year)", description: "January 1 – December 31" },
+  { value: 7, label: "July (Q3 Fiscal Cycle)", description: "July 1 – June 30" },
+  { value: 10, label: "October (Q4 Fiscal Cycle)", description: "October 1 – September 30" },
+];
 
 /**
  * Company Modal for Create and Edit Operations
@@ -735,33 +751,22 @@ export default function CompanyModal({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className={labelClass}>Store timezone</label>
-                  <select
+                  <DropdownSelect
+                    label="Store timezone"
                     name="timezone"
                     value={formData.timezone}
                     onChange={handleChange}
-                    className={`${inputClass(false)} cursor-pointer`}
-                  >
-                    <option value="Asia/Kolkata">Asia/Kolkata (IST +5:30)</option>
-                    <option value="Asia/Dubai">Asia/Dubai (GST +4:00)</option>
-                    <option value="Asia/Singapore">Asia/Singapore (SGT +8:00)</option>
-                    <option value="Europe/London">Europe/London (GMT/BST)</option>
-                    <option value="America/New_York">America/New_York (EST/EDT)</option>
-                  </select>
+                    options={TIMEZONE_OPTIONS}
+                  />
                 </div>
                 <div>
-                  <label className={labelClass}>Financial year starts</label>
-                  <select
+                  <DropdownSelect
+                    label="Financial year starts"
                     name="financial_year_start_month"
                     value={formData.financial_year_start_month}
                     onChange={handleChange}
-                    className={`${inputClass(false)} cursor-pointer`}
-                  >
-                    <option value={1}>January (calendar year)</option>
-                    <option value={4}>April (standard Indian fiscal year)</option>
-                    <option value={7}>July</option>
-                    <option value={10}>October</option>
-                  </select>
+                    options={FY_OPTIONS}
+                  />
                 </div>
               </div>
             </div>

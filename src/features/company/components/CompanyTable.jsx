@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from "react";
 import {
   Search,
   Mail,
@@ -9,9 +10,20 @@ import {
   Building2,
   ChevronDown,
   Plus,
+  Filter,
+  Check,
 } from "lucide-react";
 import { Button } from "../../../common/components/ui/buttons/index.js";
 import Pagination from "../../../common/components/Pagination.jsx";
+
+const SORT_OPTIONS = [
+  { value: "created_at:desc", label: "Newest first" },
+  { value: "created_at:asc", label: "Oldest first" },
+  { value: "company_name:asc", label: "Name A–Z" },
+  { value: "company_name:desc", label: "Name Z–A" },
+  { value: "company_code:asc", label: "Code A–Z" },
+  { value: "status:asc", label: "Status" },
+];
 
 /**
  * Company Table — directory of companies with search, filters, sort, and row actions.
@@ -24,6 +36,8 @@ export default function CompanyTable({
   onSearchChange,
   statusFilter = "",
   onStatusFilterChange,
+  onOpenFilterDrawer,
+  activeFilterCount = 0,
   sortBy = "created_at",
   sortOrder = "desc",
   onSortChange,
@@ -50,8 +64,36 @@ export default function CompanyTable({
     { value: "suspended", label: "Suspended", dot: "bg-error" },
   ];
 
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const sortDropdownRef = useRef(null);
+
+  // Close sort dropdown on outside click or escape
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target)) {
+        setIsSortOpen(false);
+      }
+    }
+    function handleKeyDown(event) {
+      if (event.key === "Escape") {
+        setIsSortOpen(false);
+      }
+    }
+    if (isSortOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isSortOpen]);
+
+  const currentSortKey = `${sortBy}:${sortOrder}`;
+  const currentSortOption = SORT_OPTIONS.find((opt) => opt.value === currentSortKey) || SORT_OPTIONS[0];
+
   return (
-    <div className="bg-base-100 rounded-xl border border-base-300 overflow-hidden text-base-content">
+    <div className="bg-base-100 rounded-xl border border-base-300 text-base-content relative">
       {/* Toolbar */}
       <div className="px-5 py-4 border-b border-base-300 flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div className="relative w-full max-w-sm">
@@ -75,17 +117,15 @@ export default function CompanyTable({
                   key={opt.value}
                   type="button"
                   onClick={() => onStatusFilterChange(opt.value)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${
-                    isActive
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${isActive
                       ? "bg-primary text-primary-content shadow-sm shadow-primary/30"
                       : "text-base-content/70 hover:text-base-content hover:bg-base-100/60"
-                  }`}
+                    }`}
                 >
                   {opt.dot && (
                     <span
-                      className={`w-1.5 h-1.5 rounded-full ${opt.dot} ${
-                        isActive ? "ring-1 ring-primary-content/50" : ""
-                      }`}
+                      className={`w-1.5 h-1.5 rounded-full ${opt.dot} ${isActive ? "ring-1 ring-primary-content/50" : ""
+                        }`}
                     />
                   )}
                   <span>{opt.label}</span>
@@ -94,24 +134,79 @@ export default function CompanyTable({
             })}
           </div>
 
-          <div className="relative">
-            <select
-              value={`${sortBy}:${sortOrder}`}
-              onChange={(e) => {
-                const [sb, so] = e.target.value.split(":");
-                onSortChange(sb, so);
-              }}
-              className="appearance-none text-xs font-medium pl-3 pr-7 py-2 rounded-lg border border-base-300 bg-base-100 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+          {/* DaisyUI Sort Dropdown */}
+          <div
+            ref={sortDropdownRef}
+            className={`dropdown dropdown-bottom dropdown-end ${isSortOpen ? "dropdown-open" : ""} relative inline-block`}
+          >
+            <button
+              type="button"
+              onClick={() => setIsSortOpen((prev) => !prev)}
+              aria-haspopup="true"
+              aria-expanded={isSortOpen}
+              className={`h-9 px-3 text-xs font-semibold rounded-lg border transition-all cursor-pointer shadow-2xs flex items-center gap-2 select-none ${
+                isSortOpen
+                  ? "bg-primary/10 border-primary/40 text-primary ring-2 ring-primary/20"
+                  : "bg-base-100 hover:bg-base-200/80 border-base-300 text-base-content"
+              }`}
             >
-              <option value="created_at:desc" className="bg-base-100 text-base-content">Newest first</option>
-              <option value="created_at:asc" className="bg-base-100 text-base-content">Oldest first</option>
-              <option value="company_name:asc" className="bg-base-100 text-base-content">Name A–Z</option>
-              <option value="company_name:desc" className="bg-base-100 text-base-content">Name Z–A</option>
-              <option value="company_code:asc" className="bg-base-100 text-base-content">Code A–Z</option>
-              <option value="status:asc" className="bg-base-100 text-base-content">Status</option>
-            </select>
-            <ChevronDown className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 text-base-content/40 pointer-events-none" />
+              <span>{currentSortOption.label}</span>
+              <ChevronDown
+                className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                  isSortOpen ? "rotate-180 text-primary" : "text-base-content/50"
+                }`}
+              />
+            </button>
+
+            {isSortOpen && (
+              <ul className="dropdown-content menu z-50 p-1.5 mt-1.5 shadow-2xl bg-base-100 rounded-xl border border-base-300 w-44 text-xs space-y-0.5 animate-in fade-in zoom-in-95 duration-100">
+                <li className="menu-title px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-base-content/50">
+                  Sort Order
+                </li>
+                {SORT_OPTIONS.map((opt) => {
+                  const isSelected = opt.value === currentSortKey;
+                  return (
+                    <li key={opt.value}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const [sb, so] = opt.value.split(":");
+                          onSortChange(sb, so);
+                          setIsSortOpen(false);
+                        }}
+                        className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs transition-colors cursor-pointer ${
+                          isSelected
+                            ? "bg-primary text-primary-content font-bold shadow-xs"
+                            : "text-base-content hover:bg-base-200 font-medium"
+                        }`}
+                      >
+                        <span>{opt.label}</span>
+                        {isSelected && <Check className="w-3.5 h-3.5 shrink-0" />}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
+
+          {/* Slide-Over Filter Drawer Trigger Button */}
+          {onOpenFilterDrawer && (
+            <button
+              type="button"
+              onClick={onOpenFilterDrawer}
+              className="h-9 px-3 rounded-lg border border-base-300 bg-base-100 hover:bg-base-200/80 text-base-content flex items-center gap-2 shadow-2xs transition text-xs font-semibold relative cursor-pointer"
+              title="Open Advanced Filters Drawer"
+            >
+              <Filter className="w-3.5 h-3.5 text-base-content/70" />
+              <span>Filters</span>
+              {activeFilterCount > 0 && (
+                <span className="w-4 h-4 rounded-full bg-primary text-primary-content text-[10px] font-bold flex items-center justify-center animate-in zoom-in duration-150">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+          )}
         </div>
       </div>
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Building2,
@@ -20,6 +20,7 @@ import {
   CompanyDetailModal,
   CompanyStatusModal,
   CompanyDeleteModal,
+  CompanyFilterDrawer,
 } from "../components/index.js";
 import {
   useCompanies,
@@ -44,6 +45,15 @@ export default function CompanyPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [sortBy, setSortBy] = useState("created_at");
   const [sortOrder, setSortOrder] = useState("desc");
+
+  // Advanced slide-over filter drawer state
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+  const [drawerFilters, setDrawerFilters] = useState({
+    status: "",
+    currency: "",
+    region: "",
+    gstinOnly: false,
+  });
 
   // Notification toast state
   const [notification, setNotification] = useState(null);
@@ -76,12 +86,85 @@ export default function CompanyPage() {
   const statusMutation = useUpdateCompanyStatus();
   const deleteMutation = useDeleteCompany();
 
-  const companiesList = companiesResponse?.data || [];
+  const rawCompanies = companiesResponse?.data || [];
+
+  // Real-time client-side filter application for all drawer & search filters
+  const filteredCompanies = useMemo(() => {
+    let list = Array.isArray(rawCompanies) ? [...rawCompanies] : [];
+
+    // Search filter (name, code, email, phone, GSTIN, city, state)
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter((c) => {
+        const name = (c.companyName || c.company_name || "").toLowerCase();
+        const code = (c.companyCode || c.company_code || "").toLowerCase();
+        const email = (c.email || "").toLowerCase();
+        const phone = (c.phone || "").toLowerCase();
+        const gstin = (c.gstin || c.taxNumber || c.tax_number || "").toLowerCase();
+        const city = (c.city || "").toLowerCase();
+        const state = (c.state || "").toLowerCase();
+        return (
+          name.includes(q) ||
+          code.includes(q) ||
+          email.includes(q) ||
+          phone.includes(q) ||
+          gstin.includes(q) ||
+          city.includes(q) ||
+          state.includes(q)
+        );
+      });
+    }
+
+    // Status filter
+    const activeStatus = drawerFilters.status || statusFilter;
+    if (activeStatus) {
+      list = list.filter(
+        (c) => (c.status || "").toLowerCase() === activeStatus.toLowerCase()
+      );
+    }
+
+    // Currency filter
+    if (drawerFilters.currency) {
+      list = list.filter((c) => {
+        const curr = (c.defaultCurrency || c.currency || "").toUpperCase();
+        return curr === drawerFilters.currency.toUpperCase();
+      });
+    }
+
+    // Region / State filter
+    if (drawerFilters.region) {
+      const reg = drawerFilters.region.toLowerCase();
+      list = list.filter((c) => {
+        const state = (c.state || "").toLowerCase();
+        const city = (c.city || "").toLowerCase();
+        const address = (c.address || "").toLowerCase();
+        return state.includes(reg) || city.includes(reg) || address.includes(reg);
+      });
+    }
+
+    // GSTIN only filter
+    if (drawerFilters.gstinOnly) {
+      list = list.filter((c) => Boolean(c.gstin || c.taxNumber || c.tax_number));
+    }
+
+    return list;
+  }, [rawCompanies, search, statusFilter, drawerFilters]);
+
+  // Active filter count calculation
+  const activeFilterCount = useMemo(() => {
+    return [
+      Boolean(drawerFilters.status || statusFilter),
+      Boolean(drawerFilters.currency),
+      Boolean(drawerFilters.region),
+      Boolean(drawerFilters.gstinOnly),
+    ].filter(Boolean).length;
+  }, [drawerFilters, statusFilter]);
+
   const paginationMeta = companiesResponse?.meta || {
-    total: companiesList.length,
+    total: filteredCompanies.length,
     page,
     limit,
-    totalPages: Math.ceil(companiesList.length / limit) || 1,
+    totalPages: Math.ceil(filteredCompanies.length / limit) || 1,
   };
 
   const showToast = (message, type = "success") => {
@@ -177,8 +260,8 @@ export default function CompanyPage() {
       {notification && (
         <div
           className={`fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-xl border text-sm font-semibold animate-in slide-in-from-bottom duration-200 ${notification.type === "error"
-              ? "bg-rose-50 text-rose-800 border-rose-200"
-              : "bg-emerald-50 text-emerald-800 border-emerald-200"
+            ? "bg-rose-50 text-rose-800 border-rose-200"
+            : "bg-emerald-50 text-emerald-800 border-emerald-200"
             }`}
         >
           {notification.type === "error" ? (
@@ -223,75 +306,13 @@ export default function CompanyPage() {
 
       {/* Overview Statistics Cards */}
       <CompanyStats
-        companies={companiesList}
-        total={paginationMeta.total}
+        companies={rawCompanies}
+        total={rawCompanies.length}
       />
-
-      {/* Global Buttons Showcase Banner (demonstrates variants & interactive designs) */}
-      <div className="relative p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-[#070d1e] via-[#0f1c3f] to-[#1e3a8a] text-white shadow-xl border border-amber-400/25 overflow-hidden">
-        {/* Luxury Golden Top Hairline Accent */}
-        <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-amber-300 via-[#d4af37] to-amber-200" />
-
-        {/* Ambient subtle glow */}
-        <div className="absolute top-0 right-0 w-80 h-80 bg-amber-400/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-1/3 w-64 h-64 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
-
-        <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-          <div className="max-w-xl">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-400/15 border border-amber-400/30 text-amber-300 font-bold text-[11px] uppercase tracking-wider font-mono">
-              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              <span>Global Button Architecture</span>
-            </div>
-            <h3 className="text-lg sm:text-xl font-black text-white mt-2 tracking-tight font-display">
-              Enterprise Boutique Design System • Pooja Fashion POS
-            </h3>
-            <p className="text-xs text-sky-200/80 mt-1 leading-relaxed">
-              Unified across corporate entities, multi-branch POS, and ledger tables. Powered by luxury gold, midnight sapphire, and creative micro-animated variants.
-            </p>
-          </div>
-
-          {/* Interactive Button Palette */}
-          <div className="flex flex-wrap items-center gap-2.5 p-2 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 shrink-0">
-            <Button
-              variant="gold"
-              size="sm"
-              icon={Building2}
-              onClick={handleOpenCreate}
-            >
-              New Branch
-            </Button>
-
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => showToast("Global Secondary Button clicked")}
-            >
-              Export CSV
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => showToast("Outline Button active")}
-              className="!text-white !border-white/40 hover:!bg-white/15"
-            >
-              Audit Trail
-            </Button>
-
-            <Button
-              variant="gradient-two"
-              size="sm"
-              onClick={() => showToast("Creative Amethyst Gradient Button clicked")}
-            >
-              Amethyst
-            </Button>
-          </div>
-        </div>
-      </div>
 
       {/* Main Companies Table */}
       <CompanyTable
-        companies={companiesList}
+        companies={filteredCompanies}
         meta={paginationMeta}
         isLoading={isLoading}
         search={search}
@@ -299,11 +320,14 @@ export default function CompanyPage() {
           setSearch(val);
           setPage(1);
         }}
-        statusFilter={statusFilter}
+        statusFilter={drawerFilters.status || statusFilter}
         onStatusFilterChange={(val) => {
           setStatusFilter(val);
+          setDrawerFilters((prev) => ({ ...prev, status: val }));
           setPage(1);
         }}
+        onOpenFilterDrawer={() => setIsFilterDrawerOpen(true)}
+        activeFilterCount={activeFilterCount}
         sortBy={sortBy}
         sortOrder={sortOrder}
         onSortChange={(sb, so) => {
@@ -323,6 +347,33 @@ export default function CompanyPage() {
         onChangeStatus={handleOpenStatus}
         onDeleteCompany={handleOpenDelete}
         onAddNew={handleOpenCreate}
+      />
+
+      {/* Slide-Over Floating Filter Drawer Modal */}
+      <CompanyFilterDrawer
+        isOpen={isFilterDrawerOpen}
+        onClose={() => setIsFilterDrawerOpen(false)}
+        filters={{
+          ...drawerFilters,
+          status: drawerFilters.status || statusFilter,
+        }}
+        onApplyFilters={(newFilters) => {
+          setDrawerFilters(newFilters);
+          if (newFilters.status !== undefined) {
+            setStatusFilter(newFilters.status);
+          }
+          setPage(1);
+        }}
+        onReset={() => {
+          setDrawerFilters({
+            status: "",
+            currency: "",
+            region: "",
+            gstinOnly: false,
+          });
+          setStatusFilter("");
+          setPage(1);
+        }}
       />
 
       {/* Create / Edit Modal */}

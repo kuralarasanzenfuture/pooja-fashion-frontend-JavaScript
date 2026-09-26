@@ -45,4 +45,12 @@ export const queryKeys = {
     detail: (id) => ["companies", "detail", id],
     byCode: (code) => ["companies", "byCode", code],
   },
+
+  companyAddresses: {
+    all: ["companyAddresses"],
+    list: (params) => ["companyAddresses", "list", params],
+    byCompany: (companyId) => ["companyAddresses", "byCompany", companyId],
+    primary: (companyId) => ["companyAddresses", "primary", companyId],
+    detail: (id) => ["companyAddresses", "detail", id],
+  },
 };

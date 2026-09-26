@@ -22,6 +22,44 @@
 }
 
 /* =========================================================
+   Pooja Fashion Brand Identity: #2A0081 Royal Purple Theme
+   ========================================================= */
+
+:root,
+[data-theme="light"] {
+  --color-primary: #2a0081;
+  --color-primary-content: #ffffff;
+  --color-primary-hover: #1f0060;
+  --color-primary-active: #150042;
+  --color-primary-focus: #2a0081;
+  --primary: #2a0081;
+  --primary-content: #ffffff;
+}
+
+[data-theme="dark"] {
+  --color-primary: #8553f8;
+  --color-primary-content: #ffffff;
+  --color-primary-hover: #9d72f9;
+  --color-primary-active: #7138f5;
+  --color-primary-focus: #8553f8;
+  --primary: #8553f8;
+  --primary-content: #ffffff;
+}
+
+[data-theme="light"] .text-primary {
+  color: #2a0081 !important;
+}
+
+[data-theme="light"] .border-primary {
+  border-color: #2a0081 !important;
+}
+
+[data-theme="light"] .bg-primary {
+  background-color: #2a0081 !important;
+  color: #ffffff !important;
+}
+
+/* =========================================================
    Pooja Fashion Shop — Unified Modern Typography System
    ========================================================= */
 

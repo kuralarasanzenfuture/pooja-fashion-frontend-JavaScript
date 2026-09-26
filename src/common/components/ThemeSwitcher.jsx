@@ -14,8 +14,8 @@ import {
 
 export const DAISYUI_THEMES = [
   // --- Core Defaults ---
-  { id: "light", name: "Light", type: "light", desc: "Clean & crisp default", colors: ["#4f46e5", "#06b6d4", "#f59e0b", "#1f2937"] },
-  { id: "dark", name: "Dark", type: "dark", desc: "Modern deep charcoal", colors: ["#6366f1", "#22d3ee", "#fbbf24", "#111827"] },
+  { id: "light", name: "Light", type: "light", desc: "Clean & crisp #2A0081 royal indigo", colors: ["#2a0081", "#06b6d4", "#f59e0b", "#1f2937"] },
+  { id: "dark", name: "Dark", type: "dark", desc: "Modern deep charcoal & violet", colors: ["#8553f8", "#22d3ee", "#fbbf24", "#111827"] },
 
   // --- Chic Boutique & Pastels ---
   { id: "cupcake", name: "Cupcake", type: "light", desc: "Sweet pastel boutique", colors: ["#65c3c8", "#ef9fbc", "#eeaf3a", "#291334"] },

@@ -39,6 +39,7 @@ import {
   CompanyModal,
   CompanyStatusModal,
   CompanyDeleteModal,
+  CompanyAddressesTab,
 } from "../components/index.js";
 
 /**
@@ -194,6 +195,7 @@ export default function CompanyViewPage({ isProfileMode = false }) {
 
   const tabs = [
     { id: "overview", label: "Overview & Identity", icon: Building2, colorDot: "bg-primary" },
+    { id: "addresses", label: "Registered Addresses", icon: MapPin, colorDot: "bg-warning" },
     { id: "contact", label: "Contact & Web", icon: Mail, colorDot: "bg-secondary" },
     { id: "fiscal", label: "Localization & Fiscal", icon: DollarSign, colorDot: "bg-accent" },
     { id: "audit", label: "System & Audit Trail", icon: Clock, colorDot: "bg-info" },
@@ -550,6 +552,11 @@ export default function CompanyViewPage({ isProfileMode = false }) {
                 </div>
               </div>
             </div>
+          )}
+
+          {/* TAB: REGISTERED ADDRESSES */}
+          {activeTab === "addresses" && (
+            <CompanyAddressesTab companyId={company.id} companyName={company.companyName} />
           )}
 
           {/* TAB 2: CONTACT & WEB */}
