@@ -263,6 +263,66 @@
   color: var(--navy-900);
 }
 
+.pooja-auth__input--error {
+  border-color: #ef4444 !important;
+  background-color: #fffafb !important;
+}
+
+.pooja-auth__input--error:focus {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+}
+
+.pooja-auth__field-error {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 5px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #dc2626;
+  animation: fadeIn 0.15s ease-in;
+}
+
+.pooja-auth__remember-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: 4px;
+  margin-bottom: 2px;
+}
+
+.pooja-auth__remember-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 13px;
+  color: var(--color-slate-600, #475569);
+  font-weight: 500;
+  transition: color 0.15s;
+}
+
+.pooja-auth__remember-label:hover {
+  color: var(--navy-900, #0f1c3f);
+}
+
+.pooja-auth__checkbox {
+  width: 17px;
+  height: 17px;
+  border-radius: 4px;
+  border: 1.5px solid var(--color-slate-400, #94a3b8);
+  accent-color: var(--color-primary, #2a0081);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pooja-auth__checkbox:focus-visible {
+  outline: 2px solid var(--color-primary, #2a0081);
+  outline-offset: 2px;
+}
+
 .pooja-auth__error {
   display: flex;
   align-items: flex-start;

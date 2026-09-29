@@ -5,10 +5,12 @@ export default function PageHeader({
   subtitle,
   description,
   actions,
+  action,
   breadcrumbs,
   className = "",
 }) {
   const desc = subtitle || description;
+  const actionItems = actions || action;
   return (
     <div className={`mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between ${className}`}>
       <div>
@@ -24,8 +26,8 @@ export default function PageHeader({
           <p className="mt-1 text-xs sm:text-sm text-base-content/60 font-medium max-w-2xl">{desc}</p>
         )}
       </div>
-      {actions && (
-        <div className="flex flex-wrap items-center gap-2.5">{actions}</div>
+      {actionItems && (
+        <div className="flex flex-wrap items-center gap-2.5">{actionItems}</div>
       )}
     </div>
   );

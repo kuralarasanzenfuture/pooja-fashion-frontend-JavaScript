@@ -22,9 +22,11 @@ export default function DashboardLayout() {
           onCloseMobile={() => setMobileMenuOpen(false)}
         />
 
-        {/* Content Area */}
-        <main className="flex-1 h-full overflow-y-auto min-h-0 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto scrollbar-thin">
-          <Outlet />
+        {/* Content Area - Full width scroll container with scrollbar at viewport corner */}
+        <main className="flex-1 h-full overflow-y-auto min-h-0 w-full scrollbar-thin">
+          <div className="max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

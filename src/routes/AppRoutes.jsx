@@ -6,6 +6,7 @@ import ModulePlaceholder from "../common/components/ModulePlaceholder.jsx";
 import SettingsPage from "../common/pages/settings/SettingsPage.jsx";
 import CompanyPage from "../features/company/pages/CompanyPage.jsx";
 import CompanyViewPage from "../features/company/pages/CompanyViewPage.jsx";
+import BankMasterPage from "../features/bank-master/pages/BankMasterPage.jsx";
 import NotFoundPage from "../common/pages/404/NotFoundPage.jsx";
 import Error500Page from "../common/pages/500/Error500Page.jsx";
 import ProtectedRoute from "./ProtectedRoute.jsx";
@@ -117,9 +118,15 @@ export default function AppRoutes() {
           />
           <Route path={ROUTES.SETTINGS} element={<SettingsPage />} />
           <Route path={ROUTES.COMPANY} element={<CompanyPage />} />
-          <Route path="/company/profile" element={<CompanyViewPage isProfileMode={true} />} />
+          <Route path="/company/profile" element={<CompanyViewPage isProfileMode={true} initialTab="overview" />} />
+          <Route path="/company/addresses" element={<CompanyViewPage isProfileMode={true} initialTab="addresses" />} />
+          <Route path="/company/contacts" element={<CompanyViewPage isProfileMode={true} initialTab="contacts" />} />
+          <Route path="/company/tax" element={<CompanyViewPage isProfileMode={true} initialTab="tax" />} />
+          <Route path="/company/bank-accounts" element={<CompanyViewPage isProfileMode={true} initialTab="banks" />} />
           <Route path="/company/view/:id" element={<CompanyViewPage />} />
           <Route path="/company/:id" element={<CompanyViewPage />} />
+          <Route path="/bank-master" element={<BankMasterPage />} />
+          <Route path="/banks" element={<BankMasterPage />} />
         </Route>
       </Route>
 

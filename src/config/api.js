@@ -60,7 +60,13 @@ api.interceptors.response.use(
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
-          .then(() => api(originalRequest))
+          .then((newToken) => {
+            if (newToken) {
+              originalRequest.headers = originalRequest.headers || {};
+              originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            }
+            return api(originalRequest);
+          })
           .catch((err) => Promise.reject(err));
       }
 
@@ -68,9 +74,33 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // In cookie-based authentication, POST /auth/refresh-token uses the refreshToken cookie
-        await api.post("/auth/refresh-token");
-        processQueue(null);
+        // In cookie-based authentication, POST /auth/refresh-token uses HTTP-only refresh_token cookie
+        // Send stored refresh_token in request body as dual-mode fallback
+        const storedRefreshToken = localStorage.getItem("refreshToken");
+        const refreshPayload = storedRefreshToken ? { refresh_token: storedRefreshToken } : {};
+        const refreshResponse = await api.post("/auth/refresh-token", refreshPayload);
+
+        const responseData = refreshResponse.data?.data || refreshResponse.data;
+        const newAccessToken =
+          responseData?.accessToken || responseData?.tokens?.accessToken;
+        const newRefreshToken =
+          responseData?.refreshToken || responseData?.tokens?.refreshToken;
+
+        if (newAccessToken) {
+          localStorage.setItem("accessToken", newAccessToken);
+          if (newRefreshToken) {
+            localStorage.setItem("refreshToken", newRefreshToken);
+          }
+          if (responseData?.sessionId) {
+            localStorage.setItem("sessionId", responseData.sessionId);
+          }
+
+          api.defaults.headers.common["Authorization"] = `Bearer ${newAccessToken}`;
+          originalRequest.headers = originalRequest.headers || {};
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        }
+
+        processQueue(null, newAccessToken);
         return api(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
@@ -78,6 +108,10 @@ api.interceptors.response.use(
         localStorage.removeItem("refreshToken");
         localStorage.removeItem("sessionId");
         localStorage.removeItem("user");
+
+        if (typeof window !== "undefined" && !window.location.pathname.includes("/login")) {
+          window.location.href = "/login";
+        }
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

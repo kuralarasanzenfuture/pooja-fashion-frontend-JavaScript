@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
   loginUser,
-  loginWithDemo,
   clearAuthError,
 } from "../../../redux/auth/authSlice.js";
 import {
@@ -21,7 +20,6 @@ import {
   AlertCircle,
   CheckCircle2,
   ArrowRight,
-  Receipt,
   Shirt,
   Tag,
   Scissors,
@@ -37,65 +35,156 @@ export default function LoginPage() {
   const loading = useSelector(selectAuthLoading);
   const authError = useSelector(selectAuthError);
 
-  const [identifier, setIdentifier] = useState("");
-  const [password, setPassword] = useState("");
+  const REMEMBER_KEY = "pooja_fashion_remembered_credentials";
+
+  // Load last saved credentials from localStorage if rememberMe was active
+  const [identifier, setIdentifier] = useState(() => {
+    try {
+      const saved = localStorage.getItem(REMEMBER_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return parsed.identifier || "";
+      }
+    } catch {
+      // Fallback
+    }
+    return "";
+  });
+
+  const [password, setPassword] = useState(() => {
+    try {
+      const saved = localStorage.getItem(REMEMBER_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return parsed.password || "";
+      }
+    } catch {
+      // Fallback
+    }
+    return "";
+  });
+
+  const [rememberMe, setRememberMe] = useState(() => {
+    try {
+      const saved = localStorage.getItem(REMEMBER_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return Boolean(parsed.rememberMe);
+      }
+    } catch {
+      // Fallback
+    }
+    return false;
+  });
+
   const [showPassword, setShowPassword] = useState(false);
-  const [localError, setLocalError] = useState("");
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
+
+  const validate = (field, value) => {
+    if (field === "identifier") {
+      const val = value ? value.trim() : "";
+      if (!val) {
+        return "Username, email, or phone number is required";
+      }
+      if (val.length < 3) {
+        return "Identifier must be at least 3 characters";
+      }
+      return "";
+    }
+    if (field === "password") {
+      if (!value) {
+        return "Password is required";
+      }
+      if (value.length < 4) {
+        return "Password must be at least 4 characters";
+      }
+      return "";
+    }
+    return "";
+  };
 
   const handleIdentifierChange = (e) => {
-    setIdentifier(e.target.value);
-    if (localError) setLocalError("");
+    const val = e.target.value;
+    setIdentifier(val);
     if (authError) dispatch(clearAuthError());
+    if (touched.identifier) {
+      setErrors((prev) => ({
+        ...prev,
+        identifier: validate("identifier", val),
+      }));
+    }
   };
 
   const handlePasswordChange = (e) => {
-    setPassword(e.target.value);
-    if (localError) setLocalError("");
+    const val = e.target.value;
+    setPassword(val);
     if (authError) dispatch(clearAuthError());
+    if (touched.password) {
+      setErrors((prev) => ({
+        ...prev,
+        password: validate("password", val),
+      }));
+    }
+  };
+
+  const handleBlur = (field) => () => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    const val = field === "identifier" ? identifier : password;
+    setErrors((prev) => ({
+      ...prev,
+      [field]: validate(field, val),
+    }));
+  };
+
+  const handleRememberMeChange = (e) => {
+    const isChecked = e.target.checked;
+    setRememberMe(isChecked);
+    if (!isChecked) {
+      localStorage.removeItem(REMEMBER_KEY);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const trimmedId = identifier.trim();
-    if (!trimmedId) {
-      setLocalError("Please enter your username, email, or phone number.");
-      return;
-    }
-    if (!password) {
-      setLocalError("Please enter your password.");
+    const idErr = validate("identifier", identifier);
+    const passErr = validate("password", password);
+
+    setTouched({ identifier: true, password: true });
+    setErrors({ identifier: idErr, password: passErr });
+
+    if (idErr || passErr) {
       return;
     }
 
     try {
       await dispatch(
-        loginUser({ identifier: trimmedId, password })
+        loginUser({ identifier: identifier.trim(), password })
       ).unwrap();
+
+      // If "Remember login credentials" is checked, store credentials for auto-fill on logout
+      if (rememberMe) {
+        localStorage.setItem(
+          REMEMBER_KEY,
+          JSON.stringify({
+            identifier: identifier.trim(),
+            password,
+            rememberMe: true,
+          })
+        );
+      } else {
+        localStorage.removeItem(REMEMBER_KEY);
+      }
+
       navigate(ROUTES.DASHBOARD, { replace: true });
     } catch {
       // Handled via Redux state authError
     }
   };
 
-  const handleDemoLogin = async () => {
-    if (authError) dispatch(clearAuthError());
-    setLocalError("");
-    try {
-      await dispatch(loginWithDemo("admin")).unwrap();
-      navigate(ROUTES.DASHBOARD, { replace: true });
-    } catch {
-      // Handled
-    }
-  };
-
-  const handleFillCredentials = () => {
-    setIdentifier("admin@poojafashion.com");
-    setPassword("fashion@2026");
-    if (localError) setLocalError("");
-    if (authError) dispatch(clearAuthError());
-  };
-
-  const displayedError = localError || authError;
+  const hasIdentifierError = Boolean(touched.identifier && errors.identifier);
+  const hasPasswordError = Boolean(touched.password && errors.password);
 
   return (
     <div className="pooja-auth">
@@ -126,7 +215,6 @@ export default function LoginPage() {
                 <span className="pooja-auth__brand-tag">Dresses & POS Billing</span>
               </div>
             </div>
-            <FontSwitcher variant="compact" />
           </div>
 
           <h1 className="pooja-auth__title">Sign In to Store</h1>
@@ -144,14 +232,25 @@ export default function LoginPage() {
                 <input
                   id="identifier"
                   type="text"
-                  className="pooja-auth__input"
-                  placeholder="e.g. pooja.admin or admin@poojafashion.com"
+                  className={`pooja-auth__input ${hasIdentifierError ? "pooja-auth__input--error" : ""
+                    }`}
+                  placeholder="e.g. admin or admin@poojafashion.com"
                   value={identifier}
                   onChange={handleIdentifierChange}
+                  onBlur={handleBlur("identifier")}
                   autoComplete="username"
+                  disabled={loading}
+                  aria-invalid={hasIdentifierError}
+                  aria-describedby={hasIdentifierError ? "identifier-error" : undefined}
                   required
                 />
               </div>
+              {hasIdentifierError && (
+                <div id="identifier-error" className="pooja-auth__field-error" role="alert">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>{errors.identifier}</span>
+                </div>
+              )}
             </div>
 
             <div className="pooja-auth__field">
@@ -166,11 +265,16 @@ export default function LoginPage() {
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  className="pooja-auth__input pooja-auth__input--password"
+                  className={`pooja-auth__input pooja-auth__input--password ${hasPasswordError ? "pooja-auth__input--error" : ""
+                    }`}
                   placeholder="Enter your account password"
                   value={password}
                   onChange={handlePasswordChange}
+                  onBlur={handleBlur("password")}
                   autoComplete="current-password"
+                  disabled={loading}
+                  aria-invalid={hasPasswordError}
+                  aria-describedby={hasPasswordError ? "password-error" : undefined}
                   required
                 />
                 <button
@@ -178,16 +282,38 @@ export default function LoginPage() {
                   className="pooja-auth__password-toggle"
                   onClick={() => setShowPassword((v) => !v)}
                   aria-label={showPassword ? "Hide password" : "Show password"}
+                  disabled={loading}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              {hasPasswordError && (
+                <div id="password-error" className="pooja-auth__field-error" role="alert">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>{errors.password}</span>
+                </div>
+              )}
             </div>
 
-            {displayedError ? (
+            {/* Remember Login Credentials Checkbox */}
+            <div className="pooja-auth__remember-row">
+              <label className="pooja-auth__remember-label" htmlFor="remember-me">
+                <input
+                  id="remember-me"
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={handleRememberMeChange}
+                  className="pooja-auth__checkbox"
+                  disabled={loading}
+                />
+                <span>Remember login credentials</span>
+              </label>
+            </div>
+
+            {authError ? (
               <div className="pooja-auth__error" role="alert">
                 <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{displayedError}</span>
+                <span>{authError}</span>
               </div>
             ) : null}
 
@@ -208,33 +334,6 @@ export default function LoginPage() {
               )}
             </button>
           </form>
-
-          {/* Quick Demo Access Bar */}
-          <div className="pooja-auth__demo-box">
-            <div className="pooja-auth__demo-header">
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-[#0f1c3f]">
-                <Receipt className="w-3.5 h-3.5 text-[#1e3a8a]" />
-                <span>Quick Access & Evaluation</span>
-              </div>
-              <button
-                type="button"
-                onClick={handleFillCredentials}
-                className="text-[11px] text-[#1e3a8a] hover:text-[#0f1c3f] underline font-medium cursor-pointer"
-              >
-                Auto-fill credentials
-              </button>
-            </div>
-            <p className="text-[11px] text-slate-600 mt-1">
-              Backend not connected? Jump straight into the store billing & dress inventory:
-            </p>
-            <button
-              type="button"
-              onClick={handleDemoLogin}
-              className="pooja-auth__demo-button"
-            >
-              <span>Instant Demo Login (Store Manager)</span>
-            </button>
-          </div>
 
           <div className="pooja-auth__footer">
             <span>Pooja Fashion & Dress Boutique • v{appConfig.version}</span>

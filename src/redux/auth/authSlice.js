@@ -33,7 +33,7 @@ const persistAuth = (payload) => {
 
 const getErrorMessage = (error, fallback) => {
 	if (error.code === "ERR_NETWORK" || !error.response) {
-		return "Unable to connect to server. Ensure the backend API is running on http://localhost:5000 or use Demo Mode.";
+		return "Unable to connect to server. Please ensure the backend API service is running.";
 	}
 	return (
 		error.response?.data?.message ||
@@ -42,30 +42,6 @@ const getErrorMessage = (error, fallback) => {
 		fallback
 	);
 };
-
-export const loginWithDemo = createAsyncThunk(
-	"auth/loginWithDemo",
-	async (demoRole = "admin") => {
-		const demoUser = {
-			id: "usr_demo_01",
-			name: "Pooja Sharma",
-			username: "pooja.admin",
-			email: "admin@poojafashion.com",
-			role: demoRole === "admin" ? "ADMIN" : "STAFF",
-			storeName: "Pooja Fashion Main Branch",
-		};
-		const demoData = {
-			user: demoUser,
-			session: { id: "sess_demo_101", active: true },
-			tokens: {
-				accessToken: "demo_access_token_pooja_fashion",
-				refreshToken: "demo_refresh_token_pooja_fashion",
-			},
-		};
-		persistAuth(demoData);
-		return demoData;
-	}
-);
 
 export const loginUser = createAsyncThunk(
 	"auth/loginUser",
@@ -218,24 +194,6 @@ const authSlice = createSlice({
 				state.loading = false;
 				state.error = action.payload;
 			})
-			.addCase(loginWithDemo.pending, (state) => {
-				state.loading = true;
-				state.error = null;
-			})
-			.addCase(loginWithDemo.fulfilled, (state, action) => {
-				const tokens = getTokenData(action.payload);
-				state.loading = false;
-				state.user = action.payload.user;
-				state.session = action.payload.session;
-				state.accessToken = tokens.accessToken || null;
-				state.isAuthenticated = true;
-				state.isInitialized = true;
-				state.error = null;
-			})
-			.addCase(loginWithDemo.rejected, (state, action) => {
-				state.loading = false;
-				state.error = action.payload;
-			})
 			.addCase(fetchCurrentUser.pending, (state) => {
 				state.loading = true;
 			})
@@ -252,16 +210,14 @@ const authSlice = createSlice({
 			.addCase(fetchCurrentUser.rejected, (state) => {
 				state.loading = false;
 				state.isInitialized = true;
-				// In demo mode without backend running, preserve demo session
-				if (state.accessToken?.startsWith("demo_") && state.user) {
-					state.isAuthenticated = true;
-					return;
-				}
-				// Otherwise cookie session is not valid / unauthorized
 				state.user = null;
 				state.session = null;
 				state.accessToken = null;
 				state.isAuthenticated = false;
+				localStorage.removeItem("accessToken");
+				localStorage.removeItem("refreshToken");
+				localStorage.removeItem("sessionId");
+				localStorage.removeItem("user");
 			})
 			.addCase(refreshUserToken.fulfilled, (state, action) => {
 				const tokens = getTokenData(action.payload);

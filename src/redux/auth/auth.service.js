@@ -4,21 +4,18 @@ const unwrapResponse = (response) => response.data?.data ?? response.data;
 
 export const login = async (credentials) => {
 	const payload = {
-		...credentials,
-		...(credentials?.identifier && !credentials?.email && credentials.identifier.includes("@")
-			? { email: credentials.identifier }
-			: {}),
-		...(credentials?.identifier && !credentials?.username && !credentials.identifier.includes("@")
-			? { username: credentials.identifier }
-			: {}),
+		identifier: credentials.identifier?.trim(),
+		password: credentials.password,
+		...(credentials?.company_id ? { company_id: credentials.company_id } : {}),
 	};
 	const response = await api.post("/auth/login", payload);
 	return unwrapResponse(response);
 };
 
-
 export const refreshToken = async () => {
-	const response = await api.post("/auth/refresh-token");
+	const storedRefreshToken = localStorage.getItem("refreshToken");
+	const payload = storedRefreshToken ? { refresh_token: storedRefreshToken } : {};
+	const response = await api.post("/auth/refresh-token", payload);
 	return unwrapResponse(response);
 };
 

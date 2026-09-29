@@ -26,5 +26,7 @@ export const ROUTES = {
   COMPANY: "/company",
   COMPANY_PROFILE: "/company/profile",
   COMPANY_VIEW: "/company/:id",
+  BANK_MASTER: "/bank-master",
+  BANKS: "/banks",
 };
 

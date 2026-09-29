@@ -53,4 +53,45 @@ export const queryKeys = {
     primary: (companyId) => ["companyAddresses", "primary", companyId],
     detail: (id) => ["companyAddresses", "detail", id],
   },
+
+  companyContacts: {
+    all: ["companyContacts"],
+    list: (params) => ["companyContacts", "list", params],
+    byCompany: (companyId) => ["companyContacts", "byCompany", companyId],
+    primary: (companyId) => ["companyContacts", "primary", companyId],
+    detail: (id) => ["companyContacts", "detail", id],
+  },
+
+  companyTaxDetails: {
+    all: ["companyTaxDetails"],
+    list: (params) => ["companyTaxDetails", "list", params],
+    byCompany: (companyId) => ["companyTaxDetails", "byCompany", companyId],
+    primary: (companyId) => ["companyTaxDetails", "primary", companyId],
+    detail: (id) => ["companyTaxDetails", "detail", id],
+  },
+
+  banks: {
+    all: ["banks"],
+    list: (params) => ["banks", "list", params],
+    detail: (id) => ["banks", "detail", id],
+    byCode: (code) => ["banks", "byCode", code],
+  },
+
+  bankIdentifiers: {
+    all: ["bankIdentifiers"],
+    list: (params) => ["bankIdentifiers", "list", params],
+    byBank: (bankId) => ["bankIdentifiers", "byBank", bankId],
+    byValue: (value) => ["bankIdentifiers", "byValue", value],
+    detail: (id) => ["bankIdentifiers", "detail", id],
+  },
+
+  companyBanks: {
+    all: ["companyBanks"],
+    list: (params) => ["companyBanks", "list", params],
+    byCompany: (companyId) => ["companyBanks", "byCompany", companyId],
+    primary: (companyId) => ["companyBanks", "primary", companyId],
+    detail: (id) => ["companyBanks", "detail", id],
+  },
 };
+
+

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate, useLocation, useSearchParams, Link } from "react-router-dom";
 import {
   Building2,
   ChevronLeft,
@@ -25,6 +25,9 @@ import {
   ArrowRight,
   Camera,
   Maximize2,
+  UserCheck,
+  Receipt,
+  Landmark,
 } from "lucide-react";
 import ImageViewerModal from "../../../common/components/ui/ImageViewerModal.jsx";
 import { Button } from "../../../common/components/ui/buttons/index.js";
@@ -40,32 +43,71 @@ import {
   CompanyStatusModal,
   CompanyDeleteModal,
   CompanyAddressesTab,
+  CompanyContactsTab,
+  CompanyTaxDetailsTab,
+  CompanyBanksTab,
 } from "../components/index.js";
 
 /**
  * Full Page View for Company Enterprise
  * Supports viewing by ID (/company/:id) or primary store profile (/company/profile)
+ * Supports deep linking to specific tabs (/company/bank-accounts, ?tab=banks)
  */
-export default function CompanyViewPage({ isProfileMode = false }) {
+export default function CompanyViewPage({ isProfileMode = false, initialTab = "overview" }) {
   const { id: routeId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Known subroute aliases that should map to profile mode with specific tabs
+  const SUBROUTE_TAB_MAP = {
+    "bank-accounts": "banks",
+    banks: "banks",
+    addresses: "addresses",
+    contacts: "contacts",
+    tax: "tax",
+    profile: "overview",
+  };
+
+  const isSubrouteAlias = SUBROUTE_TAB_MAP[routeId];
+  const effectiveProfileMode = isProfileMode || Boolean(isSubrouteAlias) || !routeId;
+
+  const determineDefaultTab = () => {
+    const urlTab = searchParams.get("tab");
+    if (urlTab) return urlTab;
+    if (isSubrouteAlias) return isSubrouteAlias;
+    if (location.pathname.endsWith("/bank-accounts")) return "banks";
+    if (location.pathname.endsWith("/addresses")) return "addresses";
+    if (location.pathname.endsWith("/contacts")) return "contacts";
+    if (location.pathname.endsWith("/tax")) return "tax";
+    return initialTab || "overview";
+  };
 
   // Active section tabs
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState(determineDefaultTab);
   const [copiedField, setCopiedField] = useState(null);
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+
+  useEffect(() => {
+    const newTab = determineDefaultTab();
+    if (newTab !== activeTab) {
+      setActiveTab(newTab);
+    }
+  }, [location.pathname, searchParams, routeId]);
 
   // Modals state
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  // In profile mode without ID, fetch the first company as default
+  // In profile mode or alias mode without numeric ID, fetch first company as default
   const { data: companiesResponse, isLoading: isListLoading } = useCompanies(
-    isProfileMode && !routeId ? { limit: 1 } : { enabled: false }
+    effectiveProfileMode && (!routeId || isSubrouteAlias) ? { limit: 1 } : { enabled: false }
   );
 
-  const targetId = routeId || companiesResponse?.data?.[0]?.id;
+  const targetId = isSubrouteAlias
+    ? companiesResponse?.data?.[0]?.id
+    : routeId || companiesResponse?.data?.[0]?.id;
 
   // Single company query
   const {
@@ -196,6 +238,9 @@ export default function CompanyViewPage({ isProfileMode = false }) {
   const tabs = [
     { id: "overview", label: "Overview & Identity", icon: Building2, colorDot: "bg-primary" },
     { id: "addresses", label: "Registered Addresses", icon: MapPin, colorDot: "bg-warning" },
+    { id: "contacts", label: "Key Personnel", icon: UserCheck, colorDot: "bg-emerald-500" },
+    { id: "tax", label: "Tax & GST", icon: Receipt, colorDot: "bg-amber-500" },
+    { id: "banks", label: "Bank Accounts", icon: Landmark, colorDot: "bg-indigo-500" },
     { id: "contact", label: "Contact & Web", icon: Mail, colorDot: "bg-secondary" },
     { id: "fiscal", label: "Localization & Fiscal", icon: DollarSign, colorDot: "bg-accent" },
     { id: "audit", label: "System & Audit Trail", icon: Clock, colorDot: "bg-info" },
@@ -337,10 +382,10 @@ export default function CompanyViewPage({ isProfileMode = false }) {
 
           {/* Quick Info Box on Right */}
           <div className="flex md:flex-col items-center md:items-end justify-between md:justify-center gap-1 pt-4 md:pt-0 border-t md:border-t-0 border-base-200">
-            <span className="text-xs font-bold uppercase tracking-wider text-base-content/50 font-mono">
+            <span className="text-xs font-semibold uppercase tracking-wider text-base-content/50">
               Store Registration
             </span>
-            <span className="text-sm sm:text-base font-mono font-black text-base-content">
+            <span className="text-sm sm:text-base font-bold text-base-content">
               {company.registrationNumber || "Unregistered"}
             </span>
             <span className="text-xs text-base-content/60 font-medium">
@@ -354,7 +399,7 @@ export default function CompanyViewPage({ isProfileMode = false }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4 sm:p-5 rounded-2xl bg-base-100 border border-base-300 shadow-xs transition-colors duration-200">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-base-content/50 font-mono">
+            <span className="text-xs font-semibold uppercase tracking-wider text-base-content/60">
               Operation Status
             </span>
             <ShieldCheck className="w-5 h-5 text-emerald-500" />
@@ -369,12 +414,12 @@ export default function CompanyViewPage({ isProfileMode = false }) {
 
         <div className="p-4 sm:p-5 rounded-2xl bg-base-100 border border-base-300 shadow-xs transition-colors duration-200">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-base-content/50 font-mono">
+            <span className="text-xs font-semibold uppercase tracking-wider text-base-content/60">
               Base Currency
             </span>
             <DollarSign className="w-5 h-5 text-primary" />
           </div>
-          <p className="text-xl font-bold text-base-content mt-2 font-mono">
+          <p className="text-xl font-bold text-base-content mt-2">
             {company.defaultCurrency || "INR"}
           </p>
           <p className="text-xs text-base-content/60 mt-0.5">
@@ -384,7 +429,7 @@ export default function CompanyViewPage({ isProfileMode = false }) {
 
         <div className="p-4 sm:p-5 rounded-2xl bg-base-100 border border-base-300 shadow-xs transition-colors duration-200">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-base-content/50 font-mono">
+            <span className="text-xs font-semibold uppercase tracking-wider text-base-content/60">
               Fiscal Cycle
             </span>
             <Calendar className="w-5 h-5 text-amber-500" />
@@ -399,7 +444,7 @@ export default function CompanyViewPage({ isProfileMode = false }) {
 
         <div className="p-4 sm:p-5 rounded-2xl bg-base-100 border border-base-300 shadow-xs transition-colors duration-200">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-base-content/50 font-mono">
+            <span className="text-xs font-semibold uppercase tracking-wider text-base-content/60">
               Business Type
             </span>
             <Building2 className="w-5 h-5 text-purple-500" />
@@ -424,7 +469,10 @@ export default function CompanyViewPage({ isProfileMode = false }) {
               <button
                 key={tab.id}
                 type="button"
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  setSearchParams({ tab: tab.id });
+                }}
                 className={`flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-bold rounded-t-xl transition-all cursor-pointer whitespace-nowrap border-b-2 ${
                   isActive
                     ? "bg-primary text-primary-content border-primary shadow-sm shadow-primary/30"
@@ -459,7 +507,7 @@ export default function CompanyViewPage({ isProfileMode = false }) {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="p-4 rounded-2xl bg-base-200/50 border border-base-300">
-                  <span className="text-xs font-bold text-base-content/50 uppercase tracking-wider block font-mono">
+                  <span className="text-xs font-semibold text-base-content/60 uppercase tracking-wider block">
                     Company Code
                   </span>
                   <div className="flex items-center justify-between mt-1">
@@ -482,7 +530,7 @@ export default function CompanyViewPage({ isProfileMode = false }) {
                 </div>
 
                 <div className="p-4 rounded-2xl bg-base-200/50 border border-base-300">
-                  <span className="text-xs font-bold text-base-content/50 uppercase tracking-wider block font-mono">
+                  <span className="text-xs font-semibold text-base-content/60 uppercase tracking-wider block">
                     Official Company Name
                   </span>
                   <span className="text-base font-bold text-base-content mt-1 block">
@@ -491,7 +539,7 @@ export default function CompanyViewPage({ isProfileMode = false }) {
                 </div>
 
                 <div className="p-4 rounded-2xl bg-base-200/50 border border-base-300">
-                  <span className="text-xs font-bold text-base-content/50 uppercase tracking-wider block font-mono">
+                  <span className="text-xs font-semibold text-base-content/60 uppercase tracking-wider block">
                     Display Name
                   </span>
                   <span className="text-base font-bold text-base-content mt-1 block">
@@ -500,7 +548,7 @@ export default function CompanyViewPage({ isProfileMode = false }) {
                 </div>
 
                 <div className="p-4 rounded-2xl bg-base-200/50 border border-base-300">
-                  <span className="text-xs font-bold text-base-content/50 uppercase tracking-wider block font-mono">
+                  <span className="text-xs font-semibold text-base-content/60 uppercase tracking-wider block">
                     Legal / Statutory Name
                   </span>
                   <span className="text-base font-bold text-base-content mt-1 block">
@@ -509,7 +557,7 @@ export default function CompanyViewPage({ isProfileMode = false }) {
                 </div>
 
                 <div className="p-4 rounded-2xl bg-base-200/50 border border-base-300">
-                  <span className="text-xs font-bold text-base-content/50 uppercase tracking-wider block font-mono">
+                  <span className="text-xs font-semibold text-base-content/60 uppercase tracking-wider block">
                     Business Type
                   </span>
                   <span className="text-base font-bold text-base-content mt-1 block">
@@ -518,7 +566,7 @@ export default function CompanyViewPage({ isProfileMode = false }) {
                 </div>
 
                 <div className="p-4 rounded-2xl bg-base-200/50 border border-base-300">
-                  <span className="text-xs font-bold text-base-content/50 uppercase tracking-wider block font-mono">
+                  <span className="text-xs font-semibold text-base-content/60 uppercase tracking-wider block">
                     Industry Sector
                   </span>
                   <span className="text-base font-bold text-base-content mt-1 block">
@@ -528,7 +576,7 @@ export default function CompanyViewPage({ isProfileMode = false }) {
 
                 <div className="p-4 rounded-2xl bg-base-200/50 border border-base-300 sm:col-span-2 lg:col-span-3 flex items-center justify-between">
                   <div>
-                    <span className="text-xs font-bold text-base-content/50 uppercase tracking-wider block font-mono">
+                    <span className="text-xs font-semibold text-base-content/60 uppercase tracking-wider block">
                       Registration Number / GSTIN / CIN
                     </span>
                     <span className="text-base font-mono font-bold text-base-content mt-1 block">
@@ -559,6 +607,21 @@ export default function CompanyViewPage({ isProfileMode = false }) {
             <CompanyAddressesTab companyId={company.id} companyName={company.companyName} />
           )}
 
+          {/* TAB: KEY PERSONNEL & CONTACTS */}
+          {activeTab === "contacts" && (
+            <CompanyContactsTab companyId={company.id} companyName={company.companyName} />
+          )}
+
+          {/* TAB: TAX & GST REGISTRATIONS */}
+          {activeTab === "tax" && (
+            <CompanyTaxDetailsTab companyId={company.id} companyName={company.companyName} />
+          )}
+
+          {/* TAB: BANK ACCOUNTS */}
+          {activeTab === "banks" && (
+            <CompanyBanksTab companyId={company.id} companyName={company.companyName} />
+          )}
+
           {/* TAB 2: CONTACT & WEB */}
           {activeTab === "contact" && (
             <div className="space-y-6 animate-in fade-in duration-150">
@@ -574,7 +637,7 @@ export default function CompanyViewPage({ isProfileMode = false }) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-5 rounded-2xl bg-base-200/50 border border-base-300 flex items-center justify-between">
                   <div className="min-w-0">
-                    <span className="text-xs font-bold text-base-content/50 uppercase tracking-wider block font-mono">
+                    <span className="text-xs font-semibold text-base-content/60 uppercase tracking-wider block">
                       Corporate Email
                     </span>
                     {company.email ? (
@@ -606,7 +669,7 @@ export default function CompanyViewPage({ isProfileMode = false }) {
 
                 <div className="p-5 rounded-2xl bg-base-200/50 border border-base-300 flex items-center justify-between">
                   <div className="min-w-0">
-                    <span className="text-xs font-bold text-base-content/50 uppercase tracking-wider block font-mono">
+                    <span className="text-xs font-semibold text-base-content/60 uppercase tracking-wider block">
                       Landline Telephone
                     </span>
                     {company.phone ? (
@@ -638,7 +701,7 @@ export default function CompanyViewPage({ isProfileMode = false }) {
 
                 <div className="p-5 rounded-2xl bg-base-200/50 border border-base-300 flex items-center justify-between">
                   <div className="min-w-0">
-                    <span className="text-xs font-bold text-base-content/50 uppercase tracking-wider block font-mono">
+                    <span className="text-xs font-semibold text-base-content/60 uppercase tracking-wider block">
                       Mobile Hotline
                     </span>
                     {company.mobile ? (
@@ -670,7 +733,7 @@ export default function CompanyViewPage({ isProfileMode = false }) {
 
                 <div className="p-5 rounded-2xl bg-base-200/50 border border-base-300 flex items-center justify-between">
                   <div className="min-w-0">
-                    <span className="text-xs font-bold text-base-content/50 uppercase tracking-wider block font-mono">
+                    <span className="text-xs font-semibold text-base-content/60 uppercase tracking-wider block">
                       Official Website
                     </span>
                     {company.website ? (
@@ -707,10 +770,10 @@ export default function CompanyViewPage({ isProfileMode = false }) {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="p-5 rounded-2xl bg-base-200/50 border border-base-300 text-center">
-                  <span className="text-xs font-bold text-base-content/50 uppercase tracking-wider font-mono">
+                  <span className="text-xs font-semibold text-base-content/60 uppercase tracking-wider">
                     Currency ISO
                   </span>
-                  <p className="text-2xl font-black font-mono text-base-content mt-2">
+                  <p className="text-2xl font-bold text-base-content mt-2">
                     {company.defaultCurrency || "INR"}
                   </p>
                   <span className="text-xs text-base-content/60 font-medium mt-1 block">
@@ -719,10 +782,10 @@ export default function CompanyViewPage({ isProfileMode = false }) {
                 </div>
 
                 <div className="p-5 rounded-2xl bg-base-200/50 border border-base-300 text-center">
-                  <span className="text-xs font-bold text-base-content/50 uppercase tracking-wider font-mono">
+                  <span className="text-xs font-semibold text-base-content/60 uppercase tracking-wider">
                     Country Code
                   </span>
-                  <p className="text-2xl font-black font-mono text-base-content mt-2">
+                  <p className="text-2xl font-bold text-base-content mt-2">
                     {company.countryCode || "IN"}
                   </p>
                   <span className="text-xs text-base-content/60 font-medium mt-1 block">
@@ -731,10 +794,10 @@ export default function CompanyViewPage({ isProfileMode = false }) {
                 </div>
 
                 <div className="p-5 rounded-2xl bg-base-200/50 border border-base-300 text-center">
-                  <span className="text-xs font-bold text-base-content/50 uppercase tracking-wider font-mono">
+                  <span className="text-xs font-semibold text-base-content/60 uppercase tracking-wider">
                     Fiscal Start
                   </span>
-                  <p className="text-2xl font-black text-base-content mt-2">
+                  <p className="text-2xl font-bold text-base-content mt-2">
                     Month #{company.financialYearStartMonth || 4}
                   </p>
                   <span className="text-xs text-base-content/60 font-medium mt-1 block">
@@ -743,10 +806,10 @@ export default function CompanyViewPage({ isProfileMode = false }) {
                 </div>
 
                 <div className="p-5 rounded-2xl bg-base-200/50 border border-base-300 text-center">
-                  <span className="text-xs font-bold text-base-content/50 uppercase tracking-wider font-mono">
+                  <span className="text-xs font-semibold text-base-content/60 uppercase tracking-wider">
                     Store Timezone
                   </span>
-                  <p className="text-base font-black font-mono text-base-content mt-3 truncate">
+                  <p className="text-base font-bold text-base-content mt-3 truncate">
                     {company.timezone || "Asia/Kolkata"}
                   </p>
                   <span className="text-xs text-base-content/60 font-medium mt-1 block">
@@ -761,7 +824,7 @@ export default function CompanyViewPage({ isProfileMode = false }) {
           {activeTab === "audit" && (
             <div className="space-y-6 animate-in fade-in duration-150">
               <div>
-                <h3 className="text-base font-extrabold text-base-content mb-1">
+                <h3 className="text-base font-bold text-base-content mb-1">
                   Entity History & System Audit
                 </h3>
                 <p className="text-xs sm:text-sm text-base-content/60">
@@ -771,16 +834,16 @@ export default function CompanyViewPage({ isProfileMode = false }) {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="p-5 rounded-2xl bg-base-200/50 border border-base-300">
-                  <span className="text-xs font-bold text-base-content/50 uppercase tracking-wider block font-mono">
+                  <span className="text-xs font-semibold text-base-content/60 uppercase tracking-wider block">
                     Primary Entity ID
                   </span>
-                  <span className="text-lg font-mono font-bold text-base-content mt-1 block">
+                  <span className="text-lg font-bold text-base-content mt-1 block">
                     #{company.id}
                   </span>
                 </div>
 
                 <div className="p-5 rounded-2xl bg-base-200/50 border border-base-300">
-                  <span className="text-xs font-bold text-base-content/50 uppercase tracking-wider block font-mono">
+                  <span className="text-xs font-semibold text-base-content/60 uppercase tracking-wider block">
                     Record Registered At
                   </span>
                   <span className="text-sm font-semibold text-base-content mt-1 block">
@@ -791,7 +854,7 @@ export default function CompanyViewPage({ isProfileMode = false }) {
                 </div>
 
                 <div className="p-5 rounded-2xl bg-base-200/50 border border-base-300">
-                  <span className="text-xs font-bold text-base-content/50 uppercase tracking-wider block font-mono">
+                  <span className="text-xs font-semibold text-base-content/60 uppercase tracking-wider block">
                     Last Modified At
                   </span>
                   <span className="text-sm font-semibold text-base-content mt-1 block">

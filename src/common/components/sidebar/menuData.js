@@ -376,6 +376,7 @@ export const SIDEBAR_MENU_DATA = [
       { id: "comp-contacts", title: "Company Contacts", to: "/company/contacts" },
       { id: "comp-tax", title: "Tax Details", to: "/company/tax" },
       { id: "comp-bank-accounts", title: "Bank Accounts", to: "/company/bank-accounts" },
+      { id: "comp-bank-master", title: "Bank Master Directory", to: "/bank-master" },
       { id: "comp-settings", title: "Business Settings", to: "/company/settings" },
       { id: "comp-sequences", title: "Number Sequences", to: "/company/sequences" },
     ],

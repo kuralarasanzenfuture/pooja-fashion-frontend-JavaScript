@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  ChevronDown,
+  Check,
 } from "lucide-react";
 
 /**
@@ -106,10 +108,31 @@ export default function Pagination({
     onPageChange(targetPage);
   };
 
-  const handlePageSizeChange = (event) => {
-    const newSize = Number(event.target.value);
+  const [isPageSizeOpen, setIsPageSizeOpen] = useState(false);
+  const pageSizeDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        pageSizeDropdownRef.current &&
+        !pageSizeDropdownRef.current.contains(event.target)
+      ) {
+        setIsPageSizeOpen(false);
+      }
+    };
+
+    if (isPageSizeOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isPageSizeOpen]);
+
+  const handleSelectPageSize = (newSize) => {
     onPageSizeChange?.(newSize);
     onPageChange?.(1);
+    setIsPageSizeOpen(false);
   };
 
   if (totalItems === 0) return null;
@@ -137,18 +160,60 @@ export default function Pagination({
 
         {showPageSizeSelector && (
           <div className="flex items-center gap-2">
-            <span className="text-sm text-base-content/60 font-medium">Rows:</span>
-            <select
-              value={pageSize}
-              onChange={handlePageSizeChange}
-              className="w-20 h-8 text-xs sm:text-sm font-semibold rounded-lg px-2 bg-base-200/60 border border-base-300 text-base-content shadow-2xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+            <span className="text-xs sm:text-sm text-base-content/65 font-medium">Rows:</span>
+
+            <div
+              ref={pageSizeDropdownRef}
+              className={`dropdown dropdown-top relative ${isPageSizeOpen ? "dropdown-open" : ""}`}
             >
-              {pageSizeOptions.map((sizeOption) => (
-                <option key={sizeOption} value={sizeOption} className="bg-base-100 text-base-content">
-                  {sizeOption}
-                </option>
-              ))}
-            </select>
+              <button
+                type="button"
+                onClick={() => setIsPageSizeOpen((prev) => !prev)}
+                className="h-8.5 px-3 min-w-[4.5rem] inline-flex items-center justify-between gap-2 text-xs sm:text-sm font-bold rounded-xl bg-base-100 hover:bg-base-200/80 border border-base-300 text-base-content shadow-2xs hover:border-primary/40 focus:border-primary focus:outline-hidden transition-all cursor-pointer"
+                aria-haspopup="listbox"
+                aria-expanded={isPageSizeOpen}
+              >
+                <span>{pageSize}</span>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 text-base-content/50 transition-transform duration-200 ${
+                    isPageSizeOpen ? "rotate-180 text-primary" : ""
+                  }`}
+                />
+              </button>
+
+              {isPageSizeOpen && (
+                <div
+                  className="dropdown-content z-50 mb-2 p-1.5 shadow-2xl bg-base-100 rounded-2xl border border-base-300 w-28 text-xs animate-in fade-in zoom-in-95 duration-150 backdrop-blur-md"
+                  role="listbox"
+                >
+                  <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-base-content/50 border-b border-base-200/70 mb-1">
+                    Rows per page
+                  </div>
+                  <div className="space-y-0.5">
+                    {pageSizeOptions.map((sizeOption) => {
+                      const isSelected = sizeOption === pageSize;
+                      return (
+                        <button
+                          key={sizeOption}
+                          type="button"
+                          onClick={() => handleSelectPageSize(sizeOption)}
+                          className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                            isSelected
+                              ? "bg-primary text-primary-content shadow-xs"
+                              : "text-base-content hover:bg-base-200"
+                          }`}
+                          role="option"
+                          aria-selected={isSelected}
+                        >
+                          <span>{sizeOption}</span>
+                          {isSelected && <Check className="w-3.5 h-3.5 stroke-[2.5]" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
