@@ -669,8 +669,16 @@ export default function CompanyBanksTab({ companyId, companyName }) {
 
       {/* Cheque / Document Lightbox Preview Modal */}
       {viewingDocUrl && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="relative max-w-2xl w-full bg-base-100 rounded-3xl p-4 overflow-hidden border border-base-300 shadow-2xl">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 transition-opacity duration-200 select-none animate-in fade-in"
+          onClick={() => setViewingDocUrl(null)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="relative max-w-2xl w-full bg-base-100 rounded-3xl p-4 overflow-hidden border border-base-300 shadow-2xl transition-all duration-200 transform scale-100 animate-in zoom-in-95"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between pb-3 border-b border-base-200">
               <h4 className="text-sm font-bold text-base-content flex items-center gap-2">
                 <FileCheck className="w-4 h-4 text-emerald-500" /> Account Proof / Cheque Preview

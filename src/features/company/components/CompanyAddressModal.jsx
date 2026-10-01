@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "../../../common/components/ui/buttons/index.js";
 import { DropdownSelect } from "../../../common/components/ui/select/index.js";
+import useModalAnimation from "../../../common/hooks/useModalAnimation.js";
 
 const ADDRESS_TYPES = [
   {
@@ -110,7 +111,12 @@ export default function CompanyAddressModal({
     }
   }, [isOpen, address, companyId]);
 
-  if (!isOpen) return null;
+  const { isRendered, isVisible, handleClose, backdropClasses, cardClasses } = useModalAnimation(
+    isOpen,
+    onClose
+  );
+
+  if (!isRendered) return null;
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -169,8 +175,11 @@ export default function CompanyAddressModal({
   const labelClass = "block text-xs font-semibold text-base-content/70 mb-1";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="relative w-full max-w-2xl bg-base-100 rounded-3xl shadow-2xl border border-base-300 overflow-hidden flex flex-col max-h-[90vh]">
+    <div className={backdropClasses} onClick={handleClose}>
+      <div
+        className={`relative w-full max-w-2xl bg-base-100 rounded-3xl shadow-2xl border border-base-300 overflow-hidden flex flex-col max-h-[90vh] text-base-content ${cardClasses}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-base-300 bg-base-200/50 shrink-0">
           <div className="flex items-center gap-2.5">
@@ -188,7 +197,7 @@ export default function CompanyAddressModal({
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             className="p-1.5 rounded-xl text-base-content/50 hover:text-base-content hover:bg-base-300 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
@@ -355,7 +364,7 @@ export default function CompanyAddressModal({
 
           {/* Footer Actions */}
           <div className="pt-4 mt-2 border-t border-base-300 flex items-center justify-end gap-2.5">
-            <Button variant="secondary" size="md" onClick={onClose} disabled={isSubmitting}>
+            <Button variant="secondary" size="md" onClick={handleClose} disabled={isSubmitting}>
               Cancel
             </Button>
             <Button type="submit" variant="clip-six" size="md" loading={isSubmitting} icon={Save}>

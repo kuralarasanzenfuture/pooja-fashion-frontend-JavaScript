@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "../../../common/components/ui/buttons/index.js";
 import { DropdownSelect } from "../../../common/components/ui/select/index.js";
+import { useModalAnimation } from "../../../common/hooks/useModalAnimation.js";
 import {
   useBankIdentifiersByBank,
   useCreateBankIdentifier,
@@ -34,7 +35,12 @@ export default function BankIdentifiersModal({
   onClose,
   bank = null,
 }) {
-  if (!isOpen || !bank) return null;
+  const { isRendered, handleClose, backdropClasses, cardClasses } = useModalAnimation(
+    isOpen && !!bank,
+    onClose
+  );
+
+  if (!isRendered || !bank) return null;
 
   const { data: identifiersResponse, isLoading } = useBankIdentifiersByBank(bank.id);
   const identifiers = identifiersResponse?.data || [];
@@ -170,8 +176,11 @@ export default function BankIdentifiersModal({
   const labelClass = "block text-xs font-semibold text-base-content/70 mb-1";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="relative w-full max-w-4xl bg-base-100 rounded-3xl shadow-2xl border border-base-300 overflow-hidden flex flex-col max-h-[90vh]">
+    <div className={backdropClasses} onClick={handleClose} role="dialog" aria-modal="true">
+      <div
+        className={`relative w-full max-w-4xl bg-base-100 rounded-3xl shadow-2xl border border-base-300 overflow-hidden flex flex-col max-h-[90vh] ${cardClasses}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-base-300 bg-base-200/50 shrink-0">
           <div className="flex items-center gap-2.5">
@@ -194,7 +203,7 @@ export default function BankIdentifiersModal({
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             className="p-1.5 rounded-xl text-base-content/50 hover:text-base-content hover:bg-base-300 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
@@ -504,7 +513,7 @@ export default function BankIdentifiersModal({
 
         {/* Footer */}
         <div className="px-6 py-3.5 border-t border-base-300 bg-base-200/50 flex items-center justify-end shrink-0">
-          <Button variant="secondary" size="sm" onClick={onClose}>
+          <Button variant="secondary" size="sm" onClick={handleClose}>
             Close
           </Button>
         </div>

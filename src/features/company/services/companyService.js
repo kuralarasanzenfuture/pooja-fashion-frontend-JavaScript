@@ -33,6 +33,17 @@ export const getCompanyByCode = async (companyCode) => {
 };
 
 /**
+ * Generate meaningful, collision-free company code from backend
+ * @param {string} [name] - Optional company name
+ */
+export const generateCompanyCode = async (name = "") => {
+  const response = await api.get("/companies/generate-code", {
+    params: name ? { name } : {},
+  });
+  return response.data;
+};
+
+/**
  * Create a new company
  * @param {Object} companyData
  */
@@ -74,6 +85,7 @@ export default {
   getCompanies,
   getCompanyById,
   getCompanyByCode,
+  generateCompanyCode,
   createCompany,
   updateCompany,
   updateCompanyStatus,

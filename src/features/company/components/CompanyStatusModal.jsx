@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { X, ShieldCheck, CheckCircle2, PauseCircle, Ban, AlertCircle } from "lucide-react";
 import { Button } from "../../../common/components/ui/buttons/index.js";
+import useModalAnimation from "../../../common/hooks/useModalAnimation.js";
 
 /**
  * Company Status Toggle / Update Modal
@@ -13,6 +14,10 @@ export default function CompanyStatusModal({
   isSubmitting = false,
 }) {
   const [selectedStatus, setSelectedStatus] = useState("active");
+  const { isRendered, isVisible, handleClose, backdropClasses, cardClasses } = useModalAnimation(
+    isOpen,
+    onClose
+  );
 
   useEffect(() => {
     if (company) {
@@ -20,7 +25,7 @@ export default function CompanyStatusModal({
     }
   }, [company, isOpen]);
 
-  if (!isOpen || !company) return null;
+  if (!isRendered || !company) return null;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -55,8 +60,11 @@ export default function CompanyStatusModal({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg bg-base-100 rounded-3xl shadow-2xl border border-base-300 overflow-hidden flex flex-col text-base-content">
+    <div className={backdropClasses} onClick={handleClose}>
+      <div
+        className={`relative w-full max-w-lg bg-base-100 rounded-3xl shadow-2xl border border-base-300 overflow-hidden flex flex-col text-base-content ${cardClasses}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="px-6 py-4 border-b border-base-300 flex items-center justify-between bg-base-200/50">
           <div className="flex items-center gap-2.5">
@@ -75,7 +83,7 @@ export default function CompanyStatusModal({
 
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             className="p-1.5 rounded-xl text-base-content/50 hover:text-base-content hover:bg-base-200 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
@@ -138,7 +146,7 @@ export default function CompanyStatusModal({
             <Button
               variant="secondary"
               size="md"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={isSubmitting}
             >
               Cancel

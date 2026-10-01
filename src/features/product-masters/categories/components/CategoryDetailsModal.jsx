@@ -16,6 +16,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Button } from "../../../../common/components/ui/buttons/index.js";
+import { useModalAnimation } from "../../../../common/hooks/useModalAnimation.js";
 
 /**
  * Category Details Quick View Modal
@@ -30,9 +31,13 @@ export default function CategoryDetailsModal({
   onImageClick,
   onNavigateFullPage,
 }) {
+  const { isRendered, handleClose, backdropClasses, cardClasses } = useModalAnimation(
+    isOpen && !!category,
+    onClose
+  );
   const [copied, setCopied] = React.useState(false);
 
-  if (!isOpen || !category) return null;
+  if (!isRendered || !category) return null;
 
   const name = category.categoryName || category.category_name;
   const code = category.categoryCode || category.category_code;
@@ -68,8 +73,11 @@ export default function CategoryDetailsModal({
   };
 
   return (
-    <dialog className="modal modal-open modal-bottom sm:modal-middle" aria-labelledby="view-cat-title">
-      <div className="modal-box w-full max-w-2xl p-0 rounded-2xl bg-base-100 border border-base-300 shadow-2xl overflow-hidden">
+    <div className={backdropClasses} onClick={handleClose} role="dialog" aria-modal="true" aria-labelledby="view-cat-title">
+      <div
+        className={`relative w-full max-w-2xl p-0 rounded-3xl bg-base-100 border border-base-300 shadow-2xl overflow-hidden ${cardClasses}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4.5 border-b border-base-300 bg-base-100">
           <div className="flex items-center gap-3">
@@ -88,7 +96,7 @@ export default function CategoryDetailsModal({
           <button
             type="button"
             className="p-1.5 rounded-lg text-base-content/50 hover:text-base-content hover:bg-base-200 transition-colors cursor-pointer"
-            onClick={onClose}
+            onClick={handleClose}
             aria-label="Close"
           >
             <X className="size-5" />
@@ -241,7 +249,6 @@ export default function CategoryDetailsModal({
           </div>
         </div>
       </div>
-      <div className="modal-backdrop bg-neutral/40" onClick={onClose} aria-hidden="true" />
-    </dialog>
+    </div>
   );
 }

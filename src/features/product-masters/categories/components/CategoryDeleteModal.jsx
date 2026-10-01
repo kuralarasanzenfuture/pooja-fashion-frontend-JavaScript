@@ -9,6 +9,7 @@ import {
   Building,
 } from "lucide-react";
 import { Button } from "../../../../common/components/ui/buttons/index.js";
+import { useModalAnimation } from "../../../../common/hooks/useModalAnimation.js";
 
 /**
  * Premium Luxury Delete Category Modal
@@ -20,7 +21,12 @@ export default function CategoryDeleteModal({
   onConfirm,
   isDeleting = false,
 }) {
-  if (!isOpen || !category) return null;
+  const { isRendered, handleClose, backdropClasses, cardClasses } = useModalAnimation(
+    isOpen && !!category,
+    onClose
+  );
+
+  if (!isRendered || !category) return null;
 
   const name = category.categoryName || category.category_name || "Unnamed Category";
   const code = category.categoryCode || category.category_code || "—";
@@ -30,11 +36,13 @@ export default function CategoryDeleteModal({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md animate-in fade-in duration-200 select-none"
-      onClick={onClose}
+      className={backdropClasses}
+      onClick={handleClose}
+      role="dialog"
+      aria-modal="true"
     >
       <div
-        className="relative w-full max-w-lg bg-base-100 rounded-3xl shadow-2xl border border-base-300 overflow-hidden animate-in zoom-in-95 duration-200"
+        className={`relative w-full max-w-lg bg-base-100 rounded-3xl shadow-2xl border border-base-300 overflow-hidden ${cardClasses}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Accent Gradient Bar */}
@@ -65,7 +73,7 @@ export default function CategoryDeleteModal({
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             disabled={isDeleting}
             className="p-1.5 rounded-xl text-base-content/50 hover:text-base-content hover:bg-base-200 transition-colors cursor-pointer"
             aria-label="Close"
@@ -134,7 +142,7 @@ export default function CategoryDeleteModal({
           <Button
             variant="secondary"
             size="md"
-            onClick={onClose}
+            onClick={handleClose}
             disabled={isDeleting}
           >
             Cancel

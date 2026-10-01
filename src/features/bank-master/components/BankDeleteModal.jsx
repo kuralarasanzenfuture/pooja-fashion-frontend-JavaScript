@@ -1,6 +1,7 @@
 import React from "react";
 import { AlertTriangle, Trash2, X, Landmark } from "lucide-react";
 import { Button } from "../../../common/components/ui/buttons/index.js";
+import { useModalAnimation } from "../../../common/hooks/useModalAnimation.js";
 
 export default function BankDeleteModal({
   isOpen = false,
@@ -9,11 +10,19 @@ export default function BankDeleteModal({
   onConfirm,
   isDeleting = false,
 }) {
-  if (!isOpen || !bank) return null;
+  const { isRendered, handleClose, backdropClasses, cardClasses } = useModalAnimation(
+    isOpen && !!bank,
+    onClose
+  );
+
+  if (!isRendered || !bank) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md bg-base-100 rounded-3xl shadow-2xl border border-base-300 overflow-hidden">
+    <div className={backdropClasses} onClick={handleClose} role="dialog" aria-modal="true">
+      <div
+        className={`relative w-full max-w-md bg-base-100 rounded-3xl shadow-2xl border border-base-300 overflow-hidden ${cardClasses}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-base-300 bg-rose-500/10">
           <div className="flex items-center gap-2.5 text-rose-600 dark:text-rose-400">
@@ -27,7 +36,7 @@ export default function BankDeleteModal({
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             className="p-1.5 rounded-xl text-base-content/50 hover:text-base-content hover:bg-base-300 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
@@ -61,7 +70,7 @@ export default function BankDeleteModal({
 
         {/* Actions */}
         <div className="px-6 py-4 border-t border-base-300 bg-base-200/50 flex items-center justify-end gap-2.5">
-          <Button variant="secondary" size="md" onClick={onClose} disabled={isDeleting}>
+          <Button variant="secondary" size="md" onClick={handleClose} disabled={isDeleting}>
             Cancel
           </Button>
 

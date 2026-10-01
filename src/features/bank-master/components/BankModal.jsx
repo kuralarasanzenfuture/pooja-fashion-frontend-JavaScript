@@ -24,6 +24,7 @@ import {
 import { Button } from "../../../common/components/ui/buttons/index.js";
 import { DropdownSelect } from "../../../common/components/ui/select/index.js";
 import BankLogo, { getBankPresetKey } from "./BankLogo.jsx";
+import { useModalAnimation } from "../../../common/hooks/useModalAnimation.js";
 
 // Aligned with the database schema: bank_type IN ('commercial', 'cooperative', 'regional_rural', 'small_finance', 'payments', 'foreign', 'other')
 const BANK_TYPES = [
@@ -410,6 +411,7 @@ export default function BankModal({
   isSubmitting = false,
 }) {
   const isEdit = Boolean(bank?.id);
+  const { isRendered, handleClose, backdropClasses, cardClasses } = useModalAnimation(isOpen, onClose);
   const primaryFileInputRef = useRef(null);
   const lightFileInputRef = useRef(null);
   const darkFileInputRef = useRef(null);
@@ -707,10 +709,15 @@ export default function BankModal({
       ? formData.logo_light_url
       : formData.logo_url;
 
+  if (!isRendered) return null;
+
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-        <div className="relative w-full max-w-2xl bg-base-100 rounded-3xl shadow-2xl border border-base-300 overflow-hidden flex flex-col max-h-[92vh]">
+      <div className={backdropClasses} onClick={handleClose} role="dialog" aria-modal="true">
+        <div
+          className={`relative w-full max-w-2xl bg-base-100 rounded-3xl shadow-2xl border border-base-300 overflow-hidden flex flex-col max-h-[92vh] ${cardClasses}`}
+          onClick={(e) => e.stopPropagation()}
+        >
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-base-300 bg-base-200/40 shrink-0">
             <div className="flex items-center gap-3">
@@ -732,7 +739,7 @@ export default function BankModal({
             </div>
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               aria-label="Close"
               className="p-1.5 rounded-xl text-base-content/50 hover:text-base-content hover:bg-base-200 transition-colors cursor-pointer"
             >
@@ -1232,7 +1239,7 @@ export default function BankModal({
 
             {/* Footer Actions */}
             <div className="pt-4 mt-2 border-t border-base-300 flex items-center justify-end gap-2.5">
-              <Button variant="secondary" size="md" onClick={onClose} disabled={isSubmitting}>
+              <Button variant="secondary" size="md" onClick={handleClose} disabled={isSubmitting}>
                 Cancel
               </Button>
               <Button type="submit" variant="clip-six" size="md" loading={isSubmitting} icon={Save}>
@@ -1245,8 +1252,16 @@ export default function BankModal({
 
       {/* FULL RESOLUTION LIGHTBOX PREVIEW */}
       {lightboxImageUrl && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="relative max-w-lg w-full bg-base-100 rounded-3xl p-5 overflow-hidden border border-base-300 shadow-2xl">
+        <div
+          className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/40 transition-opacity duration-200 select-none animate-in fade-in"
+          onClick={() => setLightboxImageUrl(null)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="relative max-w-lg w-full bg-base-100 rounded-3xl p-5 overflow-hidden border border-base-300 shadow-2xl transition-all duration-200 transform scale-100 animate-in zoom-in-95"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between pb-3 border-b border-base-200">
               <h4 className="text-sm font-bold text-base-content flex items-center gap-2">
                 <ImageIcon className="w-4 h-4 text-primary" /> Bank Logo Resolution Preview

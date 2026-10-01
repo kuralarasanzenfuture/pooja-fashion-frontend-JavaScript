@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Button } from "../../../common/components/ui/buttons/index.js";
 import ImageViewerModal from "../../../common/components/ui/ImageViewerModal.jsx";
+import useModalAnimation from "../../../common/hooks/useModalAnimation.js";
 
 /**
  * Detailed Company View Modal
@@ -30,8 +31,12 @@ export default function CompanyDetailModal({
 }) {
   const [copiedField, setCopiedField] = React.useState(null);
   const [isImageViewerOpen, setIsImageViewerOpen] = React.useState(false);
+  const { isRendered, isVisible, handleClose, backdropClasses, cardClasses } = useModalAnimation(
+    isOpen,
+    onClose
+  );
 
-  if (!isOpen || !company) return null;
+  if (!isRendered || !company) return null;
 
   const handleCopy = (text, fieldName) => {
     if (!text) return;
@@ -54,8 +59,11 @@ export default function CompanyDetailModal({
     .toUpperCase();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="relative w-full max-w-2xl bg-base-100 rounded-3xl shadow-2xl border border-base-300 overflow-hidden flex flex-col max-h-[90vh] text-base-content">
+    <div className={backdropClasses} onClick={handleClose}>
+      <div
+        className={`relative w-full max-w-2xl bg-base-100 rounded-3xl shadow-2xl border border-base-300 overflow-hidden flex flex-col max-h-[90vh] text-base-content ${cardClasses}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header Hero Banner */}
         <div className="relative p-6 bg-gradient-to-br from-[#0a1128] via-[#0f1c3f] to-[#1e3a8a] text-white">
           {/* Top Hairline accent */}
@@ -64,7 +72,7 @@ export default function CompanyDetailModal({
           {/* Close button */}
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             className="absolute top-4 right-4 p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />

@@ -1,6 +1,7 @@
 import React from "react";
 import { AlertTriangle, Trash2, X } from "lucide-react";
 import { Button } from "../../../common/components/ui/buttons/index.js";
+import useModalAnimation from "../../../common/hooks/useModalAnimation.js";
 
 /**
  * Company Delete Confirmation Modal
@@ -12,16 +13,24 @@ export default function CompanyDeleteModal({
   onConfirm,
   isDeleting = false,
 }) {
-  if (!isOpen || !company) return null;
+  const { isRendered, isVisible, handleClose, backdropClasses, cardClasses } = useModalAnimation(
+    isOpen,
+    onClose
+  );
+
+  if (!isRendered || !company) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md bg-base-100 rounded-3xl shadow-2xl border border-base-300 overflow-hidden flex flex-col text-base-content">
+    <div className={backdropClasses} onClick={handleClose}>
+      <div
+        className={`relative w-full max-w-md bg-base-100 rounded-3xl shadow-2xl border border-base-300 overflow-hidden flex flex-col text-base-content ${cardClasses}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Close Button */}
         <button
           type="button"
-          onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 rounded-xl text-base-content/50 hover:text-base-content hover:bg-base-200 transition-colors cursor-pointer"
+          onClick={handleClose}
+          className="absolute top-4 right-4 p-1.5 rounded-xl text-base-content/50 hover:text-base-content hover:bg-base-200 transition-colors cursor-pointer z-10"
         >
           <X className="w-5 h-5" />
         </button>
@@ -59,7 +68,7 @@ export default function CompanyDeleteModal({
             <Button
               variant="secondary"
               size="md"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={isDeleting}
             >
               Keep Company

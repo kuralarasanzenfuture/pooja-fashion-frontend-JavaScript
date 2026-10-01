@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { X, Tags, Sparkles, Layers, Image as ImageIcon } from "lucide-react";
 import { Button } from "../../../../common/components/ui/buttons/index.js";
+import { useModalAnimation } from "../../../../common/hooks/useModalAnimation.js";
 import ImageUploader from "./ImageUploader.jsx";
 
 const EMPTY = {
@@ -49,12 +50,15 @@ function validate(v) {
  */
 export default function CategoryFormModal({
   open,
+  isOpen,
   mode = "add", // "add" | "edit"
   initialData = null,
   saving = false,
   onClose,
   onSubmit,
 }) {
+  const isModalOpen = open ?? isOpen ?? false;
+  const { isRendered, handleClose, backdropClasses, cardClasses } = useModalAnimation(isModalOpen, onClose);
   const [form, setForm] = useState(EMPTY);
   const [errors, setErrors] = useState({});
   const [imageFile, setImageFile] = useState(null);
@@ -63,7 +67,7 @@ export default function CategoryFormModal({
 
   // Reset whenever modal opens or initialData changes
   useEffect(() => {
-    if (!open) return;
+    if (!isModalOpen) return;
     setForm(
       initialData
         ? {
@@ -152,12 +156,20 @@ export default function CategoryFormModal({
     }
   };
 
+  if (!isRendered) return null;
+
   return (
-    <dialog
-      className="modal modal-open modal-bottom sm:modal-middle"
+    <div
+      className={backdropClasses}
+      onClick={!saving ? handleClose : undefined}
+      role="dialog"
+      aria-modal="true"
       aria-labelledby="category-modal-title"
     >
-      <div className="modal-box w-full max-w-4xl p-0 rounded-2xl bg-base-100 border border-base-300 shadow-2xl overflow-hidden">
+      <div
+        className={`relative w-full max-w-4xl p-0 rounded-3xl bg-base-100 border border-base-300 shadow-2xl overflow-hidden ${cardClasses}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Modal Header */}
         <div className="flex items-center justify-between gap-4 border-b border-base-300 px-6 py-4.5 bg-base-100">
           <div className="flex items-center gap-3">
@@ -178,7 +190,7 @@ export default function CategoryFormModal({
           <button
             type="button"
             className="p-1.5 rounded-lg text-base-content/50 hover:text-base-content hover:bg-base-200 transition-colors cursor-pointer"
-            onClick={onClose}
+            onClick={handleClose}
             disabled={saving}
             aria-label="Close modal"
           >
@@ -356,7 +368,7 @@ export default function CategoryFormModal({
               type="button"
               variant="ghost"
               size="sm"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={saving}
             >
               Cancel
@@ -372,11 +384,6 @@ export default function CategoryFormModal({
           </div>
         </form>
       </div>
-      <div
-        className="modal-backdrop bg-neutral/40"
-        onClick={() => !saving && onClose?.()}
-        aria-hidden="true"
-      />
-    </dialog>
+    </div>
   );
 }

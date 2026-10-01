@@ -15,11 +15,14 @@ import {
   Maximize2,
   Eye,
   Trash2,
+  Sparkles,
   Image as ImageIcon,
 } from "lucide-react";
 import { Button } from "../../../common/components/ui/buttons/index.js";
 import ImageViewerModal from "../../../common/components/ui/ImageViewerModal.jsx";
 import { DropdownSelect } from "../../../common/components/ui/select/index.js";
+import { generateCompanyCode } from "../services/companyService.js";
+import useModalAnimation from "../../../common/hooks/useModalAnimation.js";
 
 const TIMEZONE_OPTIONS = [
   { value: "Asia/Kolkata", label: "Asia/Kolkata (IST +05:30)", description: "India Standard Time" },
@@ -35,6 +38,36 @@ const FY_OPTIONS = [
   { value: 7, label: "July (Q3 Fiscal Cycle)", description: "July 1 – June 30" },
   { value: 10, label: "October (Q4 Fiscal Cycle)", description: "October 1 – September 30" },
 ];
+
+/**
+ * Cleanly derive meaningful company prefix initials
+ */
+const deriveMeaningfulPrefix = (name) => {
+  if (!name || typeof name !== "string") return "PFS";
+  const STOP_WORDS = new Set(["pvt", "private", "ltd", "limited", "llp", "inc", "corp", "co", "and", "the", "&"]);
+  const words = name
+    .trim()
+    .replace(/[^a-zA-Z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter((w) => w.length > 0 && !STOP_WORDS.has(w.toLowerCase()));
+
+  if (words.length >= 3) {
+    return (words[0][0] + words[1][0] + words[2][0]).toUpperCase();
+  }
+  if (words.length === 2) {
+    const w1 = words[0].toUpperCase();
+    const w2 = words[1].toUpperCase();
+    if (w2.startsWith("S") || w2.includes("S")) {
+      return (w1[0] + "F" + "S").toUpperCase().slice(0, 3);
+    }
+    const combined = (w1[0] + w2.slice(0, 2)).toUpperCase();
+    return combined.length >= 3 ? combined : (w1.slice(0, 2) + w2[0]).toUpperCase();
+  }
+  if (words.length === 1) {
+    return words[0].slice(0, 3).toUpperCase() || "PFS";
+  }
+  return "PFS";
+};
 
 /**
  * Company Modal for Create and Edit Operations
@@ -74,6 +107,12 @@ export default function CompanyModal({
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const [isGeneratingCode, setIsGeneratingCode] = useState(false);
+  const [codeManuallyEdited, setCodeManuallyEdited] = useState(false);
+  const { isRendered, isVisible, handleClose, backdropClasses, cardClasses } = useModalAnimation(
+    isOpen,
+    onClose
+  );
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -97,14 +136,51 @@ export default function CompanyModal({
         financial_year_start_month: company.financialYearStartMonth || company.financial_year_start_month || 4,
         status: company.status || "active",
       });
+      setCodeManuallyEdited(true);
       setErrors({});
     } else {
       setFormData(initialFormState);
+      setCodeManuallyEdited(false);
       setErrors({});
+
+      // Auto-fetch meaningful next code when opening modal in create mode
+      if (isOpen) {
+        generateCompanyCode("")
+          .then((res) => {
+            const nextCode = res?.data?.company_code || res?.company_code;
+            if (nextCode) {
+              setFormData((prev) => (prev.company_code ? prev : { ...prev, company_code: nextCode }));
+            }
+          })
+          .catch(() => {
+            setFormData((prev) => (prev.company_code ? prev : { ...prev, company_code: "PFS001" }));
+          });
+      }
     }
     setActiveTab("identity");
     setUploadError("");
   }, [company, isOpen]);
+
+  const handleAutoGenerateCode = async () => {
+    setIsGeneratingCode(true);
+    try {
+      const res = await generateCompanyCode(formData.company_name || "");
+      const generated = res?.data?.company_code || res?.company_code;
+      if (generated) {
+        setFormData((prev) => ({ ...prev, company_code: generated }));
+        setCodeManuallyEdited(false);
+        if (errors.company_code) {
+          setErrors((prev) => ({ ...prev, company_code: null }));
+        }
+      }
+    } catch {
+      const prefix = deriveMeaningfulPrefix(formData.company_name);
+      setFormData((prev) => ({ ...prev, company_code: `${prefix}001` }));
+      setCodeManuallyEdited(false);
+    } finally {
+      setIsGeneratingCode(false);
+    }
+  };
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
@@ -163,17 +239,31 @@ export default function CompanyModal({
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  if (!isOpen) return null;
+  if (!isRendered) return null;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     let formattedValue = value;
 
     if (name === "company_code") {
+      setCodeManuallyEdited(true);
       formattedValue = value.toUpperCase().replace(/[^A-Z0-9_-]/g, "");
     }
     if (name === "financial_year_start_month") {
       formattedValue = Number(value);
+    }
+
+    // When typing company name in create mode, auto-derive meaningful code if user hasn't typed custom code
+    if (name === "company_name" && !isEdit && !codeManuallyEdited) {
+      const prefix = deriveMeaningfulPrefix(value);
+      setFormData((prev) => ({
+        ...prev,
+        company_name: value,
+        company_code: `${prefix}001`,
+      }));
+      if (errors.company_name) setErrors((prev) => ({ ...prev, company_name: null }));
+      if (errors.company_code) setErrors((prev) => ({ ...prev, company_code: null }));
+      return;
     }
 
     setFormData((prev) => ({ ...prev, [name]: formattedValue }));
@@ -184,8 +274,15 @@ export default function CompanyModal({
 
   const validate = () => {
     const newErrors = {};
-    if (!formData.company_code || formData.company_code.trim().length < 2) {
-      newErrors.company_code = "Company code must be at least 2 characters (alphanumeric, -, _).";
+    if (isEdit) {
+      if (!formData.company_code || formData.company_code.trim().length < 2) {
+        newErrors.company_code = "Company code must be at least 2 characters (alphanumeric, -, _).";
+      }
+    } else {
+      // In create mode: if provided, validate; if blank, backend auto-generates
+      if (formData.company_code && formData.company_code.trim().length > 0 && formData.company_code.trim().length < 2) {
+        newErrors.company_code = "Company code must be at least 2 characters (alphanumeric, -, _).";
+      }
     }
     if (!formData.company_name || formData.company_name.trim().length < 2) {
       newErrors.company_name = "Company name must be at least 2 characters.";
@@ -212,7 +309,7 @@ export default function CompanyModal({
 
     const payload = {
       ...formData,
-      company_code: formData.company_code.trim().toUpperCase(),
+      company_code: formData.company_code?.trim() ? formData.company_code.trim().toUpperCase() : undefined,
       company_name: formData.company_name.trim(),
       legal_name: formData.legal_name.trim() || null,
       display_name: formData.display_name.trim() || null,
@@ -250,8 +347,11 @@ export default function CompanyModal({
   const labelClass = "block text-[12.5px] font-medium text-base-content/80 mb-1.5 tracking-[-0.01em]";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
-      <div className="relative w-full max-w-3xl bg-base-100 rounded-2xl shadow-2xl border border-base-300 overflow-hidden flex flex-col max-h-[90vh] font-[450] antialiased text-base-content">
+    <div className={backdropClasses} onClick={handleClose}>
+      <div
+        className={`relative w-full max-w-3xl bg-base-100 rounded-2xl shadow-2xl border border-base-300 overflow-hidden flex flex-col max-h-[90vh] font-[450] antialiased text-base-content ${cardClasses}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="px-6 pt-5 pb-4 flex items-center justify-between border-b border-base-200">
           <div>
@@ -267,8 +367,8 @@ export default function CompanyModal({
 
           <button
             type="button"
-            onClick={onClose}
-            className="p-1.5 -mr-1.5 rounded-lg text-base-content/50 hover:text-base-content hover:bg-base-200 transition-colors"
+            onClick={handleClose}
+            className="p-1.5 -mr-1.5 rounded-lg text-base-content/50 hover:text-base-content hover:bg-base-200 transition-colors cursor-pointer"
           >
             <X className="w-[18px] h-[18px]" />
           </button>
@@ -304,25 +404,48 @@ export default function CompanyModal({
             <div className="space-y-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className={labelClass}>
-                    Company code <span className="text-rose-400">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="company_code"
-                    value={formData.company_code}
-                    onChange={handleChange}
-                    placeholder="e.g. PFS001"
-                    maxLength={50}
-                    className={`${inputClass(errors.company_code)} font-mono tracking-wide`}
-                  />
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className={labelClass}>
+                      Company code {!isEdit ? <span className="text-[11px] font-normal text-base-content/50 ml-1">(auto-generated)</span> : <span className="text-rose-400">*</span>}
+                    </label>
+                    {!isEdit && (
+                      <button
+                        type="button"
+                        onClick={handleAutoGenerateCode}
+                        disabled={isGeneratingCode}
+                        className="text-xs font-bold text-primary hover:text-primary-focus flex items-center gap-1 cursor-pointer transition-colors active:scale-95"
+                        title="Auto generate meaningful company code"
+                      >
+                        <Sparkles className={`w-3 h-3 ${isGeneratingCode ? "animate-spin text-primary" : "text-amber-500"}`} />
+                        <span>{isGeneratingCode ? "Generating..." : "Auto generate"}</span>
+                      </button>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      name="company_code"
+                      value={formData.company_code}
+                      onChange={handleChange}
+                      placeholder="e.g. PFS001"
+                      maxLength={50}
+                      className={`${inputClass(errors.company_code)} font-mono tracking-wide pr-14`}
+                    />
+                    {!isEdit && formData.company_code && (
+                      <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                        <span className="px-1.5 py-0.5 text-[9px] font-mono font-bold bg-primary/10 text-primary rounded border border-primary/20">
+                          AUTO
+                        </span>
+                      </div>
+                    )}
+                  </div>
                   {errors.company_code && (
                     <p className="text-[11.5px] text-rose-500 mt-1.5 flex items-center gap-1">
                       <AlertCircle className="w-3 h-3" /> {errors.company_code}
                     </p>
                   )}
-                  <p className="text-[11px] text-slate-400 mt-1.5">
-                    Used across POS invoices and accounting.
+                  <p className="text-[11px] text-base-content/50 mt-1.5">
+                    Meaningful identifier across POS invoices and accounting (auto-generated if left blank).
                   </p>
                 </div>
 
@@ -779,7 +902,7 @@ export default function CompanyModal({
             </div>
 
             <div className="flex items-center gap-2">
-              <Button variant="secondary" size="md" onClick={onClose} disabled={isSubmitting}>
+              <Button variant="secondary" size="md" onClick={handleClose} disabled={isSubmitting}>
                 Cancel
               </Button>
               <Button type="submit" variant="clip-six" size="md" loading={isSubmitting} icon={Save}>

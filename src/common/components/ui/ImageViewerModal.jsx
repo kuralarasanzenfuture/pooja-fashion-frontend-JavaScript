@@ -70,7 +70,7 @@ export default function ImageViewerModal({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-between bg-black/90 backdrop-blur-md animate-in fade-in duration-200 select-none"
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-between bg-black/90 transition-opacity duration-200 select-none animate-in fade-in"
       onClick={onClose}
     >
       {/* Top Controls Toolbar */}

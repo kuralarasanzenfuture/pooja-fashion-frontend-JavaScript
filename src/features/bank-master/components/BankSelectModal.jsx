@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { X, Search, Check, Plus, AlertCircle, Landmark } from "lucide-react";
 import BankLogo from "./BankLogo.jsx";
+import { useModalAnimation } from "../../../common/hooks/useModalAnimation.js";
 
 // Core Popular Banks curated to match standard Indian commercial banking
 export const POPULAR_BANKS = [
@@ -109,6 +110,7 @@ export default function BankSelectModal({
   onSelectBank,
   onAddManual,
 }) {
+  const { isRendered, handleClose, backdropClasses, cardClasses } = useModalAnimation(isOpen, onClose);
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef(null);
 
@@ -121,17 +123,6 @@ export default function BankSelectModal({
       }, 100);
     }
   }, [isOpen]);
-
-  // Handle ESC key to close
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape" && isOpen) {
-        onClose();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
 
   // Merge directory banks with popular presets so popular banks always link to database records if matched
   const resolvedPopularBanks = useMemo(() => {
@@ -206,15 +197,16 @@ export default function BankSelectModal({
 
   const handleBankClick = (bankItem) => {
     onSelectBank(bankItem);
-    onClose();
+    handleClose();
   };
 
+  if (!isRendered) return null;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+    <div className={backdropClasses} onClick={handleClose} role="dialog" aria-modal="true">
       <div
-        className="relative w-full max-w-[460px] bg-base-100 rounded-3xl shadow-2xl border border-base-300 overflow-hidden flex flex-col max-h-[88vh] animate-in zoom-in-95 duration-150"
-        role="dialog"
-        aria-modal="true"
+        className={`relative w-full max-w-[460px] bg-base-100 rounded-3xl shadow-2xl border border-base-300 overflow-hidden flex flex-col max-h-[88vh] ${cardClasses}`}
+        onClick={(e) => e.stopPropagation()}
         aria-labelledby="select-bank-title"
       >
         {/* Top Header */}
@@ -224,7 +216,7 @@ export default function BankSelectModal({
           </h2>
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             aria-label="Close dialog"
             className="p-1 rounded-xl text-base-content/50 hover:text-base-content hover:bg-base-200 transition-colors cursor-pointer"
           >
