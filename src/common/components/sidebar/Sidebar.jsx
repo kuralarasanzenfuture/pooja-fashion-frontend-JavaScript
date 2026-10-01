@@ -188,32 +188,33 @@ export default function Sidebar({
           1. Desktop Collapsible Sidebar
           ======================================================== */}
       <aside
-        className={`hidden lg:flex flex-col h-full border-r border-base-200 bg-base-100 shrink-0 transition-all duration-300 ease-in-out z-20 overflow-hidden ${sidebarOpen ? "w-68" : "w-[68px]"
-          }`}
+        className={`hidden lg:flex flex-col h-full border-r border-base-200 bg-base-100 shrink-0 transition-[width] duration-200 ease-out z-20 overflow-hidden will-change-[width] ${
+          sidebarOpen ? "w-68" : "w-[68px]"
+        }`}
       >
         {renderSidebarContent(false)}
       </aside>
 
       {/* ========================================================
-          2. Mobile Navigation Drawer (Smooth Slide Open & Close)
+          2. Mobile Navigation Drawer (Ultra-Fast 60fps Slide In & Out)
           ======================================================== */}
       <div
-        className={`fixed inset-0 z-50 lg:hidden transition-all duration-300 ${
-          mobileOpen ? "visible pointer-events-auto" : "invisible pointer-events-none"
+        className={`fixed inset-0 z-50 lg:hidden ${
+          mobileOpen ? "pointer-events-auto" : "pointer-events-none"
         }`}
         aria-hidden={!mobileOpen}
       >
-        {/* Backdrop Fade In & Out */}
+        {/* Backdrop Fade In & Out (GPU compositor-friendly, no heavy blur) */}
         <div
-          className={`fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity duration-300 ease-out ${
+          className={`fixed inset-0 bg-black/50 transition-opacity duration-200 ease-out ${
             mobileOpen ? "opacity-100" : "opacity-0"
           }`}
           onClick={onCloseMobile}
         />
 
-        {/* Drawer Body - Hardware-accelerated Smooth Slide In & Out */}
+        {/* Drawer Body - GPU-accelerated Smooth Slide In & Out */}
         <div
-          className={`relative w-80 max-w-[85vw] bg-base-100 text-base-content h-full shadow-2xl flex flex-col z-50 transform transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform ${
+          className={`relative w-80 max-w-[85vw] bg-base-100 text-base-content h-full shadow-2xl flex flex-col z-50 transform transition-transform duration-200 ease-out will-change-transform ${
             mobileOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >

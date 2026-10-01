@@ -90,9 +90,15 @@ export default function Pagination({
   showFirstLast = true,
   className = "",
 }) {
-  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
-  const rangeStart = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
-  const rangeEnd = Math.min(currentPage * pageSize, totalItems);
+  const isAll =
+    pageSize === "All" ||
+    (typeof pageSize === "number" && totalItems > 0 && pageSize >= totalItems);
+  const numericPageSize =
+    pageSize === "All" ? totalItems || 100 : Number(pageSize) || 10;
+  const totalPages = Math.max(1, Math.ceil(totalItems / numericPageSize));
+  const rangeStart =
+    totalItems === 0 ? 0 : isAll ? 1 : (currentPage - 1) * numericPageSize + 1;
+  const rangeEnd = isAll ? totalItems : Math.min(currentPage * numericPageSize, totalItems);
 
   const pageNumbers = buildPageNumbers(currentPage, totalPages, siblings);
 
@@ -109,7 +115,28 @@ export default function Pagination({
   };
 
   const [isPageSizeOpen, setIsPageSizeOpen] = useState(false);
+  const [isDropdownRendered, setIsDropdownRendered] = useState(false);
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const pageSizeDropdownRef = useRef(null);
+
+  // Smooth open / close animation lifecycle
+  useEffect(() => {
+    let timeoutId;
+    if (isPageSizeOpen) {
+      setIsDropdownRendered(true);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsDropdownVisible(true);
+        });
+      });
+    } else {
+      setIsDropdownVisible(false);
+      timeoutId = setTimeout(() => {
+        setIsDropdownRendered(false);
+      }, 160);
+    }
+    return () => clearTimeout(timeoutId);
+  }, [isPageSizeOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -164,43 +191,52 @@ export default function Pagination({
 
             <div
               ref={pageSizeDropdownRef}
-              className={`dropdown dropdown-top relative ${isPageSizeOpen ? "dropdown-open" : ""}`}
+              className="relative"
             >
               <button
                 type="button"
                 onClick={() => setIsPageSizeOpen((prev) => !prev)}
-                className="h-8.5 px-3 min-w-[4.5rem] inline-flex items-center justify-between gap-2 text-xs sm:text-sm font-bold rounded-xl bg-base-100 hover:bg-base-200/80 border border-base-300 text-base-content shadow-2xs hover:border-primary/40 focus:border-primary focus:outline-hidden transition-all cursor-pointer"
+                className={`h-8.5 px-3 min-w-[4.5rem] inline-flex items-center justify-between gap-2 text-xs sm:text-sm font-bold rounded-xl bg-base-100 hover:bg-base-200/80 border text-base-content shadow-2xs transition-all cursor-pointer ${
+                  isPageSizeOpen
+                    ? "border-primary ring-2 ring-primary/20 text-primary"
+                    : "border-base-300 hover:border-primary/40"
+                }`}
                 aria-haspopup="listbox"
                 aria-expanded={isPageSizeOpen}
               >
                 <span>{pageSize}</span>
                 <ChevronDown
-                  className={`w-3.5 h-3.5 text-base-content/50 transition-transform duration-200 ${
-                    isPageSizeOpen ? "rotate-180 text-primary" : ""
+                  className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                    isPageSizeOpen ? "rotate-180 text-primary" : "text-base-content/50"
                   }`}
                 />
               </button>
 
-              {isPageSizeOpen && (
+              {/* Animated Floating Card */}
+              {isDropdownRendered && (
                 <div
-                  className="dropdown-content z-50 mb-2 p-1.5 shadow-2xl bg-base-100 rounded-2xl border border-base-300 w-28 text-xs animate-in fade-in zoom-in-95 duration-150 backdrop-blur-md"
+                  className={`absolute bottom-full mb-2 left-0 z-50 p-1.5 shadow-2xl bg-base-100 rounded-2xl border border-base-300 w-32 text-xs transition-all duration-200 ease-out origin-bottom transform ${
+                    isDropdownVisible
+                      ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
+                      : "opacity-0 scale-95 translate-y-2 pointer-events-none"
+                  }`}
                   role="listbox"
                 >
-                  <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-base-content/50 border-b border-base-200/70 mb-1">
-                    Rows per page
+                  <div className="px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-base-content/50 border-b border-base-200/80 mb-1 select-none">
+                    ROWS PER PAGE
                   </div>
-                  <div className="space-y-0.5">
+                  <div className="space-y-0.5 max-h-56 overflow-y-auto scrollbar-thin">
                     {pageSizeOptions.map((sizeOption) => {
-                      const isSelected = sizeOption === pageSize;
+                      const isSelected = String(sizeOption) === String(pageSize);
                       return (
                         <button
                           key={sizeOption}
                           type="button"
                           onClick={() => handleSelectPageSize(sizeOption)}
-                          className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                          className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                             isSelected
-                              ? "bg-primary text-primary-content shadow-xs"
-                              : "text-base-content hover:bg-base-200"
+                              ? "bg-primary text-primary-content shadow-xs font-bold"
+                              : "text-base-content hover:bg-base-200/80 active:scale-[0.98]"
                           }`}
                           role="option"
                           aria-selected={isSelected}

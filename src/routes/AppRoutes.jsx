@@ -7,6 +7,8 @@ import SettingsPage from "../common/pages/settings/SettingsPage.jsx";
 import CompanyPage from "../features/company/pages/CompanyPage.jsx";
 import CompanyViewPage from "../features/company/pages/CompanyViewPage.jsx";
 import BankMasterPage from "../features/bank-master/pages/BankMasterPage.jsx";
+import CategoriesPage from "../features/product-masters/categories/pages/CategoriesPage.jsx";
+import CategoryViewPage from "../features/product-masters/categories/pages/CategoryViewPage.jsx";
 import NotFoundPage from "../common/pages/404/NotFoundPage.jsx";
 import Error500Page from "../common/pages/500/Error500Page.jsx";
 import ProtectedRoute from "./ProtectedRoute.jsx";
@@ -127,6 +129,10 @@ export default function AppRoutes() {
           <Route path="/company/:id" element={<CompanyViewPage />} />
           <Route path="/bank-master" element={<BankMasterPage />} />
           <Route path="/banks" element={<BankMasterPage />} />
+          <Route path={ROUTES.CATEGORIES} element={<CategoriesPage />} />
+          <Route path="/categories" element={<CategoriesPage />} />
+          <Route path={ROUTES.CATEGORY_VIEW} element={<CategoryViewPage />} />
+          <Route path="/categories/:id" element={<CategoryViewPage />} />
         </Route>
       </Route>
 
