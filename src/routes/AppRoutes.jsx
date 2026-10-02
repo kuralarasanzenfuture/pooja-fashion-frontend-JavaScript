@@ -9,9 +9,12 @@ import CompanyViewPage from "../features/company/pages/CompanyViewPage.jsx";
 import BankMasterPage from "../features/bank-master/pages/BankMasterPage.jsx";
 import CategoriesPage from "../features/product-masters/categories/pages/CategoriesPage.jsx";
 import CategoryViewPage from "../features/product-masters/categories/pages/CategoryViewPage.jsx";
+import RolesPage from "../features/roles/pages/RolesPage.jsx";
+import UsersPage from "../features/users/pages/UsersPage.jsx";
 import NotFoundPage from "../common/pages/404/NotFoundPage.jsx";
 import Error500Page from "../common/pages/500/Error500Page.jsx";
 import ProtectedRoute from "./ProtectedRoute.jsx";
+import RoleProtectedRoute from "./RoleProtectedRoute.jsx";
 import PublicRoute from "./PublicRoute.jsx";
 import { ROUTES } from "../constants/routes.js";
 
@@ -133,6 +136,15 @@ export default function AppRoutes() {
           <Route path="/categories" element={<CategoriesPage />} />
           <Route path={ROUTES.CATEGORY_VIEW} element={<CategoryViewPage />} />
           <Route path="/categories/:id" element={<CategoryViewPage />} />
+
+          {/* Users & Roles Management (Admin & SuperAdmin only) */}
+          <Route element={<RoleProtectedRoute allowedRoles={["ADMIN", "SUPERADMIN"]} />}>
+            <Route path={ROUTES.USERS} element={<UsersPage />} />
+            <Route path="/users" element={<UsersPage />} />
+            <Route path={ROUTES.ROLES} element={<RolesPage />} />
+            <Route path="/roles" element={<RolesPage />} />
+            <Route path="/users/roles" element={<RolesPage />} />
+          </Route>
         </Route>
       </Route>
 

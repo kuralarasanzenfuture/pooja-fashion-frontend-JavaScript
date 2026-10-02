@@ -346,3 +346,31 @@ html[data-font="luxury"] .font-luxury {
   border-color: #cbd5e1;
   box-shadow: 0 4px 12px -2px rgba(15, 28, 63, 0.08);
 }
+
+/* =========================================================
+   Application Brand Theme Focus Rings & Clean Select Overrides
+   ========================================================= */
+.select,
+select {
+  outline: none !important;
+}
+
+.select:focus,
+.select:focus-visible,
+.select-bordered:focus,
+.select-bordered:focus-visible,
+select:focus,
+select:focus-visible {
+  outline: none !important;
+  border-color: var(--color-primary, #2a0081) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary, #2a0081) 22%, transparent) !important;
+}
+
+input:focus,
+input:focus-visible,
+textarea:focus,
+textarea:focus-visible {
+  outline: none !important;
+  border-color: var(--color-primary, #2a0081) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary, #2a0081) 18%, transparent) !important;
+}

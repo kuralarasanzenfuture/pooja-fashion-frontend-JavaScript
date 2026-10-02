@@ -17,3 +17,4 @@ export { default as CompanyTaxDetailsTab } from "./CompanyTaxDetailsTab.jsx";
 export { default as CompanyBankModal } from "./CompanyBankModal.jsx";
 export { default as CompanyBankDeleteModal } from "./CompanyBankDeleteModal.jsx";
 export { default as CompanyBanksTab } from "./CompanyBanksTab.jsx";
+export { default as CompanySelect } from "./CompanySelect.jsx";

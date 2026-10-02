@@ -30,5 +30,8 @@ export const ROUTES = {
   BANKS: "/banks",
   CATEGORIES: "/products/categories",
   CATEGORY_VIEW: "/products/categories/:id",
+  ROLES: "/users/roles",
+  ROLES_ALT: "/roles",
+  USERS: "/users",
 };
 

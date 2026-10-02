@@ -35,9 +35,11 @@
  */
 
 export const USER_ROLES = {
+  SUPERADMIN: "SUPERADMIN",
   ADMIN: "ADMIN",
   MANAGER: "MANAGER",
   STAFF: "STAFF",
+  CASHIER: "CASHIER",
 };
 
 export const PAYMENT_MODES = {

@@ -100,6 +100,19 @@ export const queryKeys = {
     byCode: (companyId, code) => ["categories", "byCode", companyId, code],
     detail: (id) => ["categories", "detail", id],
   },
+
+  roles: {
+    all: ["roles"],
+    list: (params) => ["roles", "list", params],
+    detail: (id) => ["roles", "detail", id],
+    byCompany: (companyId) => ["roles", "byCompany", companyId],
+  },
+
+  users: {
+    all: ["users"],
+    list: (params) => ["users", "list", params],
+    detail: (id) => ["users", "detail", id],
+  },
 };
 
 
