@@ -33,5 +33,7 @@ export const ROUTES = {
   ROLES: "/users/roles",
   ROLES_ALT: "/roles",
   USERS: "/users",
+  USER_VIEW: "/users/:id",
+  USER_VIEW_ALT: "/users/view/:id",
 };
 

@@ -74,6 +74,33 @@ export const deleteUser = async (id) => {
   return response.data;
 };
 
+/**
+ * Check if a username already exists within the target company or globally
+ * @param {Object} params - { username, company_id, exclude_id }
+ */
+export const checkUsernameAvailability = async (params = {}) => {
+  const response = await api.get("/users/check-username", { params });
+  return response.data;
+};
+
+/**
+ * Check if an email address is already registered globally
+ * @param {Object} params - { email, exclude_id }
+ */
+export const checkEmailAvailability = async (params = {}) => {
+  const response = await api.get("/users/check-email", { params });
+  return response.data;
+};
+
+/**
+ * Combined availability check for username and email
+ * @param {Object} params - { username, email, company_id, exclude_id }
+ */
+export const checkAvailability = async (params = {}) => {
+  const response = await api.get("/users/check-availability", { params });
+  return response.data;
+};
+
 export default {
   getUsers,
   getUserById,
@@ -82,4 +109,8 @@ export default {
   changePassword,
   updateUserStatus,
   deleteUser,
+  checkUsernameAvailability,
+  checkEmailAvailability,
+  checkAvailability,
 };
+

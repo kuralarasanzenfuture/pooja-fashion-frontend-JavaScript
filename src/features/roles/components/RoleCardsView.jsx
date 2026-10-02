@@ -90,11 +90,10 @@ export default function RoleCardsView({
             {/* Role Info */}
             <div className="flex items-start gap-3.5 pt-1">
               <div
-                className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border ${
-                  isSystem
+                className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border ${isSystem
                     ? "bg-amber-500/10 border-amber-500/20 text-amber-600"
                     : "bg-primary/10 border-primary/20 text-primary"
-                }`}
+                  }`}
               >
                 <Shield className="w-5 h-5" />
               </div>

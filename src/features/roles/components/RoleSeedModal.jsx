@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Sparkles, Building, X, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Button } from "../../../common/components/ui/buttons/index.js";
 import { useModalAnimation } from "../../../common/hooks/useModalAnimation.js";
-import { useCompanies } from "../../company/hooks/useCompanies.js";
+import { CompanySelect } from "../../company/components/index.js";
 
 /**
  * Super Admin modal to seed default system roles (SUPERADMIN, ADMIN) for a company
@@ -19,25 +19,15 @@ export default function RoleSeedModal({
     onClose
   );
 
-  const { data: companiesResponse, isLoading: companiesLoading } = useCompanies({
-    limit: 100,
-    status: "active",
-  });
-  const companies = companiesResponse?.data || [];
-
-  const [companyId, setCompanyId] = useState(defaultCompanyId || "");
+  const [companyId, setCompanyId] = useState(defaultCompanyId ? String(defaultCompanyId) : "");
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (isOpen) {
-      if (defaultCompanyId) {
-        setCompanyId(defaultCompanyId);
-      } else if (companies.length > 0 && !companyId) {
-        setCompanyId(companies[0].id);
-      }
+      setCompanyId(defaultCompanyId ? String(defaultCompanyId) : "");
       setError("");
     }
-  }, [isOpen, defaultCompanyId, companies]);
+  }, [isOpen, defaultCompanyId]);
 
   if (!isRendered) return null;
 
@@ -80,45 +70,30 @@ export default function RoleSeedModal({
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="p-6 space-y-4">
+          <div className="p-6 space-y-4 pb-24">
             <p className="text-xs text-base-content/75 leading-relaxed">
               This will automatically provision standard baseline system roles (<code>SUPERADMIN</code>, <code>ADMIN</code>) for the target company if they are not already initialized.
             </p>
 
-            <div className="space-y-1.5">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-base-content/70">
-                Target Company <span className="text-rose-500">*</span>
-              </label>
-              <div className="relative">
-                <Building className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-base-content/40 pointer-events-none" />
-                <select
-                  value={companyId}
-                  onChange={(e) => {
-                    setCompanyId(e.target.value);
-                    if (error) setError("");
-                  }}
-                  className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-base-300 bg-base-100 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                  disabled={isSeeding || companiesLoading}
-                >
-                  <option value="">
-                    {companiesLoading ? "Loading companies..." : "-- Select Company --"}
-                  </option>
-                  {companies.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.companyName} {c.companyCode ? `(${c.companyCode})` : ""}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              {error && <p className="text-[11px] text-rose-500 font-medium">{error}</p>}
-            </div>
+            <CompanySelect
+              value={companyId}
+              onChange={(id) => {
+                setCompanyId(id);
+                if (error) setError("");
+              }}
+              error={error}
+              required
+              disabled={isSeeding}
+              label="Target Company"
+              placeholder="-- Select Company to Seed --"
+            />
           </div>
 
           <div className="px-6 py-4 border-t border-base-200 flex items-center justify-end gap-2.5 bg-base-100">
             <Button variant="outline" size="md" onClick={handleClose} disabled={isSeeding}>
               Cancel
             </Button>
-            <Button variant="primary" size="md" type="submit" loading={isSeeding} disabled={isSeeding}>
+            <Button variant="clip-six" size="md" type="submit" loading={isSeeding} disabled={isSeeding}>
               Seed Roles
             </Button>
           </div>

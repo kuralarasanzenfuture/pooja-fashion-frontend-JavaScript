@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useSelector } from "react-redux";
 import {
   X,
@@ -15,12 +15,20 @@ import {
   KeyRound,
   CheckCircle2,
   AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "../../../common/components/ui/buttons/index.js";
 import { useModalAnimation } from "../../../common/hooks/useModalAnimation.js";
 import { useRoles } from "../../roles/hooks/useRoles.js";
 import { useCompanies } from "../../company/hooks/useCompanies.js";
+import { useUsers } from "../hooks/useUsers.js";
 import { CompanySelect } from "../../company/components/index.js";
+import { RoleSelect } from "../../roles/components/index.js";
+import StatusSelect from "./StatusSelect.jsx";
+import {
+  checkUsernameAvailability,
+  checkEmailAvailability,
+} from "../services/userService.js";
 import {
   selectIsSuperAdmin,
   selectIsAdmin,
@@ -39,7 +47,7 @@ const EMPTY_FORM = {
   two_factor_enabled: false,
 };
 
-function validateUserForm(values, isEdit = false) {
+function validateUserForm(values, isEdit = false, isPrivilegedAdmin = false) {
   const errors = {};
   const username = (values.username || "").trim();
   const email = (values.email || "").trim();
@@ -53,6 +61,14 @@ function validateUserForm(values, isEdit = false) {
     errors.username = "Username cannot exceed 100 characters.";
   } else if (!/^[a-zA-Z0-9_.-]+$/.test(username)) {
     errors.username = "Only letters, numbers, dots, hyphens, and underscores are allowed.";
+  }
+
+  if (!values.role_id) {
+    errors.role_id = "Please select a system role.";
+  }
+
+  if (!isEdit && isPrivilegedAdmin && !values.company_id) {
+    errors.company_id = "Target company is mandatory.";
   }
 
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -85,6 +101,7 @@ export default function UserFormModal({
   isOpen = false,
   mode = "add", // "add" | "edit"
   initialData = null,
+  existingUsers = null,
   saving = false,
   onClose,
   onSubmit,
@@ -106,11 +123,78 @@ export default function UserFormModal({
   const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState("credentials"); // "credentials" | "assignment"
 
+  // Real-time availability check states
+  const [checkingUsername, setCheckingUsername] = useState(false);
+  const [usernameAvailable, setUsernameAvailable] = useState(null);
+  const [checkingEmail, setCheckingEmail] = useState(false);
+  const [emailAvailable, setEmailAvailable] = useState(null);
+
+  const usernameTimerRef = useRef(null);
+  const emailTimerRef = useRef(null);
+
   const isEdit = mode === "edit";
 
-  // Fetch available roles to populate role dropdown
-  const { data: rolesResponse } = useRoles({ limit: 50, is_active: "true" });
-  const availableRoles = rolesResponse?.data || rolesResponse?.roles || [];
+  const isEditingSystemRoleUser =
+    isEdit &&
+    (Boolean(initialData?.isSystemRole) ||
+      Boolean(initialData?.is_system_role) ||
+      Boolean(initialData?.role?.is_system_role) ||
+      Boolean(initialData?.role?.isSystemRole) ||
+      ["SUPERADMIN", "ADMIN"].includes(
+        String(initialData?.roleCode || initialData?.role?.role_code || "").toUpperCase()
+      ) ||
+      Boolean(initialData?.isSuperAdmin));
+
+  // Fetch available roles to populate role dropdown (strictly filter active roles)
+  const { data: rolesResponse } = useRoles({ limit: 100, is_active: "true" });
+  const rawRoles = rolesResponse?.data || rolesResponse?.roles || [];
+  const availableRoles = rawRoles.filter(
+    (r) => r.isActive !== false && r.is_active !== false
+  );
+
+  // Fetch existing users to identify occupied system roles
+  const { data: usersResponse } = useUsers({ limit: 100 });
+  const allUsersList = existingUsers || usersResponse?.data?.users || usersResponse?.data || [];
+
+  const occupiedSystemRoleIds = useMemo(() => {
+    const occupied = [];
+    const targetCompanyId = form.company_id || userCompanyId;
+
+    availableRoles.forEach((role) => {
+      const isSystem =
+        Boolean(role.isSystemRole || role.is_system_role) ||
+        ["SUPERADMIN", "ADMIN"].includes(
+          String(role.roleCode || role.role_code || "").toUpperCase()
+        );
+
+      if (isSystem) {
+        const isSuperAdminRole =
+          String(role.roleCode || role.role_code || "").toUpperCase() === "SUPERADMIN";
+
+        const hasUser = allUsersList.some((u) => {
+          if (isEdit && String(u.id) === String(initialData?.id)) return false;
+
+          const matchesRole =
+            String(u.roleId || u.role_id) === String(role.id) ||
+            String(u.roleCode || u.role?.role_code || "").toUpperCase() ===
+              String(role.roleCode || role.role_code || "").toUpperCase();
+
+          if (!matchesRole) return false;
+
+          if (isSuperAdminRole) return true;
+
+          if (!targetCompanyId || !u.companyId) return true;
+          return String(u.companyId || u.company_id) === String(targetCompanyId);
+        });
+
+        if (hasUser) {
+          occupied.push(role.id);
+        }
+      }
+    });
+
+    return occupied;
+  }, [availableRoles, allUsersList, form.company_id, userCompanyId, isEdit, initialData]);
 
   // Fetch available companies for Admin and SuperAdmin
   const { data: companiesResponse, isLoading: companiesLoading } = useCompanies({
@@ -136,20 +220,38 @@ export default function UserFormModal({
         two_factor_enabled: Boolean(initialData.twoFactorEnabled ?? initialData.two_factor_enabled),
       });
     } else {
+      const defaultCompanyId =
+        userCompanyId ||
+        (companies.length === 1 ? String(companies[0].id) : "");
+
       setForm({
         ...EMPTY_FORM,
-        company_id: isSuperAdmin ? "" : userCompanyId || "",
+        company_id: defaultCompanyId,
       });
     }
     setErrors({});
     setTouched({});
     setShowPassword(false);
     setActiveTab("credentials");
+    setUsernameAvailable(null);
+    setEmailAvailable(null);
 
     setTimeout(() => {
       usernameInputRef.current?.focus();
     }, 150);
-  }, [isModalOpen, initialData, isSuperAdmin, userCompanyId]);
+  }, [isModalOpen, initialData, isSuperAdmin, userCompanyId, companies]);
+
+  // When companies finish loading, auto-assign if there is only 1 company and none is chosen
+  useEffect(() => {
+    if (!isModalOpen || isEdit) return;
+    if (companies.length === 1 && !form.company_id) {
+      setForm((prev) => ({
+        ...prev,
+        company_id: String(companies[0].id),
+      }));
+    }
+  }, [companies, isModalOpen, isEdit, form.company_id]);
+
 
   if (!isRendered) return null;
 
@@ -162,6 +264,79 @@ export default function UserFormModal({
         return next;
       });
     }
+
+    // Real-time debounced username availability check
+    if (field === "username") {
+      setUsernameAvailable(null);
+      if (usernameTimerRef.current) clearTimeout(usernameTimerRef.current);
+      const clean = (value || "").trim();
+      if (clean.length >= 3 && /^[a-zA-Z0-9_.-]+$/.test(clean)) {
+        if (isEdit && initialData?.username && initialData.username.toLowerCase() === clean.toLowerCase()) {
+          setUsernameAvailable(true);
+          return;
+        }
+        setCheckingUsername(true);
+        usernameTimerRef.current = setTimeout(async () => {
+          try {
+            const res = await checkUsernameAvailability({
+              username: clean,
+              company_id: form.company_id || undefined,
+              exclude_id: initialData?.id || undefined,
+            });
+            const exists = Boolean(res?.data?.exists ?? res?.exists);
+            if (exists) {
+              setErrors((prev) => ({
+                ...prev,
+                username: res?.data?.message || res?.message || "Username is already taken.",
+              }));
+              setUsernameAvailable(false);
+            } else {
+              setUsernameAvailable(true);
+            }
+          } catch {
+            // Graceful fallback
+          } finally {
+            setCheckingUsername(false);
+          }
+        }, 350);
+      }
+    }
+
+    // Real-time debounced email availability check
+    if (field === "email") {
+      setEmailAvailable(null);
+      if (emailTimerRef.current) clearTimeout(emailTimerRef.current);
+      const clean = (value || "").trim().toLowerCase();
+      if (clean && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean)) {
+        if (isEdit && initialData?.email && initialData.email.toLowerCase() === clean) {
+          setEmailAvailable(true);
+          return;
+        }
+        setCheckingEmail(true);
+        emailTimerRef.current = setTimeout(async () => {
+          try {
+            const res = await checkEmailAvailability({
+              email: clean,
+              exclude_id: initialData?.id || undefined,
+            });
+            const exists = Boolean(res?.data?.exists ?? res?.exists);
+            if (exists) {
+              setErrors((prev) => ({
+                ...prev,
+                email: res?.data?.message || res?.message || "Email address is already registered.",
+              }));
+              setEmailAvailable(false);
+            } else {
+              setEmailAvailable(true);
+            }
+          } catch {
+            // Graceful fallback
+          } finally {
+            setCheckingEmail(false);
+          }
+        }, 350);
+      }
+    }
   };
 
   const handleBlur = (field) => {
@@ -170,15 +345,27 @@ export default function UserFormModal({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const validationErrors = validateUserForm(form, isEdit);
+    if (checkingUsername || checkingEmail) return;
+
+    const validationErrors = validateUserForm(form, isEdit, isPrivilegedAdmin);
+    if (errors.username) validationErrors.username = errors.username;
+    if (errors.email) validationErrors.email = errors.email;
+
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       setTouched({
         username: true,
         email: true,
         password: true,
+        role_id: true,
+        company_id: true,
       });
-      setActiveTab("credentials");
+
+      if (validationErrors.username || validationErrors.email || validationErrors.password) {
+        setActiveTab("credentials");
+      } else {
+        setActiveTab("assignment");
+      }
       return;
     }
 
@@ -204,6 +391,7 @@ export default function UserFormModal({
 
     onSubmit(payload);
   };
+
 
   return (
     <div className={backdropClasses} onClick={handleClose} role="dialog" aria-modal="true">
@@ -273,9 +461,16 @@ export default function UserFormModal({
               <div className="space-y-4">
                 {/* Username */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-base-content/70">
-                    Username <span className="text-rose-500">*</span>
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-base-content/70">
+                      Username <span className="text-rose-500">*</span>
+                    </label>
+                    {checkingUsername && (
+                      <span className="text-[11px] text-primary flex items-center gap-1 font-medium animate-pulse">
+                        <RefreshCw className="w-3 h-3 animate-spin" /> Checking...
+                      </span>
+                    )}
+                  </div>
                   <div className="relative">
                     <User className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-base-content/40" />
                     <input
@@ -285,24 +480,44 @@ export default function UserFormModal({
                       onChange={(e) => handleChange("username", e.target.value)}
                       onBlur={() => handleBlur("username")}
                       placeholder="e.g. kural_admin, pooja_staff"
-                      className={`w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border bg-base-100 text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                      className={`w-full pl-10 pr-9 py-2.5 text-sm rounded-xl border bg-base-100 text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
                         errors.username && touched.username
-                          ? "border-rose-500 focus:border-rose-500"
+                          ? "border-rose-500 focus:border-rose-500 ring-rose-500/20"
+                          : usernameAvailable && form.username.length >= 3
+                          ? "border-emerald-500 focus:border-emerald-500 ring-emerald-500/20"
                           : "border-base-300 focus:border-primary"
                       }`}
                       disabled={saving}
                     />
+                    {usernameAvailable && !errors.username && form.username.length >= 3 && (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500 absolute right-3 top-1/2 -translate-y-1/2 shrink-0" />
+                    )}
                   </div>
-                  {errors.username && touched.username && (
-                    <p className="text-[11px] text-rose-500 font-medium">{errors.username}</p>
-                  )}
+                  {errors.username && touched.username ? (
+                    <p className="text-[11px] text-rose-500 font-medium flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      {errors.username}
+                    </p>
+                  ) : usernameAvailable && form.username.length >= 3 ? (
+                    <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                      Username is available
+                    </p>
+                  ) : null}
                 </div>
 
                 {/* Email */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-base-content/70">
-                    Email Address
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-base-content/70">
+                      Email Address
+                    </label>
+                    {checkingEmail && (
+                      <span className="text-[11px] text-primary flex items-center gap-1 font-medium animate-pulse">
+                        <RefreshCw className="w-3 h-3 animate-spin" /> Checking...
+                      </span>
+                    )}
+                  </div>
                   <div className="relative">
                     <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-base-content/40" />
                     <input
@@ -311,17 +526,30 @@ export default function UserFormModal({
                       onChange={(e) => handleChange("email", e.target.value)}
                       onBlur={() => handleBlur("email")}
                       placeholder="e.g. user@poojafashion.com"
-                      className={`w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border bg-base-100 text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                      className={`w-full pl-10 pr-9 py-2.5 text-sm rounded-xl border bg-base-100 text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
                         errors.email && touched.email
-                          ? "border-rose-500 focus:border-rose-500"
+                          ? "border-rose-500 focus:border-rose-500 ring-rose-500/20"
+                          : emailAvailable && form.email
+                          ? "border-emerald-500 focus:border-emerald-500 ring-emerald-500/20"
                           : "border-base-300 focus:border-primary"
                       }`}
                       disabled={saving}
                     />
+                    {emailAvailable && !errors.email && form.email && (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500 absolute right-3 top-1/2 -translate-y-1/2 shrink-0" />
+                    )}
                   </div>
-                  {errors.email && touched.email && (
-                    <p className="text-[11px] text-rose-500 font-medium">{errors.email}</p>
-                  )}
+                  {errors.email && touched.email ? (
+                    <p className="text-[11px] text-rose-500 font-medium flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      {errors.email}
+                    </p>
+                  ) : emailAvailable && form.email ? (
+                    <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                      Email is available
+                    </p>
+                  ) : null}
                 </div>
 
                 {/* Phone */}
@@ -381,40 +609,59 @@ export default function UserFormModal({
 
             {/* TAB 2: Role & Security */}
             {activeTab === "assignment" && (
-              <div className="space-y-4">
-                {/* Role Selection */}
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-base-content/70">
-                    System Role <span className="text-rose-500">*</span>
-                  </label>
-                  <select
-                    value={form.role_id}
-                    onChange={(e) => handleChange("role_id", e.target.value)}
-                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-base-300 bg-base-100 text-base-content focus:outline-none focus:border-primary"
-                    disabled={saving}
-                  >
-                    <option value="">Select a Role...</option>
-                    {availableRoles.map((r) => (
-                      <option key={r.id} value={r.id}>
-                        {r.roleName} ({r.roleCode}) {r.isSystemRole ? "— System" : ""}
-                      </option>
-                    ))}
-                  </select>
-                  <p className="text-[11px] text-base-content/50">
-                    Determines user permissions, access scopes, and module visibility.
-                  </p>
-                </div>
+              <div className="space-y-5 pb-24 min-h-[360px]">
+                {/* System Role Lock Warning */}
+                {isEditingSystemRoleUser && (
+                  <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-2.5 text-xs text-amber-800 dark:text-amber-300">
+                    <Lock className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-bold">System Role Protected:</span>
+                      <p className="text-[11px] mt-0.5 text-amber-700 dark:text-amber-400 leading-relaxed">
+                        This account is assigned to a core system role ({initialData?.roleName || initialData?.roleCode || "Administrator"}). System roles are permanently bound to the user account and cannot be modified or reassigned.
+                      </p>
+                    </div>
+                  </div>
+                )}
 
-                {/* Company Context: Asked for Admin and SuperAdmin; for other users get from user data */}
+                {/* Role Selection */}
+                <RoleSelect
+                  value={form.role_id}
+                  onChange={(roleId) => handleChange("role_id", roleId)}
+                  onBlur={() => handleBlur("role_id")}
+                  roles={availableRoles}
+                  disabledRoleIds={occupiedSystemRoleIds}
+                  error={touched.role_id ? errors.role_id : null}
+                  disabled={saving || isEditingSystemRoleUser}
+                  helperText={
+                    isEditingSystemRoleUser
+                      ? "System role is permanently assigned to this account and cannot be modified."
+                      : "Determines user permissions, access scopes, and module visibility."
+                  }
+                  required
+                />
+
+                {/* Company Context: Asked for Admin and SuperAdmin (Mandatory); for other users get from user data */}
                 {!isEdit && (
                   isPrivilegedAdmin ? (
                     <CompanySelect
                       value={form.company_id}
-                      onChange={(companyId) => handleChange("company_id", companyId)}
+                      onChange={(companyId) => {
+                        handleChange("company_id", companyId);
+                        if (errors.company_id) {
+                          setErrors((prev) => {
+                            const next = { ...prev };
+                            delete next.company_id;
+                            return next;
+                          });
+                        }
+                      }}
+                      onBlur={() => handleBlur("company_id")}
+                      error={touched.company_id ? errors.company_id : null}
                       disabled={saving}
                       label="Target Company"
-                      placeholder="-- Auto-Assign Active Company --"
-                      helperText="As Administrator, select which company to assign this user to, or leave blank for default tenant."
+                      required={true}
+                      placeholder="-- Select Target Company (Mandatory) --"
+                      helperText="Target company assignment is mandatory for staff login and store access."
                     />
                   ) : (
                     <div className="p-3 rounded-2xl bg-base-200/40 border border-base-200 flex items-center justify-between text-xs">
@@ -431,21 +678,12 @@ export default function UserFormModal({
 
                 {/* Status Selection (only on Add mode, Edit has dedicated action) */}
                 {!isEdit && (
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-base-content/70">
-                      Account Status
-                    </label>
-                    <select
-                      value={form.status}
-                      onChange={(e) => handleChange("status", e.target.value)}
-                      className="w-full px-4 py-2.5 text-sm rounded-xl border border-base-300 bg-base-100 text-base-content focus:outline-none focus:border-primary"
-                      disabled={saving}
-                    >
-                      <option value="active">Active (Full Access)</option>
-                      <option value="inactive">Inactive (Suspended)</option>
-                      <option value="blocked">Blocked</option>
-                    </select>
-                  </div>
+                  <StatusSelect
+                    value={form.status}
+                    onChange={(newStatus) => handleChange("status", newStatus)}
+                    disabled={saving}
+                    helperText="Controls whether this user account can immediately sign in."
+                  />
                 )}
 
                 {/* 2FA Toggle */}
@@ -505,7 +743,13 @@ export default function UserFormModal({
                 variant="clip-six"
                 size="md"
                 loading={saving}
-                disabled={saving}
+                disabled={
+                  saving ||
+                  checkingUsername ||
+                  checkingEmail ||
+                  Boolean(errors.username) ||
+                  Boolean(errors.email)
+                }
               >
                 {isEdit ? "Update User" : "Create User"}
               </Button>

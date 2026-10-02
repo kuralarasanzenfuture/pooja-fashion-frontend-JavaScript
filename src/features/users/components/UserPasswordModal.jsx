@@ -145,7 +145,7 @@ export default function UserPasswordModal({
             <Button variant="outline" size="md" onClick={handleClose} disabled={isChanging}>
               Cancel
             </Button>
-            <Button variant="primary" size="md" type="submit" loading={isChanging} disabled={isChanging}>
+            <Button variant="clip-six" size="md" type="submit" loading={isChanging} disabled={isChanging}>
               Update Password
             </Button>
           </div>

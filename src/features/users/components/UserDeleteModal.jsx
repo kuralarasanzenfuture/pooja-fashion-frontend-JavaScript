@@ -24,9 +24,20 @@ export default function UserDeleteModal({
   if (!isRendered || !user) return null;
 
   const isSelf = loggedInUser && Number(loggedInUser.id) === Number(user.id);
+  const isSystemRole =
+    Boolean(user.isSystemRole) ||
+    Boolean(user.is_system_role) ||
+    Boolean(user.role?.is_system_role) ||
+    Boolean(user.role?.isSystemRole) ||
+    ["SUPERADMIN", "ADMIN"].includes(
+      String(user.roleCode || user.role?.role_code || "").toUpperCase()
+    ) ||
+    Boolean(user.isSuperAdmin);
+
+  const isProtected = isSelf || isSystemRole;
   const username = user.username || "Unnamed User";
   const email = user.email || "No email";
-  const roleName = user.roleName || user.roleCode || "User";
+  const roleName = user.roleName || user.roleCode || user.role?.role_name || "User";
 
   return (
     <div className={backdropClasses} onClick={handleClose} role="dialog" aria-modal="true">
@@ -39,19 +50,23 @@ export default function UserDeleteModal({
           <div className="flex items-center gap-3">
             <div
               className={`w-10 h-10 rounded-2xl flex items-center justify-center shadow-xs ${
-                isSelf
+                isProtected
                   ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
                   : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20"
               }`}
             >
-              {isSelf ? <ShieldAlert className="w-5 h-5" /> : <Trash2 className="w-5 h-5" />}
+              {isProtected ? <ShieldAlert className="w-5 h-5" /> : <Trash2 className="w-5 h-5" />}
             </div>
             <div>
               <h2 className="text-base font-bold text-base-content tracking-tight">
-                {isSelf ? "Action Prohibited" : "Delete User Account"}
+                {isProtected ? "Action Prohibited" : "Delete User Account"}
               </h2>
               <p className="text-xs text-base-content/60">
-                {isSelf ? "Self-account safeguard active" : "Permanent removal action"}
+                {isSelf
+                  ? "Self-account safeguard active"
+                  : isSystemRole
+                  ? "System role safeguard active"
+                  : "Permanent removal action"}
               </p>
             </div>
           </div>
@@ -71,6 +86,18 @@ export default function UserDeleteModal({
               <p className="font-semibold text-sm">Cannot Delete Your Own Account</p>
               <p>
                 You are currently signed in as <strong>{username}</strong>. You cannot delete your own active administrator profile from this console.
+              </p>
+            </div>
+          ) : isSystemRole ? (
+            <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-300 space-y-2 leading-relaxed">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-sm">System Role Account Protected</span>
+                <span className="badge badge-sm badge-primary text-[10px] uppercase font-bold tracking-wider">
+                  System
+                </span>
+              </div>
+              <p>
+                Account <strong>{username}</strong> is assigned to the core system role <strong>{roleName}</strong>. System role accounts cannot be deleted to preserve core platform administration, security roles, and business continuity.
               </p>
             </div>
           ) : (
@@ -105,9 +132,9 @@ export default function UserDeleteModal({
         {/* Actions Footer */}
         <div className="px-6 py-4 border-t border-base-200 flex items-center justify-end gap-2.5 bg-base-100">
           <Button variant="outline" size="md" onClick={handleClose} disabled={isDeleting}>
-            {isSelf ? "Close" : "Cancel"}
+            {isProtected ? "Close" : "Cancel"}
           </Button>
-          {!isSelf && (
+          {!isProtected && (
             <Button
               variant="danger"
               size="md"

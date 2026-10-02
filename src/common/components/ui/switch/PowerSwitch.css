@@ -1,0 +1,215 @@
+/* PowerSwitch.css - Premium Animated Power Switch for Pooja Fashion */
+
+.pf-power-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+  flex-shrink: 0;
+  outline: none;
+}
+
+.pf-power-switch:focus-visible {
+  ring: 2px solid var(--power-color, #10b981);
+  ring-offset: 2px;
+}
+
+/* Hover & Active Interactions */
+.pf-power-switch:hover:not(.is-disabled):not(:disabled) {
+  transform: scale(1.06);
+}
+
+.pf-power-switch:active:not(.is-disabled):not(:disabled) {
+  transform: scale(0.94);
+}
+
+.pf-power-switch.is-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* SVG Container */
+.pf-power-switch .power-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke 0.25s ease, filter 0.25s ease;
+  overflow: visible;
+}
+
+.pf-power-switch .power-line {
+  transition: opacity 0.2s ease, transform 0.35s ease;
+  transform-origin: 75px 45px;
+}
+
+.pf-power-switch .power-circle {
+  transform-origin: 75px 80px;
+  stroke-dasharray: 220;
+  stroke-dashoffset: 44;
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), stroke-dashoffset 0.35s ease, opacity 0.25s ease;
+}
+
+/* --- STATE: INACTIVE (OFF) --- */
+.pf-power-switch:not(.is-active) {
+  background-color: var(--pf-switch-inactive-bg, #f8fafc);
+  border: 1px solid var(--pf-switch-inactive-border, #cbd5e1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+}
+
+:root[data-theme="dark"] .pf-power-switch:not(.is-active),
+.dark .pf-power-switch:not(.is-active) {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.pf-power-switch:not(.is-active) .power-svg {
+  stroke: var(--pf-switch-inactive-stroke, #94a3b8) !important;
+  filter: none;
+}
+
+.pf-power-switch:not(.is-active) .power-line {
+  opacity: 0.6;
+  transform: translateY(0);
+}
+
+.pf-power-switch:not(.is-active) .power-circle {
+  opacity: 0.6;
+  transform: rotate(-58deg);
+  stroke-dashoffset: 44;
+}
+
+.pf-power-switch:not(.is-active):hover .power-svg {
+  stroke: #64748b !important;
+}
+
+.pf-power-switch:not(.is-active):hover .power-line,
+.pf-power-switch:not(.is-active):hover .power-circle {
+  opacity: 0.9;
+}
+
+/* --- STATE: ACTIVE (ON) --- */
+.pf-power-switch.is-active {
+  background-color: var(--pf-switch-active-bg, #ecfdf5);
+  border: 1px solid var(--pf-switch-active-border, rgba(16, 185, 129, 0.4));
+  box-shadow: 0 1px 3px rgba(16, 185, 129, 0.2), 0 0 10px rgba(16, 185, 129, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+:root[data-theme="dark"] .pf-power-switch.is-active,
+.dark .pf-power-switch.is-active {
+  background-color: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.45);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4), 0 0 12px rgba(16, 185, 129, 0.25);
+}
+
+.pf-power-switch.is-active .power-svg {
+  stroke: var(--power-color, #10b981) !important;
+  filter: drop-shadow(0 0 2px var(--power-glow, rgba(16, 185, 129, 0.5)));
+}
+
+.pf-power-switch.is-active .power-line {
+  opacity: 1;
+  animation: pf-line-bounce 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.pf-power-switch.is-active .power-circle {
+  opacity: 1;
+  transform: rotate(302deg);
+  stroke-dashoffset: 44;
+}
+
+/* Keyframes for Line Bounce */
+@keyframes pf-line-bounce {
+  0% {
+    transform: translateY(0);
+  }
+  20% {
+    transform: translateY(6px);
+  }
+  50% {
+    transform: translateY(-16px);
+  }
+  75% {
+    transform: translateY(3px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* --- INTERACTIVE STATUS PILL VARIANT --- */
+.pf-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  border-width: 1px;
+  border-style: solid;
+  cursor: pointer;
+}
+
+.pf-status-pill:hover:not(.is-disabled) {
+  transform: translateY(-0.5px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.pf-status-pill:active:not(.is-disabled) {
+  transform: translateY(0.5px);
+}
+
+.pf-status-pill.is-active {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #059669;
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+.pf-status-pill.is-active:hover:not(.is-disabled) {
+  background-color: rgba(16, 185, 129, 0.16);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+:root[data-theme="dark"] .pf-status-pill.is-active,
+.dark .pf-status-pill.is-active {
+  color: #34d399;
+  background-color: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.pf-status-pill:not(.is-active) {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+  border-color: rgba(245, 158, 11, 0.25);
+}
+
+.pf-status-pill:not(.is-active):hover:not(.is-disabled) {
+  background-color: rgba(245, 158, 11, 0.16);
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+:root[data-theme="dark"] .pf-status-pill:not(.is-active),
+.dark .pf-status-pill:not(.is-active) {
+  color: #fbbf24;
+  background-color: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+.pf-status-pill.is-disabled {
+  opacity: 0.65;
+  cursor: default;
+}

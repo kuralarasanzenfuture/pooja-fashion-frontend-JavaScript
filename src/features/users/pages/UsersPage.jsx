@@ -7,19 +7,13 @@ import {
   Search,
   CheckCircle2,
   AlertCircle,
-  Edit2,
-  Trash2,
-  KeyRound,
-  Eye,
   RotateCcw,
   LayoutGrid,
   Table as TableIcon,
   Shield,
   Building,
-  Mail,
-  Phone,
+  Filter,
   X,
-  Lock,
 } from "lucide-react";
 import PageHeader from "../../../common/components/PageHeader.jsx";
 import { Button } from "../../../common/components/ui/buttons/index.js";
@@ -33,14 +27,20 @@ import {
   useDeleteUser,
 } from "../hooks/useUsers.js";
 import { useRoles } from "../../roles/hooks/useRoles.js";
+import { useCompanies } from "../../company/hooks/useCompanies.js";
 import {
   UserFormModal,
   UserDeleteModal,
   UserDetailsModal,
   UserPasswordModal,
+  UserFilterDropdown,
+  UsersTable,
+  UserCardsView,
 } from "../components/index.js";
+import UserViewPage from "./UserViewPage.jsx";
 import {
   selectIsSuperAdmin,
+  selectIsAdmin,
   selectCurrentUserCompanyId,
   selectCurrentUser,
 } from "../../../redux/selectors/authSelectors.js";
@@ -58,9 +58,10 @@ function UsersSkeleton({ viewMode = "table" }) {
             className="rounded-3xl p-5 bg-base-100 border border-base-300 space-y-4 shadow-xs"
           >
             <div className="flex items-center justify-between">
-              <div className="h-6 w-20 bg-base-300/70 animate-pulse rounded-lg" />
+              <div className="h-6 w-24 bg-base-300/70 animate-pulse rounded-lg" />
               <div className="h-6 w-16 bg-base-300/70 animate-pulse rounded-full" />
             </div>
+            <div className="h-6 w-32 bg-base-300/50 animate-pulse rounded-xl" />
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-2xl bg-base-300/70 animate-pulse shrink-0" />
               <div className="space-y-2 flex-1">
@@ -68,7 +69,6 @@ function UsersSkeleton({ viewMode = "table" }) {
                 <div className="h-3 w-40 bg-base-300/50 animate-pulse rounded" />
               </div>
             </div>
-            <div className="h-8 w-full bg-base-300/40 animate-pulse rounded-xl" />
             <div className="pt-3 border-t border-base-200 flex items-center justify-between">
               <div className="h-4 w-20 bg-base-300/60 animate-pulse rounded" />
               <div className="flex gap-2">
@@ -89,6 +89,7 @@ function UsersSkeleton({ viewMode = "table" }) {
           <thead>
             <tr className="border-b border-base-300 bg-base-200/50 text-[11px] font-semibold uppercase tracking-wider text-base-content/60">
               <th className="py-3 px-5">User Profile</th>
+              <th className="py-3 px-4">Company</th>
               <th className="py-3 px-4">Role</th>
               <th className="py-3 px-4">Status</th>
               <th className="py-3 px-4 hidden md:table-cell">Contact</th>
@@ -107,6 +108,9 @@ function UsersSkeleton({ viewMode = "table" }) {
                       <div className="h-3 w-36 bg-base-300/50 animate-pulse rounded" />
                     </div>
                   </div>
+                </td>
+                <td className="py-3.5 px-4">
+                  <div className="h-6 w-24 bg-base-300/60 animate-pulse rounded-lg" />
                 </td>
                 <td className="py-3.5 px-4">
                   <div className="h-6 w-20 bg-base-300/70 animate-pulse rounded-lg" />
@@ -140,14 +144,17 @@ function UsersSkeleton({ viewMode = "table" }) {
  */
 export default function UsersPage() {
   const isSuperAdmin = useSelector(selectIsSuperAdmin);
+  const isAdmin = useSelector(selectIsAdmin);
   const userCompanyId = useSelector(selectCurrentUserCompanyId);
   const loggedInUser = useSelector(selectCurrentUser);
+  const isPrivilegedAdmin = isSuperAdmin || isAdmin;
 
   // View & Filter states
   const [viewMode, setViewMode] = useState("table"); // "table" | "cards"
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
+  const [companyFilter, setCompanyFilter] = useState("");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
 
@@ -162,9 +169,16 @@ export default function UsersPage() {
   // Notification feedback state
   const [feedback, setFeedback] = useState(null);
 
-  // Roles query for filter dropdown
-  const { data: rolesResponse } = useRoles({ limit: 50, is_active: "true" });
-  const availableRoles = rolesResponse?.data || rolesResponse?.roles || [];
+  // Roles query for filter dropdown (active roles)
+  const { data: rolesResponse } = useRoles({ limit: 100, is_active: "true" });
+  const rawRoles = rolesResponse?.data || rolesResponse?.roles || [];
+  const availableRoles = rawRoles.filter(
+    (r) => r.isActive !== false && r.is_active !== false
+  );
+
+  // Companies query for SuperAdmin / Admin company filter
+  const { data: companiesResponse } = useCompanies({ limit: 100, status: "active" });
+  const companies = companiesResponse?.data || [];
 
   // Query Params
   const queryParams = useMemo(() => {
@@ -177,11 +191,13 @@ export default function UsersPage() {
     if (search.trim()) params.search = search.trim();
     if (statusFilter) params.status = statusFilter;
     if (roleFilter) params.role_id = roleFilter;
-    if (!isSuperAdmin && userCompanyId) {
+    if (companyFilter) {
+      params.company_id = companyFilter;
+    } else if (!isSuperAdmin && userCompanyId) {
       params.company_id = userCompanyId;
     }
     return params;
-  }, [page, limit, search, statusFilter, roleFilter, isSuperAdmin, userCompanyId]);
+  }, [page, limit, search, statusFilter, roleFilter, companyFilter, isSuperAdmin, userCompanyId]);
 
   // Mutations & Query
   const { data: response, isLoading, isFetching, refetch } = useUsers(queryParams);
@@ -284,10 +300,13 @@ export default function UsersPage() {
     setSearch("");
     setStatusFilter("");
     setRoleFilter("");
+    setCompanyFilter("");
     setPage(1);
   };
 
-  const hasActiveFilters = search || statusFilter !== "" || roleFilter !== "";
+  const hasActiveFilters = Boolean(
+    search || statusFilter !== "" || roleFilter !== "" || companyFilter !== ""
+  );
 
   const getStatusBadge = (st) => {
     switch (st) {
@@ -302,6 +321,69 @@ export default function UsersPage() {
         return "bg-base-200 text-base-content/60 border-base-300";
     }
   };
+
+  // Dropdown options
+  const companyOptions = useMemo(
+    () => [
+      { value: "", label: "All Companies" },
+      ...companies.map((c) => ({
+        value: String(c.id),
+        label: c.companyName || c.company_name,
+        badge: c.companyCode || c.company_code || null,
+        icon: Building,
+      })),
+    ],
+    [companies]
+  );
+
+  const roleOptions = useMemo(
+    () => [
+      { value: "", label: "All Roles" },
+      ...availableRoles.map((r) => ({
+        value: String(r.id),
+        label: r.roleName || r.role_name,
+        badge: r.isSystemRole || r.is_system_role ? "System" : null,
+        icon: Shield,
+      })),
+    ],
+    [availableRoles]
+  );
+
+  const statusOptions = useMemo(
+    () => [
+      { value: "", label: "All Statuses" },
+      { value: "active", label: "Active", dotColor: "bg-emerald-500" },
+      { value: "inactive", label: "Inactive", dotColor: "bg-amber-500" },
+      { value: "blocked", label: "Blocked", dotColor: "bg-rose-500" },
+      { value: "locked", label: "Locked", dotColor: "bg-purple-500" },
+    ],
+    []
+  );
+
+  const activeCompanyName = useMemo(() => {
+    if (!companyFilter) return "";
+    const found = companies.find((c) => String(c.id) === String(companyFilter));
+    return found?.companyName || found?.company_name || `Company #${companyFilter}`;
+  }, [companyFilter, companies]);
+
+  const activeRoleName = useMemo(() => {
+    if (!roleFilter) return "";
+    const found = availableRoles.find((r) => String(r.id) === String(roleFilter));
+    return found?.roleName || found?.role_name || `Role #${roleFilter}`;
+  }, [roleFilter, availableRoles]);
+
+  // If user details view is open, render as Full Page View (not modal style!)
+  if (isDetailsModalOpen && selectedUser) {
+    return (
+      <UserViewPage
+        userId={selectedUser.id}
+        initialUser={selectedUser}
+        onBack={() => setIsDetailsModalOpen(false)}
+        onEdit={(user) => handleOpenEdit(user)}
+        onResetPassword={(user) => handleOpenResetPassword(user)}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 pb-12">
@@ -359,9 +441,9 @@ export default function UsersPage() {
 
       {/* Filter and Control Bar */}
       <div className="p-4 bg-base-100 rounded-2xl border border-base-300 shadow-xs space-y-3">
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        <div className="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-3">
           {/* Search Box */}
-          <div className="relative flex-1">
+          <div className="relative flex-1 min-w-[260px]">
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-base-content/40" />
             <input
               type="text"
@@ -371,7 +453,7 @@ export default function UsersPage() {
                 setPage(1);
               }}
               placeholder="Search by username, email, or phone..."
-              className="w-full pl-10 pr-9 py-2 text-sm rounded-xl border border-base-300 bg-base-100 text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+              className="w-full pl-10 pr-9 py-2 text-xs rounded-xl border border-base-300 bg-base-200/40 text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
             />
             {search && (
               <button
@@ -385,45 +467,53 @@ export default function UsersPage() {
           </div>
 
           {/* Quick Filters */}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5">
+            {/* Company Filter (for SuperAdmin and Admin across companies) */}
+            {isPrivilegedAdmin && (isSuperAdmin || !userCompanyId) && companies.length > 0 && (
+              <UserFilterDropdown
+                label="All Companies"
+                value={companyFilter}
+                options={companyOptions}
+                onChange={(val) => {
+                  setCompanyFilter(val);
+                  setPage(1);
+                }}
+                icon={Building}
+                minWidth="min-w-[150px]"
+              />
+            )}
+
             {/* Role Filter */}
-            <select
+            <UserFilterDropdown
+              label="All Roles"
               value={roleFilter}
-              onChange={(e) => {
-                setRoleFilter(e.target.value);
+              options={roleOptions}
+              onChange={(val) => {
+                setRoleFilter(val);
                 setPage(1);
               }}
-              className="px-3 py-2 text-xs font-medium rounded-xl border border-base-300 bg-base-100 text-base-content focus:outline-none focus:border-primary"
-            >
-              <option value="">All Roles</option>
-              {availableRoles.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.roleName}
-                </option>
-              ))}
-            </select>
+              icon={Shield}
+              minWidth="min-w-[130px]"
+            />
 
             {/* Status Filter */}
-            <select
+            <UserFilterDropdown
+              label="All Statuses"
               value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
+              options={statusOptions}
+              onChange={(val) => {
+                setStatusFilter(val);
                 setPage(1);
               }}
-              className="px-3 py-2 text-xs font-medium rounded-xl border border-base-300 bg-base-100 text-base-content focus:outline-none focus:border-primary"
-            >
-              <option value="">All Statuses</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="blocked">Blocked</option>
-              <option value="locked">Locked</option>
-            </select>
+              icon={Filter}
+              minWidth="min-w-[125px]"
+            />
 
             {/* Reset Filters */}
             {hasActiveFilters && (
               <button
                 onClick={handleResetFilters}
-                className="px-2.5 py-2 text-xs font-semibold text-rose-500 hover:bg-rose-500/10 rounded-xl transition-colors flex items-center gap-1"
+                className="px-2.5 py-1.5 text-xs font-semibold text-rose-500 hover:bg-rose-500/10 rounded-xl transition-colors flex items-center gap-1 shrink-0"
                 title="Reset filters"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
@@ -431,8 +521,10 @@ export default function UsersPage() {
               </button>
             )}
 
+            <div className="w-px h-6 bg-base-300 hidden sm:block shrink-0" />
+
             {/* View Mode Toggle */}
-            <div className="flex items-center p-0.5 bg-base-200 rounded-xl border border-base-300">
+            <div className="flex items-center p-0.5 bg-base-200 rounded-xl border border-base-300 shrink-0">
               <button
                 onClick={() => setViewMode("table")}
                 className={`p-1.5 rounded-lg text-xs font-medium transition-all ${
@@ -458,6 +550,77 @@ export default function UsersPage() {
             </div>
           </div>
         </div>
+
+        {/* Active Filter Chips / Badges Row */}
+        {hasActiveFilters && (
+          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-base-200/80 text-xs">
+            <span className="text-[11px] font-semibold text-base-content/50 uppercase tracking-wider flex items-center gap-1">
+              <Filter className="w-3 h-3" /> Active Filters:
+            </span>
+
+            {search && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20 text-[11px] font-medium">
+                Search: "{search}"
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  className="hover:text-primary-focus ml-0.5"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+
+            {companyFilter && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20 text-[11px] font-medium">
+                <Building className="w-3 h-3" />
+                Company: {activeCompanyName}
+                <button
+                  type="button"
+                  onClick={() => setCompanyFilter("")}
+                  className="hover:text-primary-focus ml-0.5"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+
+            {roleFilter && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20 text-[11px] font-medium">
+                <Shield className="w-3 h-3" />
+                Role: {activeRoleName}
+                <button
+                  type="button"
+                  onClick={() => setRoleFilter("")}
+                  className="hover:text-primary-focus ml-0.5"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+
+            {statusFilter && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20 text-[11px] font-medium capitalize">
+                Status: {statusFilter}
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter("")}
+                  className="hover:text-primary-focus ml-0.5"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="text-[11px] font-medium text-rose-500 hover:underline ml-1"
+            >
+              Clear all
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Main Content Area */}
@@ -490,236 +653,27 @@ export default function UsersPage() {
           </div>
         </div>
       ) : viewMode === "table" ? (
-        /* Table View */
-        <div className="bg-base-100 rounded-2xl border border-base-300 overflow-hidden shadow-2xs">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-base-300 bg-base-200/50 text-[11px] font-semibold uppercase tracking-wider text-base-content/60">
-                  <th className="py-3 px-5">User Profile</th>
-                  <th className="py-3 px-4">Role</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 hidden md:table-cell">Contact</th>
-                  <th className="py-3 px-4 hidden lg:table-cell">Joined</th>
-                  <th className="py-3 px-5 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-base-200">
-                {users.map((u) => {
-                  const isSelf = loggedInUser && Number(loggedInUser.id) === Number(u.id);
-
-                  return (
-                    <tr
-                      key={u.id}
-                      onClick={() => handleOpenDetails(u)}
-                      className="hover:bg-base-200/40 transition-colors cursor-pointer group"
-                    >
-                      {/* User Profile */}
-                      <td className="py-3.5 px-5">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-sm shrink-0">
-                            {(u.username || "U").slice(0, 2).toUpperCase()}
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-bold text-sm text-base-content group-hover:text-primary transition-colors">
-                                {u.username}
-                              </span>
-                              {isSelf && (
-                                <span className="px-1.5 py-0.2 rounded-md bg-primary/15 text-primary text-[10px] font-bold">
-                                  You
-                                </span>
-                              )}
-                            </div>
-                            <span className="text-xs text-base-content/60 block truncate max-w-xs">
-                              {u.email || "No email address"}
-                            </span>
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Role Badge */}
-                      <td className="py-3.5 px-4">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20">
-                          <Shield className="w-3 h-3" />
-                          {u.roleName || u.roleCode || "User"}
-                        </span>
-                      </td>
-
-                      {/* Status */}
-                      <td className="py-3.5 px-4">
-                        <span
-                          className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border uppercase tracking-wider ${getStatusBadge(
-                            u.status
-                          )}`}
-                        >
-                          {u.status}
-                        </span>
-                      </td>
-
-                      {/* Phone / Branch */}
-                      <td className="py-3.5 px-4 hidden md:table-cell text-xs text-base-content/70">
-                        {u.phone || "—"}
-                      </td>
-
-                      {/* Created */}
-                      <td className="py-3.5 px-4 hidden lg:table-cell text-xs text-base-content/55">
-                        {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "—"}
-                      </td>
-
-                      {/* Actions */}
-                      <td className="py-3.5 px-5 text-right">
-                        <div
-                          className="flex items-center justify-end gap-1"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <button
-                            type="button"
-                            onClick={(e) => handleOpenDetails(u, e)}
-                            className="p-1.5 rounded-lg text-base-content/50 hover:text-base-content hover:bg-base-200 transition-colors"
-                            title="View details"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(e) => handleOpenResetPassword(u, e)}
-                            className="p-1.5 rounded-lg text-base-content/50 hover:text-amber-500 hover:bg-base-200 transition-colors"
-                            title="Reset password"
-                          >
-                            <KeyRound className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(e) => handleOpenEdit(u, e)}
-                            className="p-1.5 rounded-lg text-base-content/50 hover:text-primary hover:bg-base-200 transition-colors"
-                            title="Edit user"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          {!isSelf && (
-                            <button
-                              type="button"
-                              onClick={(e) => handleOpenDelete(u, e)}
-                              className="p-1.5 rounded-lg text-base-content/50 hover:text-rose-500 hover:bg-base-200 transition-colors"
-                              title="Delete user"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <UsersTable
+          users={users}
+          loggedInUser={loggedInUser}
+          onOpenDetails={handleOpenDetails}
+          onOpenEdit={handleOpenEdit}
+          onOpenResetPassword={handleOpenResetPassword}
+          onOpenDelete={handleOpenDelete}
+          onToggleStatus={handleToggleStatus}
+          getStatusBadge={getStatusBadge}
+        />
       ) : (
-        /* Cards View */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {users.map((u) => {
-            const isSelf = loggedInUser && Number(loggedInUser.id) === Number(u.id);
-
-            return (
-              <div
-                key={u.id}
-                onClick={() => handleOpenDetails(u)}
-                className="group relative bg-base-100 rounded-3xl border border-base-300 p-5 space-y-4 hover:border-primary/40 hover:shadow-lg transition-all cursor-pointer shadow-xs"
-              >
-                {/* Top Row: Role & Status */}
-                <div className="flex items-center justify-between">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20">
-                    <Shield className="w-3 h-3" />
-                    {u.roleName || u.roleCode || "User"}
-                  </span>
-
-                  <span
-                    className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border uppercase tracking-wider ${getStatusBadge(
-                      u.status
-                    )}`}
-                  >
-                    {u.status}
-                  </span>
-                </div>
-
-                {/* User Info */}
-                <div className="flex items-start gap-3.5 pt-1">
-                  <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-base shrink-0">
-                    {(u.username || "U").slice(0, 2).toUpperCase()}
-                  </div>
-                  <div className="space-y-1 flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <h3 className="font-bold text-sm text-base-content group-hover:text-primary transition-colors truncate">
-                        {u.username}
-                      </h3>
-                      {isSelf && (
-                        <span className="px-1.5 py-0.2 rounded-md bg-primary/15 text-primary text-[10px] font-bold">
-                          You
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-base-content/60 truncate flex items-center gap-1">
-                      <Mail className="w-3 h-3 shrink-0" />
-                      {u.email || "No email address"}
-                    </p>
-                    {u.phone && (
-                      <p className="text-xs text-base-content/60 truncate flex items-center gap-1">
-                        <Phone className="w-3 h-3 shrink-0" />
-                        {u.phone}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Bottom Actions Bar */}
-                <div className="pt-3 border-t border-base-200 flex items-center justify-between">
-                  <span className="text-[11px] text-base-content/50">
-                    {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : ""}
-                  </span>
-
-                  <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                    <button
-                      type="button"
-                      onClick={(e) => handleOpenDetails(u, e)}
-                      className="p-1.5 rounded-lg text-base-content/50 hover:text-base-content hover:bg-base-200 transition-colors"
-                      title="View details"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(e) => handleOpenResetPassword(u, e)}
-                      className="p-1.5 rounded-lg text-base-content/50 hover:text-amber-500 hover:bg-base-200 transition-colors"
-                      title="Reset password"
-                    >
-                      <KeyRound className="w-4 h-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(e) => handleOpenEdit(u, e)}
-                      className="p-1.5 rounded-lg text-base-content/50 hover:text-primary hover:bg-base-200 transition-colors"
-                      title="Edit user"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    {!isSelf && (
-                      <button
-                        type="button"
-                        onClick={(e) => handleOpenDelete(u, e)}
-                        className="p-1.5 rounded-lg text-base-content/50 hover:text-rose-500 hover:bg-base-200 transition-colors"
-                        title="Delete user"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <UserCardsView
+          users={users}
+          loggedInUser={loggedInUser}
+          onOpenDetails={handleOpenDetails}
+          onOpenEdit={handleOpenEdit}
+          onOpenResetPassword={handleOpenResetPassword}
+          onOpenDelete={handleOpenDelete}
+          onToggleStatus={handleToggleStatus}
+          getStatusBadge={getStatusBadge}
+        />
       )}
 
       {/* Pagination */}
@@ -742,6 +696,7 @@ export default function UsersPage() {
         isOpen={isFormModalOpen}
         mode={formMode}
         initialData={selectedUser}
+        existingUsers={users}
         saving={createMutation.isPending || updateMutation.isPending}
         onClose={() => setIsFormModalOpen(false)}
         onSubmit={handleFormSubmit}

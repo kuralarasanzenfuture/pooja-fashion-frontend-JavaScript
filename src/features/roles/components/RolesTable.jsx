@@ -60,11 +60,10 @@ export default function RolesTable({
                   <td className="py-3.5 px-5">
                     <div className="flex items-center gap-3">
                       <div
-                        className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${
-                          isSystem
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${isSystem
                             ? "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400"
                             : "bg-primary/10 border-primary/20 text-primary"
-                        }`}
+                          }`}
                       >
                         <Shield className="w-5 h-5" />
                       </div>
@@ -149,9 +148,8 @@ export default function RolesTable({
                             title={isActive ? "Active - click to deactivate" : "Inactive - click to activate"}
                           />
                           <span
-                            className={`text-xs font-semibold hidden sm:inline ${
-                              isActive ? "text-emerald-600 dark:text-emerald-400" : "text-base-content/40"
-                            }`}
+                            className={`text-xs font-semibold hidden sm:inline ${isActive ? "text-emerald-600 dark:text-emerald-400" : "text-base-content/40"
+                              }`}
                           >
                             {isActive ? "Active" : "Inactive"}
                           </span>
