@@ -46,7 +46,8 @@ export default function CategoryDetailsModal({
   const isActive =
     category.isActive !== undefined ? category.isActive : Boolean(category.is_active);
   const desc = category.description;
-  const companyName = category.companyName || "Pooja Fashion";
+  const companyName = category.companyName || category.company_name || "Pooja Fashion";
+  const companyCode = category.companyCode || category.company_code || null;
   const updatedAt = category.updatedAt || category.updated_at;
   const createdAt = category.createdAt || category.created_at;
 
@@ -172,9 +173,16 @@ export default function CategoryDetailsModal({
                   <span className="text-[10px] uppercase font-bold text-base-content/50 tracking-wider block">
                     Company
                   </span>
-                  <span className="font-semibold text-base-content mt-0.5 block truncate">
-                    {companyName}
-                  </span>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="font-semibold text-base-content block truncate">
+                      {companyName}
+                    </span>
+                    {companyCode && (
+                      <span className="badge badge-xs text-[9px] font-mono uppercase font-bold tracking-wider badge-ghost">
+                        {companyCode}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="p-3 rounded-xl bg-base-200/50 border border-base-300/70">

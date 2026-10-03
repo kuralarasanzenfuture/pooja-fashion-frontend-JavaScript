@@ -19,16 +19,22 @@ import {
   Table as TableIcon,
   Layers,
   ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
   Calendar,
   Sparkles,
   Eye,
   Maximize2,
   ExternalLink,
+  Building,
+  Image as ImageIcon,
+  ImageOff,
 } from "lucide-react";
 import PageHeader from "../../../../common/components/PageHeader.jsx";
 import { Button } from "../../../../common/components/ui/buttons/index.js";
 import Pagination from "../../../../common/components/ui/pagination/Pagination.jsx";
 import ImageViewerModal from "../../../../common/components/ui/ImageViewerModal.jsx";
+import { useCompanies } from "../../../company/hooks/useCompanies.js";
 import {
   useCategories,
   useCreateCategory,
@@ -40,6 +46,7 @@ import {
 import CategoryFormModal from "../components/CategoryFormModal.jsx";
 import CategoryDetailsModal from "../components/CategoryDetailsModal.jsx";
 import CategoryDeleteModal from "../components/CategoryDeleteModal.jsx";
+import CategoryFilterDropdown from "../components/CategoryFilterDropdown.jsx";
 
 /**
  * Shimmering Loading Skeleton for Categories
@@ -185,14 +192,26 @@ function CategoryThumb({ url, name, size = "md", onImageClick }) {
 export default function CategoriesPage() {
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
-  const activeCompanyId = user?.companyId || user?.company_id || 1;
+  const roleCode = String(user?.roleCode || user?.role || "").toUpperCase();
+  const userCompanyId = user?.companyId || user?.company_id;
+  const isSuperAdmin = roleCode === "SUPERADMIN";
+  const isAdmin = roleCode === "ADMIN";
+  // "superadmin" and "admin" user only don't have company id; this user only company to select
+  const canSelectCompany = (isSuperAdmin || isAdmin) && !userCompanyId;
+
+  // Active companies directory from API master
+  const { data: companiesResponse } = useCompanies({ limit: 100, status: "active" });
+  const companiesList = companiesResponse?.data || [];
 
   // UI state
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState(""); // "" | "active" | "inactive"
-  const [companyFilter, setCompanyFilter] = useState(""); // "" for all companies
+  const [companyFilter, setCompanyFilter] = useState(""); // "" for all companies (SuperAdmin/Admin)
+  const [mediaFilter, setMediaFilter] = useState(""); // "" | "with_image" | "without_image"
+  const [sortBy, setSortBy] = useState("display_order"); // "display_order" | "category_name" | "category_code" | "created_at" | "updated_at"
+  const [sortOrder, setSortOrder] = useState("asc"); // "asc" | "desc"
   const [viewMode, setViewMode] = useState("table"); // "table" | "cards"
   const [copiedKey, setCopiedKey] = useState(null);
 
@@ -218,11 +237,19 @@ export default function CategoriesPage() {
   };
 
   // Master directory query for persistent, non-collapsing category counts (limit <= 100)
+  const masterParams = useMemo(() => {
+    const p = { limit: 100 };
+    if (!canSelectCompany && userCompanyId) {
+      p.company_id = Number(userCompanyId);
+    }
+    return p;
+  }, [canSelectCompany, userCompanyId]);
+
   const {
     data: allCategoriesResponse,
     refetch: refetchMaster,
   } = useCategories(
-    { limit: 100 },
+    masterParams,
     { staleTime: 30000 }
   );
 
@@ -232,11 +259,15 @@ export default function CategoriesPage() {
     const params = {
       page: isAll ? 1 : page,
       limit: isAll ? 100 : Math.min(Number(limit) || 10, 100),
-      sortBy: "display_order",
-      sortOrder: "asc",
+      sortBy,
+      sortOrder,
     };
-    if (companyFilter) {
-      params.company_id = Number(companyFilter);
+    if (canSelectCompany) {
+      if (companyFilter) {
+        params.company_id = Number(companyFilter);
+      }
+    } else if (userCompanyId) {
+      params.company_id = Number(userCompanyId);
     }
     if (search.trim()) {
       params.search = search.trim();
@@ -246,8 +277,13 @@ export default function CategoriesPage() {
     } else if (statusFilter === "inactive") {
       params.is_active = false;
     }
+    if (mediaFilter === "with_image") {
+      params.has_image = true;
+    } else if (mediaFilter === "without_image") {
+      params.has_image = false;
+    }
     return params;
-  }, [page, limit, companyFilter, search, statusFilter]);
+  }, [page, limit, canSelectCompany, companyFilter, userCompanyId, search, statusFilter, mediaFilter, sortBy, sortOrder]);
 
   const {
     data: categoriesResponse,
@@ -274,35 +310,127 @@ export default function CategoriesPage() {
 
   // Company options for filter
   const companyOptions = useMemo(() => {
+    const baseList =
+      companiesList.length > 0
+        ? companiesList.map((c) => ({
+            value: String(c.id),
+            label: c.companyName || c.displayName || `Company #${c.id}`,
+            badge: c.companyCode || null,
+            icon: Building,
+          }))
+        : [];
+    if (baseList.length > 0) {
+      return [{ value: "", label: "All Companies", icon: Building }, ...baseList];
+    }
     const map = new Map();
     masterCategories.forEach((c) => {
       const cId = c.companyId || c.company_id;
       const cName = c.companyName || (cId ? `Company #${cId}` : null);
       if (cId && cName && !map.has(String(cId))) {
-        map.set(String(cId), cName);
+        map.set(String(cId), {
+          value: String(cId),
+          label: cName,
+          badge: c.companyCode || null,
+          icon: Building,
+        });
       }
     });
-    return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
-  }, [masterCategories]);
+    return [{ value: "", label: "All Companies", icon: Building }, ...Array.from(map.values())];
+  }, [companiesList, masterCategories]);
 
   // Summary counts over the full catalog or active company selection
   const counts = useMemo(() => {
-    const list = companyFilter
-      ? masterCategories.filter(
-          (c) => String(c.companyId || c.company_id) === String(companyFilter)
-        )
-      : masterCategories;
+    const list = canSelectCompany
+      ? (companyFilter
+          ? masterCategories.filter(
+              (c) => String(c.companyId || c.company_id) === String(companyFilter)
+            )
+          : masterCategories)
+      : (userCompanyId
+          ? masterCategories.filter(
+              (c) => String(c.companyId || c.company_id) === String(userCompanyId)
+            )
+          : masterCategories);
 
     const total = list.length;
     let active = 0;
     let inactive = 0;
+    let withImage = 0;
+    let withoutImage = 0;
     list.forEach((cat) => {
       const isAct = cat.isActive !== undefined ? cat.isActive : Boolean(cat.is_active);
       if (isAct) active++;
       else inactive++;
+
+      const img = cat.imageUrl || cat.image_url;
+      if (img && typeof img === "string" && img.trim() !== "") {
+        withImage++;
+      } else {
+        withoutImage++;
+      }
     });
-    return { total, active, inactive };
+    return { total, active, inactive, withImage, withoutImage };
   }, [masterCategories, companyFilter]);
+
+  const statusOptions = useMemo(
+    () => [
+      { value: "", label: "All Statuses", icon: Filter },
+      {
+        value: "active",
+        label: "Active Catalog",
+        dotColor: "bg-emerald-500",
+        badge: `${counts.active}`,
+      },
+      {
+        value: "inactive",
+        label: "Inactive Catalog",
+        dotColor: "bg-rose-500",
+        badge: `${counts.inactive}`,
+      },
+    ],
+    [counts.active, counts.inactive]
+  );
+
+  const mediaOptions = useMemo(
+    () => [
+      { value: "", label: "All Media", icon: ImageIcon },
+      {
+        value: "with_image",
+        label: "With Visual Asset",
+        icon: ImageIcon,
+        badge: `${counts.withImage}`,
+      },
+      {
+        value: "without_image",
+        label: "No Visual Asset",
+        icon: ImageOff,
+        badge: `${counts.withoutImage}`,
+      },
+    ],
+    [counts.withImage, counts.withoutImage]
+  );
+
+  const sortOptions = useMemo(
+    () => [
+      { value: "display_order", label: "Display Order", icon: Layers },
+      { value: "category_name", label: "Category Name", icon: Tags },
+      { value: "category_code", label: "Category Code", icon: Tags },
+      { value: "created_at", label: "Recently Created", icon: Calendar },
+      { value: "updated_at", label: "Recently Updated", icon: Calendar },
+    ],
+    []
+  );
+
+  const activeCompanyName = useMemo(() => {
+    if (!companyFilter) return "";
+    const found = companyOptions.find((c) => String(c.value) === String(companyFilter));
+    return found?.label || `Company #${companyFilter}`;
+  }, [companyFilter, companyOptions]);
+
+  const activeSortLabel = useMemo(() => {
+    const found = sortOptions.find((s) => s.value === sortBy);
+    return found?.label || "Display Order";
+  }, [sortBy, sortOptions]);
 
   // Pagination metadata
   const meta = categoriesResponse?.meta || {};
@@ -319,12 +447,22 @@ export default function CategoriesPage() {
     }
   }, [page, totalPages]);
 
-  const hasActiveFilters = Boolean(search.trim() || statusFilter !== "" || companyFilter !== "");
+  const hasActiveFilters = Boolean(
+    search.trim() ||
+      statusFilter !== "" ||
+      companyFilter !== "" ||
+      mediaFilter !== "" ||
+      sortBy !== "display_order" ||
+      sortOrder !== "asc"
+  );
 
   const handleResetFilters = () => {
     setSearch("");
     setStatusFilter("");
     setCompanyFilter("");
+    setMediaFilter("");
+    setSortBy("display_order");
+    setSortOrder("asc");
     setPage(1);
   };
 
@@ -349,10 +487,18 @@ export default function CategoriesPage() {
       const editing = modal.mode === "edit";
       const id = modal.data?.id;
 
+      const targetCompanyId = canSelectCompany
+        ? Number(
+            values.company_id ||
+            modal.data?.companyId ||
+            modal.data?.company_id ||
+            companyFilter ||
+            1
+          )
+        : Number(userCompanyId);
+
       const payload = {
-        company_id: Number(
-          modal.data?.companyId || modal.data?.company_id || companyFilter || activeCompanyId || 1
-        ),
+        company_id: targetCompanyId,
         category_name: values.category_name,
         category_code: values.category_code || undefined,
         description: values.description || null,
@@ -612,11 +758,11 @@ export default function CategoriesPage() {
             <span className="text-xs font-semibold text-base-content/60 uppercase tracking-wider block">
               Sequencing
             </span>
-            <div className="text-2xl font-extrabold text-indigo-600 mt-1">
-              {counts.total > 0 ? "Ascending" : "—"}
+            <div className="text-2xl font-extrabold text-indigo-600 mt-1 capitalize">
+              {sortOrder === "asc" ? "Ascending" : "Descending"}
             </div>
-            <span className="text-[11px] text-indigo-600/80 font-medium mt-0.5 block">
-              Ordered by display order
+            <span className="text-[11px] text-indigo-600/80 font-medium mt-0.5 block truncate max-w-[140px]" title={activeSortLabel}>
+              By {activeSortLabel}
             </span>
           </div>
           <div className="w-11 h-11 rounded-2xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center shrink-0">
@@ -627,9 +773,9 @@ export default function CategoriesPage() {
 
       {/* Filter and Search Toolbar */}
       <div className="rounded-2xl p-4 sm:p-5 bg-base-100 border border-base-300 shadow-xs space-y-3.5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
           {/* Search box */}
-          <div className="relative flex-1 max-w-md">
+          <div className="relative flex-1 min-w-[240px] max-w-lg">
             <Search className="w-4 h-4 text-base-content/40 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
@@ -656,86 +802,145 @@ export default function CategoriesPage() {
             )}
           </div>
 
-          {/* Company Filter Dropdown */}
-          {companyOptions.length > 1 && (
-            <select
-              value={companyFilter}
-              onChange={(e) => {
-                setCompanyFilter(e.target.value);
-                setPage(1);
-              }}
-              className="select select-bordered select-sm text-xs rounded-xl bg-base-100 font-medium self-start sm:self-auto"
-            >
-              <option value="">All Companies ({masterCategories.length})</option>
-              {companyOptions.map((co) => (
-                <option key={co.id} value={co.id}>
-                  {co.name}
-                </option>
-              ))}
-            </select>
-          )}
-
-          {/* Status Tabs */}
-          <div className="flex items-center gap-1.5 bg-base-200/70 p-1 rounded-xl border border-base-300 self-start sm:self-auto overflow-x-auto">
-            {[
-              { key: "", label: "All", count: counts.total },
-              { key: "active", label: "Active", count: counts.active },
-              { key: "inactive", label: "Inactive", count: counts.inactive },
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => {
-                  setStatusFilter(tab.key);
+          {/* Luxury Dropdowns & Filter Controls Cluster */}
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Company Filter (Only SuperAdmin and Admin without fixed company_id can select) */}
+            {canSelectCompany && companyOptions.length > 1 && (
+              <CategoryFilterDropdown
+                label="All Companies"
+                value={companyFilter}
+                options={companyOptions}
+                onChange={(val) => {
+                  setCompanyFilter(val);
                   setPage(1);
                 }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  statusFilter === tab.key
-                    ? "bg-base-100 text-primary shadow-2xs font-bold"
-                    : "text-base-content/65 hover:text-base-content"
-                }`}
-              >
-                <span>{tab.label}</span>
-                <span
-                  className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                icon={Building}
+                minWidth="min-w-[155px]"
+              />
+            )}
+
+            {/* Status Filter */}
+            <CategoryFilterDropdown
+              label="All Statuses"
+              value={statusFilter}
+              options={statusOptions}
+              onChange={(val) => {
+                setStatusFilter(val);
+                setPage(1);
+              }}
+              icon={Filter}
+              minWidth="min-w-[130px]"
+            />
+
+            {/* Media / Imagery Filter */}
+            <CategoryFilterDropdown
+              label="All Media"
+              value={mediaFilter}
+              options={mediaOptions}
+              onChange={(val) => {
+                setMediaFilter(val);
+                setPage(1);
+              }}
+              icon={ImageIcon}
+              minWidth="min-w-[130px]"
+            />
+
+            {/* Sort Criteria Dropdown */}
+            <CategoryFilterDropdown
+              label="Sort By"
+              value={sortBy}
+              options={sortOptions}
+              onChange={(val) => {
+                setSortBy(val);
+                setPage(1);
+              }}
+              icon={ArrowUpDown}
+              minWidth="min-w-[145px]"
+            />
+
+            {/* Sort Direction Toggle Button */}
+            <button
+              type="button"
+              onClick={() => {
+                setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+                setPage(1);
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all duration-200 cursor-pointer select-none ${
+                sortOrder === "desc"
+                  ? "border-primary bg-primary/10 text-primary shadow-xs ring-1 ring-primary/30"
+                  : "border-base-300 bg-base-100 text-base-content/70 hover:border-primary/40 hover:bg-base-200/50"
+              }`}
+              title={`Switch to ${sortOrder === "asc" ? "Descending (Z-A / High-Low)" : "Ascending (A-Z / Low-High)"}`}
+            >
+              {sortOrder === "asc" ? (
+                <>
+                  <ArrowUp className="w-3.5 h-3.5 text-primary" />
+                  <span className="uppercase text-[11px] font-bold">ASC</span>
+                </>
+              ) : (
+                <>
+                  <ArrowDown className="w-3.5 h-3.5 text-primary" />
+                  <span className="uppercase text-[11px] font-bold">DESC</span>
+                </>
+              )}
+            </button>
+
+            {/* Quick Status Tabs Pills */}
+            <div className="flex items-center gap-1 bg-base-200/70 p-1 rounded-xl border border-base-300 overflow-x-auto">
+              {[
+                { key: "", label: "All", count: counts.total },
+                { key: "active", label: "Active", count: counts.active },
+                { key: "inactive", label: "Inactive", count: counts.inactive },
+              ].map((tab) => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => {
+                    setStatusFilter(tab.key);
+                    setPage(1);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                     statusFilter === tab.key
-                      ? "bg-primary/10 text-primary"
-                      : "bg-base-300/80 text-base-content/60"
+                      ? "bg-base-100 text-primary shadow-2xs font-bold"
+                      : "text-base-content/65 hover:text-base-content"
                   }`}
                 >
-                  {tab.count}
-                </span>
+                  <span>{tab.label}</span>
+                  <span
+                    className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                      statusFilter === tab.key
+                        ? "bg-primary/10 text-primary"
+                        : "bg-base-300/80 text-base-content/60"
+                    }`}
+                  >
+                    {tab.count}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Reset Button */}
+            {hasActiveFilters && (
+              <button
+                type="button"
+                onClick={handleResetFilters}
+                className="px-2.5 py-1.5 text-xs font-semibold text-rose-500 hover:bg-rose-500/10 rounded-xl transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
+                title="Reset all filters"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset</span>
               </button>
-            ))}
+            )}
           </div>
         </div>
 
         {/* Active filter chips */}
         {hasActiveFilters && (
-          <div className="flex items-center justify-between flex-wrap gap-2 pt-2 border-t border-base-200 text-xs">
+          <div className="flex items-center justify-between flex-wrap gap-2 pt-2.5 border-t border-base-200 text-xs">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-base-content/50 font-medium">Active Filters:</span>
-
-              {companyFilter !== "" && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 font-medium">
-                  <span>
-                    Company:{" "}
-                    {companyOptions.find((c) => String(c.id) === String(companyFilter))?.name ||
-                      `Company #${companyFilter}`}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCompanyFilter("");
-                      setPage(1);
-                    }}
-                    className="p-0.5 hover:bg-indigo-500/20 rounded cursor-pointer"
-                    title="Remove Company Filter"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              )}
+              <span className="text-[11px] font-semibold text-base-content/50 uppercase tracking-wider flex items-center gap-1">
+                <Filter className="w-3 h-3" /> Active Filters:
+              </span>
 
               {search.trim() && (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20 font-medium">
@@ -754,9 +959,27 @@ export default function CategoriesPage() {
                 </span>
               )}
 
+              {companyFilter !== "" && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 font-medium">
+                  <Building className="w-3 h-3" />
+                  <span>Company: {activeCompanyName}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCompanyFilter("");
+                      setPage(1);
+                    }}
+                    className="p-0.5 hover:bg-indigo-500/20 rounded cursor-pointer"
+                    title="Remove Company Filter"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+
               {statusFilter !== "" && (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-medium">
-                  <span>Status: {statusFilter === "active" ? "Active Only" : "Inactive Only"}</span>
+                  <span>Status: {statusFilter === "active" ? "Active Catalog" : "Inactive Catalog"}</span>
                   <button
                     type="button"
                     onClick={() => {
@@ -765,6 +988,45 @@ export default function CategoriesPage() {
                     }}
                     className="p-0.5 hover:bg-emerald-500/20 rounded cursor-pointer"
                     title="Remove Status"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+
+              {mediaFilter !== "" && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-medium">
+                  {mediaFilter === "with_image" ? <ImageIcon className="w-3 h-3" /> : <ImageOff className="w-3 h-3" />}
+                  <span>Media: {mediaFilter === "with_image" ? "With Visual Asset" : "No Visual Asset"}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMediaFilter("");
+                      setPage(1);
+                    }}
+                    className="p-0.5 hover:bg-purple-500/20 rounded cursor-pointer"
+                    title="Remove Media Filter"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+
+              {(sortBy !== "display_order" || sortOrder !== "asc") && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 font-medium">
+                  <ArrowUpDown className="w-3 h-3" />
+                  <span>
+                    Sort: {activeSortLabel} ({sortOrder.toUpperCase()})
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSortBy("display_order");
+                      setSortOrder("asc");
+                      setPage(1);
+                    }}
+                    className="p-0.5 hover:bg-blue-500/20 rounded cursor-pointer"
+                    title="Reset Sort"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -831,6 +1093,7 @@ export default function CategoriesPage() {
                 <tr className="border-b border-base-300 bg-base-200/50 text-[11px] font-semibold uppercase tracking-wider text-base-content/60">
                   <th className="py-3 px-5 w-20 text-center">Order</th>
                   <th className="py-3 px-4">Category Details</th>
+                  <th className="py-3 px-4 hidden sm:table-cell">Company</th>
                   <th className="py-3 px-4 hidden lg:table-cell">Description</th>
                   <th className="py-3 px-4">Catalog Status</th>
                   <th className="py-3 px-4 hidden md:table-cell">Last Updated</th>
@@ -847,6 +1110,8 @@ export default function CategoriesPage() {
                     cat.isActive !== undefined ? cat.isActive : Boolean(cat.is_active);
                   const updatedAt = cat.updatedAt || cat.updated_at;
                   const desc = cat.description;
+                  const companyName = cat.companyName || cat.company_name || "Pooja Fashion";
+                  const companyCode = cat.companyCode || cat.company_code || null;
 
                   return (
                     <tr
@@ -898,6 +1163,25 @@ export default function CategoriesPage() {
                                 )}
                               </button>
                             </div>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Company Info */}
+                      <td className="py-3.5 px-4 hidden sm:table-cell">
+                        <div className="flex items-center gap-2">
+                          <span className="w-7 h-7 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0">
+                            <Building className="w-3.5 h-3.5" />
+                          </span>
+                          <div className="min-w-0">
+                            <span className="font-semibold text-xs text-base-content block truncate max-w-[130px]" title={companyName}>
+                              {companyName}
+                            </span>
+                            {companyCode && (
+                              <span className="badge badge-xs text-[9px] font-mono uppercase font-bold tracking-wider badge-ghost">
+                                {companyCode}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </td>
@@ -1001,6 +1285,8 @@ export default function CategoriesPage() {
                 cat.isActive !== undefined ? cat.isActive : Boolean(cat.is_active);
               const updatedAt = cat.updatedAt || cat.updated_at;
               const desc = cat.description;
+              const companyName = cat.companyName || cat.company_name || "Pooja Fashion";
+              const companyCode = cat.companyCode || cat.company_code || null;
 
               return (
                 <div
@@ -1011,12 +1297,16 @@ export default function CategoriesPage() {
                   <div>
                     {/* Top badges */}
                     <div className="flex items-center justify-between gap-2 mb-3">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="px-2 py-0.5 rounded-lg text-xs font-mono font-bold bg-base-200 text-base-content/75 border border-base-300/80">
                           #{displayOrder}
                         </span>
                         <span className="px-2 py-0.5 rounded-lg text-xs font-mono font-semibold bg-primary/10 text-primary border border-primary/20">
                           {code}
+                        </span>
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-base-200/90 text-base-content/70 border border-base-300" title={`Company: ${companyName}`}>
+                          <Building className="w-3 h-3 text-primary shrink-0" />
+                          <span className="truncate max-w-[100px]">{companyName}</span>
                         </span>
                       </div>
 
@@ -1143,6 +1433,7 @@ export default function CategoriesPage() {
         open={modal.open}
         mode={modal.mode}
         initialData={modal.data}
+        initialCompanyId={companyFilter ? Number(companyFilter) : (user?.companyId || user?.company_id || 1)}
         saving={saving}
         onClose={closeModal}
         onSubmit={handleFormSubmit}

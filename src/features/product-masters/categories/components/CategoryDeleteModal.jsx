@@ -32,7 +32,8 @@ export default function CategoryDeleteModal({
   const code = category.categoryCode || category.category_code || "—";
   const imageUrl = category.imageUrl || category.image_url;
   const displayOrder = category.displayOrder ?? category.display_order ?? 0;
-  const companyName = category.companyName || "Pooja Fashion";
+  const companyName = category.companyName || category.company_name || "Pooja Fashion";
+  const companyCode = category.companyCode || category.company_code || null;
 
   return (
     <div
@@ -45,12 +46,6 @@ export default function CategoryDeleteModal({
         className={`relative w-full max-w-lg bg-base-100 rounded-3xl shadow-2xl border border-base-300 overflow-hidden ${cardClasses}`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Top Accent Gradient Bar */}
-        {/* <div className="h-1.5 w-full bg-gradient-to-r from-rose-500 via-red-500 to-amber-500" /> */}
-
-        {/* Ambient background glow */}
-        {/* <div className="absolute top-0 right-0 -mt-10 -mr-10 w-44 h-44 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" /> */}
-
         {/* Header */}
         <div className="flex items-start justify-between px-6 pt-5 pb-4 border-b border-base-200/80 relative">
           <div className="flex items-center gap-3.5">
@@ -119,6 +114,11 @@ export default function CategoryDeleteModal({
               </div>
               <div className="flex items-center gap-2 mt-1.5 text-[11px] text-base-content/60 font-medium">
                 <span className="truncate">{companyName}</span>
+                {companyCode && (
+                  <span className="badge badge-xs text-[9px] font-mono uppercase font-bold tracking-wider badge-ghost">
+                    {companyCode}
+                  </span>
+                )}
                 <span>•</span>
                 <span className="font-mono">ID: #{category.id}</span>
               </div>

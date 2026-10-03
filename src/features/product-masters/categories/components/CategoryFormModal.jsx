@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
-import { X, Tags, Sparkles, Layers, Image as ImageIcon } from "lucide-react";
+import { useSelector } from "react-redux";
+import { X, Tags, Sparkles, Layers, Image as ImageIcon, Building } from "lucide-react";
 import { Button } from "../../../../common/components/ui/buttons/index.js";
 import { useModalAnimation } from "../../../../common/hooks/useModalAnimation.js";
+import { CompanySelect } from "../../../company/components/index.js";
 import ImageUploader from "./ImageUploader.jsx";
 
 const EMPTY = {
+  company_id: "",
   category_code: "",
   category_name: "",
   description: "",
@@ -14,8 +17,11 @@ const EMPTY = {
 
 const DESC_MAX = 2000;
 
-function validate(v) {
+function validate(v, canSelectCompany) {
   const e = {};
+  if (canSelectCompany && !v.company_id) {
+    e.company_id = "Target company is required.";
+  }
   const code = (v.category_code || "").trim();
   const name = (v.category_name || "").trim();
 
@@ -53,12 +59,20 @@ export default function CategoryFormModal({
   isOpen,
   mode = "add", // "add" | "edit"
   initialData = null,
+  initialCompanyId = null,
   saving = false,
   onClose,
   onSubmit,
 }) {
   const isModalOpen = open ?? isOpen ?? false;
   const { isRendered, handleClose, backdropClasses, cardClasses } = useModalAnimation(isModalOpen, onClose);
+  const currentUser = useSelector((state) => state.auth?.user);
+  const roleCode = String(currentUser?.roleCode || currentUser?.role || "").toUpperCase();
+  const userCompanyId = currentUser?.companyId || currentUser?.company_id;
+  // "superadmin" and "admin" without company_id are the only users who select company
+  const isSuperAdminOrAdmin = roleCode === "SUPERADMIN" || roleCode === "ADMIN";
+  const canSelectCompany = isSuperAdminOrAdmin && !userCompanyId;
+
   const [form, setForm] = useState(EMPTY);
   const [errors, setErrors] = useState({});
   const [imageFile, setImageFile] = useState(null);
@@ -68,9 +82,17 @@ export default function CategoryFormModal({
   // Reset whenever modal opens or initialData changes
   useEffect(() => {
     if (!isModalOpen) return;
+    const defaultCompanyId =
+      initialData?.companyId ??
+      initialData?.company_id ??
+      (!canSelectCompany && userCompanyId ? userCompanyId : "") ??
+      initialCompanyId ??
+      "";
+
     setForm(
       initialData
         ? {
+            company_id: String(defaultCompanyId),
             category_code: initialData.categoryCode ?? initialData.category_code ?? "",
             category_name: initialData.categoryName ?? initialData.category_name ?? "",
             description: initialData.description ?? "",
@@ -82,12 +104,15 @@ export default function CategoryFormModal({
                 ? Boolean(initialData.is_active)
                 : true,
           }
-        : EMPTY
+        : {
+            ...EMPTY,
+            company_id: defaultCompanyId ? String(defaultCompanyId) : "",
+          }
     );
     setErrors({});
     setImageFile(null);
     setRemoveImage(false);
-  }, [open, initialData]);
+  }, [open, isOpen, initialData, initialCompanyId, currentUser, canSelectCompany, userCompanyId]);
 
   // Local preview for newly picked file
   useEffect(() => {
@@ -108,7 +133,7 @@ export default function CategoryFormModal({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, saving, onClose]);
 
-  if (!open) return null;
+  if (!open && !isOpen) return null;
 
   const currentImageUrl = initialData?.imageUrl || initialData?.image_url || null;
   const previewUrl = objectUrl || (removeImage ? null : currentImageUrl);
@@ -133,14 +158,19 @@ export default function CategoryFormModal({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const found = validate(form);
+    const found = validate(form, canSelectCompany);
     if (Object.keys(found).length) {
       setErrors(found);
       return;
     }
 
+    const targetCompanyId = canSelectCompany
+      ? Number(form.company_id)
+      : Number(userCompanyId || form.company_id);
+
     const res = await onSubmit?.({
       values: {
+        company_id: targetCompanyId,
         category_code: form.category_code.trim().toUpperCase(),
         category_name: form.category_name.trim(),
         description: form.description.trim(),
@@ -182,7 +212,7 @@ export default function CategoryFormModal({
               </h3>
               <p className="text-xs text-base-content/60 mt-0.5">
                 {mode === "edit"
-                  ? "Update category details, display sequence, and image visual assets."
+                  ? "Update category details, company association, display sequence, and visual assets."
                   : "Register a product classification master for sarees, dress materials, and fabrics."}
               </p>
             </div>
@@ -203,6 +233,42 @@ export default function CategoryFormModal({
           <div className="grid gap-6 px-6 py-5 md:grid-cols-5">
             {/* Form Fields Column */}
             <div className="space-y-4.5 md:col-span-3">
+              {/* Target Company Select (Only SuperAdmin and Admin without company_id can select) */}
+              {canSelectCompany ? (
+                <div>
+                  <CompanySelect
+                    value={form.company_id}
+                    onChange={(val) => {
+                      setForm((f) => ({ ...f, company_id: val }));
+                      if (errors.company_id) setErrors((er) => ({ ...er, company_id: undefined }));
+                    }}
+                    error={errors.company_id}
+                    required={true}
+                    disabled={saving}
+                    helperText="Select the corporate company entity this category belongs to."
+                  />
+                </div>
+              ) : (
+                <div className="p-3.5 rounded-2xl bg-base-200/50 border border-base-300 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <Building className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-semibold text-base-content/50 uppercase tracking-wider block">
+                        Assigned Company
+                      </span>
+                      <span className="text-xs font-bold text-base-content">
+                        {currentUser?.companyName || currentUser?.company_name || `Company #${userCompanyId}`}
+                      </span>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                    Auto Assigned
+                  </span>
+                </div>
+              )}
+
               {/* Category Name */}
               <div>
                 <label className="block text-xs font-semibold text-base-content/80 mb-1.5">

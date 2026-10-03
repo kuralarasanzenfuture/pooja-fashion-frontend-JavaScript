@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useSelector } from "react-redux";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   ChevronLeft,
@@ -34,6 +35,12 @@ import CategoryDeleteModal from "../components/CategoryDeleteModal.jsx";
 export default function CategoryViewPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const currentUser = useSelector((state) => state.auth?.user);
+  const roleCode = String(currentUser?.roleCode || currentUser?.role || "").toUpperCase();
+  const userCompanyId = currentUser?.companyId || currentUser?.company_id;
+  // "superadmin" & "admin" user only don't have company id; this user only company to select
+  const isSuperAdminOrAdmin = roleCode === "SUPERADMIN" || roleCode === "ADMIN";
+  const canSelectCompany = isSuperAdminOrAdmin && !userCompanyId;
 
   const {
     data: categoryResponse,
@@ -462,17 +469,22 @@ export default function CategoryViewPage() {
         open={isEditOpen}
         mode="edit"
         initialData={category}
+        initialCompanyId={category.companyId || category.company_id || 1}
         onClose={() => setIsEditOpen(false)}
         onSubmit={async ({ values, imageFile, removeImage }) => {
           try {
             if (removeImage && !imageFile && imageUrl) {
               await deleteImageMutation.mutateAsync(category.id);
             }
+            const targetCompanyId = canSelectCompany
+              ? Number(values.company_id || category.companyId || category.company_id || 1)
+              : Number(userCompanyId || category.companyId || category.company_id || 1);
+
             await updateMutation.mutateAsync({
               id: category.id,
               data: {
                 ...values,
-                company_id: category.companyId || category.company_id || 1,
+                company_id: targetCompanyId,
               },
               imageFile,
             });
