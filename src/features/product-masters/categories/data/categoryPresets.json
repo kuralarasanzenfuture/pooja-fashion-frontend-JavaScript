@@ -1,0 +1,146 @@
+[
+  {
+    "id": "silk-sarees",
+    "name": "Pure Silk Sarees",
+    "code": "SILK_SAREES",
+    "department": "Sarees & Drapes",
+    "description": "Authentic Kanchipuram, Banarasi, Mysore, and Tussar pure silk sarees crafted for weddings, temple rituals, and grand celebrations.",
+    "display_order": 1,
+    "popular": true
+  },
+  {
+    "id": "cotton-sarees",
+    "name": "Cotton & Handloom Sarees",
+    "code": "COTTON_SAREES",
+    "department": "Sarees & Drapes",
+    "description": "Breathable daily and office wear sarees in pure cotton, Chanderi, Mulmul, Kota Doria, and traditional handloom weaves.",
+    "display_order": 2,
+    "popular": true
+  },
+  {
+    "id": "designer-sarees",
+    "name": "Designer & Party Wear Sarees",
+    "code": "DESIGNER_SAREES",
+    "department": "Sarees & Drapes",
+    "description": "Contemporary partywear sarees in georgette, organza, chiffon, and net featuring cutdana, sequins, and threadwork embroidery.",
+    "display_order": 3,
+    "popular": true
+  },
+  {
+    "id": "art-silk-sarees",
+    "name": "Art Silk & Fancy Sarees",
+    "code": "ART_SILK_SAREES",
+    "department": "Sarees & Drapes",
+    "description": "Affordable silk-blend, jacquard, and poly-silk sarees with rich woven pallus and zari borders for festive functions.",
+    "display_order": 4,
+    "popular": false
+  },
+  {
+    "id": "cotton-dress-materials",
+    "name": "Cotton Dress Materials",
+    "code": "DRESS_MATERIALS",
+    "department": "Salwar & Dress Materials",
+    "description": "Unstitched 3-piece salwar suit sets with printed/embroidered cotton top, matching bottom fabric, and coordinated dupatta.",
+    "display_order": 5,
+    "popular": true
+  },
+  {
+    "id": "silk-dress-materials",
+    "name": "Silk & Festive Dress Materials",
+    "code": "SILK_DRESS_MATS",
+    "department": "Salwar & Dress Materials",
+    "description": "Premium unstitched dress materials in Chanderi silk, Banarasi brocade, and Tussar silk embellished with zari and thread work.",
+    "display_order": 6,
+    "popular": false
+  },
+  {
+    "id": "kurtis-tunics",
+    "name": "Kurtis & Tunics",
+    "code": "KURTIS_TUNICS",
+    "department": "Women's Ethnic Wear",
+    "description": "Ready-to-wear daily and office wear kurtis, A-line tunics, Anarkalis, short kurtis, and designer ethnic tops.",
+    "display_order": 7,
+    "popular": true
+  },
+  {
+    "id": "salwar-suits-sets",
+    "name": "Salwar Suits & Kurta Sets",
+    "code": "SALWAR_SUITS",
+    "department": "Women's Ethnic Wear",
+    "description": "Ready-made kurta with pant, palazzo, or sharara sets paired with designer dupattas for parties and casual gatherings.",
+    "display_order": 8,
+    "popular": true
+  },
+  {
+    "id": "bridal-lehengas",
+    "name": "Bridal & Festive Lehengas",
+    "code": "BRIDAL_LEHENGAS",
+    "department": "Bridal & Haute Couture",
+    "description": "Heavy embroidered bridal lehengas, reception ghagra cholis, and bridesmaid crop top skirts with matching net dupattas.",
+    "display_order": 9,
+    "popular": true
+  },
+  {
+    "id": "dupattas-shawls",
+    "name": "Dupattas, Shawls & Stoles",
+    "code": "DUPATTAS_SHAWLS",
+    "department": "Drapes & Accessories",
+    "description": "Banarasi silk dupattas, Phulkari, Bandhani, Kalamkari printed stoles, and woolen winter shawls for mix-and-match styling.",
+    "display_order": 10,
+    "popular": false
+  },
+  {
+    "id": "fabrics-running",
+    "name": "Fabrics & Running Material",
+    "code": "RUNNING_FABRICS",
+    "department": "Fabrics & Textiles",
+    "description": "Cut-length fabrics sold per meter including raw silk, brocade, velvet, rayon, satin, and pure crepe for custom tailoring.",
+    "display_order": 11,
+    "popular": true
+  },
+  {
+    "id": "readymade-blouses",
+    "name": "Ready-Made Designer Blouses",
+    "code": "READY_BLOUSES",
+    "department": "Women's Ethnic Wear",
+    "description": "Padded and non-padded stitched saree blouses in velvet, brocade, and stretchable cotton lycra with maggam/aari embroidery.",
+    "display_order": 12,
+    "popular": false
+  },
+  {
+    "id": "indo-western-gowns",
+    "name": "Indo-Western & Fusion Gowns",
+    "code": "INDO_WESTERN",
+    "department": "Western & Fusion",
+    "description": "Floor-length evening gowns, cape sets, dhoti-kurti sets, and draped fusion ensembles for cocktail and sangeet nights.",
+    "display_order": 13,
+    "popular": false
+  },
+  {
+    "id": "mens-ethnic",
+    "name": "Men's Ethnic Wear",
+    "code": "MENS_ETHNIC",
+    "department": "Men's Apparel",
+    "description": "Traditional kurta pyjama sets, silk dhotis, Nehru jackets, Modi waistcoats, and wedding sherwanis.",
+    "display_order": 14,
+    "popular": false
+  },
+  {
+    "id": "kids-ethnic",
+    "name": "Kids Traditional & Ethnic Wear",
+    "code": "KIDS_ETHNIC",
+    "department": "Kids Apparel",
+    "description": "Pattu Pavadai lehenga sets for girls, dhoti-kurta sets for boys, and festive party wear collections for children.",
+    "display_order": 15,
+    "popular": false
+  },
+  {
+    "id": "loungewear-nighties",
+    "name": "Daily Loungewear & Nighties",
+    "code": "DAILY_LOUNGEWEAR",
+    "department": "Comfort & Loungewear",
+    "description": "Pure cotton nightgowns, kaftans, feeding nighties, thermal leggings, and daily home comfort wear.",
+    "display_order": 16,
+    "popular": false
+  }
+]

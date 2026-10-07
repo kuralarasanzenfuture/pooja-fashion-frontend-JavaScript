@@ -374,3 +374,122 @@ textarea:focus-visible {
   border-color: var(--color-primary, #2a0081) !important;
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary, #2a0081) 18%, transparent) !important;
 }
+
+/* =========================================================
+   Sleek Agency Tooltip System (Clean, Minimal, Non-Obtrusive)
+   ========================================================= */
+.tooltip {
+  --tooltip-tail: 4px;
+}
+
+.tooltip:before {
+  font-family: inherit;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  line-height: 1.3 !important;
+  letter-spacing: 0.015em;
+  padding: 4px 8px !important;
+  border-radius: 6px !important;
+  background-color: #0f172a !important; /* Premium dark slate */
+  color: #f8fafc !important;
+  box-shadow: 0 4px 14px -2px rgba(15, 23, 42, 0.28), 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  white-space: nowrap !important;
+  pointer-events: none !important;
+  z-index: 100 !important;
+  backdrop-filter: blur(8px) !important;
+  opacity: 0;
+  transform: translateY(2px) scale(0.96);
+  transition: opacity 150ms cubic-bezier(0.4, 0, 0.2, 1), transform 150ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.tooltip:hover:before,
+.tooltip:focus:before {
+  opacity: 1 !important;
+  transform: translateY(0) scale(1) !important;
+}
+
+.tooltip:after {
+  border-color: #0f172a transparent transparent transparent !important;
+  z-index: 100 !important;
+  opacity: 0;
+  transition: opacity 150ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.tooltip:hover:after,
+.tooltip:focus:after {
+  opacity: 1 !important;
+}
+
+.tooltip.tooltip-bottom:after {
+  border-color: transparent transparent #0f172a transparent !important;
+}
+
+.tooltip.tooltip-left:after {
+  border-color: transparent transparent transparent #0f172a !important;
+}
+
+.tooltip.tooltip-right:after {
+  border-color: transparent #0f172a transparent transparent !important;
+}
+
+/* Primary and error tooltip overrides - subtle, never blinding neon */
+.tooltip-primary:before {
+  background-color: #1e1b4b !important;
+  border-color: rgba(99, 102, 241, 0.35) !important;
+  color: #e0e7ff !important;
+}
+.tooltip-primary:after {
+  border-color: #1e1b4b transparent transparent transparent !important;
+}
+
+.tooltip-error:before {
+  background-color: #3b0712 !important;
+  border-color: rgba(244, 63, 94, 0.35) !important;
+  color: #ffe4e6 !important;
+}
+.tooltip-error:after {
+  border-color: #3b0712 transparent transparent transparent !important;
+}
+.tooltip-error.tooltip-left:after {
+  border-color: transparent transparent transparent #3b0712 !important;
+}
+.tooltip-primary.tooltip-left:after {
+  border-color: transparent transparent transparent #1e1b4b !important;
+}
+
+/* Ensure table rows stay in top stacking context on hover for perfect tooltips */
+tbody tr:hover {
+  position: relative;
+  z-index: 25;
+}
+tbody tr:hover td:last-child {
+  z-index: 30;
+}
+
+/* =========================================================
+   Smooth Accordion Animation Utility (CSS Grid 0fr <-> 1fr)
+   ========================================================= */
+.accordion-grid {
+  display: grid;
+  transition: grid-template-rows 320ms cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 260ms cubic-bezier(0.4, 0, 0.2, 1),
+              margin 320ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.accordion-grid.open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.accordion-grid.closed {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.accordion-grid > .accordion-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+

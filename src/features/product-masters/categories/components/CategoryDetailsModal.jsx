@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   X,
   Tags,
@@ -14,12 +15,16 @@ import {
   ExternalLink,
   Maximize2,
   ArrowRight,
+  Plus,
+  FolderTree,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "../../../../common/components/ui/buttons/index.js";
 import { useModalAnimation } from "../../../../common/hooks/useModalAnimation.js";
+import { useSubcategories } from "../../sub-categories/hooks/useSubCategories.js";
 
 /**
- * Category Details Quick View Modal
+ * Category Details Quick View Modal with Subcategory Management
  */
 export default function CategoryDetailsModal({
   isOpen = false,
@@ -30,12 +35,25 @@ export default function CategoryDetailsModal({
   onToggleStatus,
   onImageClick,
   onNavigateFullPage,
+  onAddSubcategory,
 }) {
+  const navigate = useNavigate();
   const { isRendered, handleClose, backdropClasses, cardClasses } = useModalAnimation(
     isOpen && !!category,
     onClose
   );
   const [copied, setCopied] = React.useState(false);
+
+  // Fetch subcategories belonging to this category
+  const { data: subcategoriesResponse, isLoading: isLoadingSubcategories } = useSubcategories(
+    { category_id: category?.id, limit: 50 },
+    { enabled: Boolean(isOpen && category?.id) }
+  );
+
+  const subcategoriesList = useMemo(() => {
+    const raw = subcategoriesResponse?.data || subcategoriesResponse?.subcategories || [];
+    return Array.isArray(raw) ? raw : [];
+  }, [subcategoriesResponse]);
 
   if (!isRendered || !category) return null;
 
@@ -76,7 +94,7 @@ export default function CategoryDetailsModal({
   return (
     <div className={backdropClasses} onClick={handleClose} role="dialog" aria-modal="true" aria-labelledby="view-cat-title">
       <div
-        className={`relative w-full max-w-2xl p-0 rounded-3xl bg-base-100 border border-base-300 shadow-2xl overflow-hidden ${cardClasses}`}
+        className={`relative w-full max-w-2xl sm:max-w-3xl p-0 rounded-3xl bg-base-100 border border-base-300 shadow-2xl overflow-hidden ${cardClasses}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -121,9 +139,8 @@ export default function CategoryDetailsModal({
                     type="button"
                     onClick={() => onImageClick?.(imageUrl, name)}
                     className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white gap-1.5 cursor-pointer backdrop-blur-xs"
-                    title="Click to view full image in high quality"
                   >
-                    <Maximize2 className="size-6" />
+                    <Maximize2 className="size-6 text-amber-300" />
                     <span className="text-[11px] font-semibold">View High-Res</span>
                   </button>
                 </>
@@ -146,22 +163,22 @@ export default function CategoryDetailsModal({
 
                 <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20 text-xs font-mono font-bold">
                   <span>{code}</span>
-                  <button
-                    type="button"
-                    onClick={handleCopyCode}
-                    className="hover:text-primary transition-colors cursor-pointer"
-                    title="Copy Code"
-                  >
-                    {copied ? <Check className="size-3 text-emerald-500" /> : <Copy className="size-3" />}
-                  </button>
+                  <div className="tooltip tooltip-top" data-tip={copied ? "Copied code!" : "Copy code"}>
+                    <button
+                      type="button"
+                      onClick={handleCopyCode}
+                      className="hover:text-primary transition-colors cursor-pointer"
+                    >
+                      {copied ? <Check className="size-3 text-emerald-500" /> : <Copy className="size-3" />}
+                    </button>
+                  </div>
                 </div>
 
                 <span
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold inline-flex items-center gap-1 ${
-                    isActive
-                      ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
-                      : "bg-rose-500/10 text-rose-600 border border-rose-500/20"
-                  }`}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold inline-flex items-center gap-1 ${isActive
+                    ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
+                    : "bg-rose-500/10 text-rose-600 border border-rose-500/20"
+                    }`}
                 >
                   {isActive ? <CheckCircle2 className="size-3.5" /> : <AlertCircle className="size-3.5" />}
                   {isActive ? "Active on POS" : "Inactive"}
@@ -212,6 +229,136 @@ export default function CategoryDetailsModal({
             <p className="text-xs sm:text-sm text-base-content/75 leading-relaxed">
               {desc || <span className="italic text-base-content/40">No description provided for this category.</span>}
             </p>
+          </div>
+
+          {/* Linked Subcategories Section */}
+          <div className="p-4.5 rounded-2xl bg-base-200/40 border border-base-300/80 space-y-3.5">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <span className="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <FolderTree className="size-4" />
+                </span>
+                <div>
+                  <h4 className="text-xs font-bold text-base-content uppercase tracking-wider flex items-center gap-1.5">
+                    <span>Linked Subcategories</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary border border-primary/20">
+                      {subcategoriesList.length}
+                    </span>
+                  </h4>
+                </div>
+              </div>
+
+              <Button
+                variant="clip-six"
+                size="xs"
+                icon={Plus}
+                onClick={() => onAddSubcategory?.(category)}
+              >
+                Add Subcategory
+              </Button>
+            </div>
+
+            {/* Subcategories list / skeleton / empty */}
+            {isLoadingSubcategories ? (
+              <div className="space-y-2">
+                {[1, 2].map((i) => (
+                  <div key={i} className="h-12 rounded-xl bg-base-300/60 animate-pulse" />
+                ))}
+              </div>
+            ) : subcategoriesList.length === 0 ? (
+              <div className="py-6 px-4 rounded-xl border border-dashed border-base-300 bg-base-100/50 text-center space-y-2">
+                <FolderTree className="size-7 mx-auto text-base-content/30" />
+                <div className="text-xs text-base-content/70">
+                  No subcategories created under <span className="font-semibold text-base-content">{name}</span> yet.
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onAddSubcategory?.(category)}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-primary/10 text-primary hover:bg-primary/20 transition-colors cursor-pointer"
+                >
+                  <Plus className="size-3.5" />
+                  <span>Add First Subcategory</span>
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+                  {subcategoriesList.map((subcat) => {
+                    const subName = subcat.subcategoryName || subcat.subcategory_name;
+                    const subCode = subcat.subcategoryCode || subcat.subcategory_code;
+                    const subOrder = subcat.displayOrder ?? subcat.display_order ?? 0;
+                    const subActive = subcat.isActive !== undefined ? subcat.isActive : Boolean(subcat.is_active);
+                    const subImg = subcat.imageUrl || subcat.image_url;
+
+                    return (
+                      <div
+                        key={subcat.id}
+                        onClick={() => {
+                          onClose();
+                          navigate(`/products/subcategories/${subcat.id}`);
+                        }}
+                        className="p-2.5 rounded-xl bg-base-100 border border-base-300 hover:border-primary/50 transition-all cursor-pointer flex items-center justify-between gap-2.5 group"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          {subImg ? (
+                            <img
+                              src={subImg}
+                              alt={subName}
+                              className="size-8 rounded-lg object-cover shrink-0 border border-base-300"
+                            />
+                          ) : (
+                            <div className="size-8 rounded-lg bg-base-200 border border-base-300 flex items-center justify-center shrink-0 text-base-content/50 group-hover:text-primary transition-colors">
+                              <Layers className="size-4" />
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <span className="font-bold text-xs text-base-content group-hover:text-primary transition-colors block truncate">
+                              {subName}
+                            </span>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              {subCode && (
+                                <span className="px-1 py-0.2 rounded text-[9px] font-mono font-semibold bg-base-200 text-base-content/70">
+                                  {subCode}
+                                </span>
+                              )}
+                              <span className="text-[10px] text-base-content/40">
+                                #{subOrder}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span
+                            className={`size-2 rounded-full ${subActive ? "bg-emerald-500" : "bg-rose-500"
+                              }`}
+                            title={subActive ? "Active" : "Inactive"}
+                          />
+                          <ChevronRight className="size-3.5 text-base-content/30 group-hover:text-primary transition-colors" />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="pt-1 flex items-center justify-between text-xs text-base-content/60">
+                  <span className="text-[11px]">
+                    Showing {subcategoriesList.length} subcategories
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      navigate(`/products/subcategories?category_id=${category.id}`);
+                    }}
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline cursor-pointer"
+                  >
+                    <span>View all in directory</span>
+                    <ArrowRight className="size-3" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

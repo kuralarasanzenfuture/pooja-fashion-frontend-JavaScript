@@ -55,32 +55,61 @@ export default function ImageUploader({
       />
 
       {previewUrl ? (
-        <div className="group relative aspect-square w-full overflow-hidden rounded-2xl border border-base-300 bg-base-200">
+        <div
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragging(true);
+          }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={onDrop}
+          className="group relative aspect-square w-full overflow-hidden rounded-2xl border border-base-300 bg-base-200 shadow-xs"
+        >
           <img
             src={previewUrl}
             alt="Category preview"
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
-          <div className="absolute inset-x-0 bottom-0 flex items-center justify-end gap-2 bg-gradient-to-t from-black/70 via-black/30 to-transparent p-3">
-            <button
-              type="button"
-              onClick={openPicker}
-              disabled={disabled}
-              className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white/95 text-neutral-800 hover:bg-white transition-all cursor-pointer shadow-sm flex items-center gap-1.5"
-            >
-              <RefreshCw className="size-3.5" />
-              <span>Replace</span>
-            </button>
-            <button
-              type="button"
-              onClick={onRemove}
-              disabled={disabled}
-              className="p-1.5 rounded-lg text-xs font-semibold bg-rose-600 text-white hover:bg-rose-700 transition-all cursor-pointer shadow-sm flex items-center justify-center"
-              aria-label="Remove image"
-              title="Remove image"
-            >
-              <Trash2 className="size-3.5" />
-            </button>
+
+          {/* Top Tag */}
+          <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-md border border-white/15 text-[11px] font-medium text-white/90 shadow-md">
+            <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Visual Asset</span>
+          </div>
+
+          {/* Drag over replace overlay */}
+          {dragging && (
+            <div className="absolute inset-0 bg-primary/20 backdrop-blur-xs flex items-center justify-center border-2 border-dashed border-primary z-10 transition-all">
+              <span className="px-3 py-1.5 rounded-xl bg-base-100 text-primary font-bold text-xs shadow-lg">
+                Drop to Replace
+              </span>
+            </div>
+          )}
+
+          {/* Bottom Luxury Action Dock */}
+          <div className="absolute inset-x-0 bottom-0 flex items-center justify-end gap-2 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3 pt-8">
+            <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-black/50 backdrop-blur-md border border-white/15 shadow-xl">
+              <button
+                type="button"
+                onClick={openPicker}
+                disabled={disabled}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-white bg-white/15 hover:bg-white/25 active:scale-95 transition-all cursor-pointer border border-white/10 shadow-xs group/btn"
+                title="Choose another image"
+              >
+                <RefreshCw className="size-3.5 transition-transform duration-500 group-hover/btn:rotate-180" />
+                <span>Replace</span>
+              </button>
+              <button
+                type="button"
+                onClick={onRemove}
+                disabled={disabled}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-rose-300 hover:text-white bg-rose-500/20 hover:bg-rose-600 active:scale-95 transition-all cursor-pointer border border-rose-500/30 shadow-xs hover:shadow-rose-500/25 group/del"
+                aria-label="Remove image"
+                title="Remove current image"
+              >
+                <Trash2 className="size-3.5 transition-transform duration-200 group-hover/del:scale-110" />
+                <span>Remove</span>
+              </button>
+            </div>
           </div>
         </div>
       ) : (

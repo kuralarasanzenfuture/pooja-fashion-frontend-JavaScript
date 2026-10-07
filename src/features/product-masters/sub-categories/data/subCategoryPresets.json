@@ -1,0 +1,137 @@
+[
+  {
+    "id": "kanchipuram-pure-silk",
+    "name": "Kanchipuram Pure Silk",
+    "code": "KANCHI_SILK",
+    "category": "Pure Silk Sarees",
+    "description": "Traditional South Indian handwoven pure mulberry silk sarees with heavy gold zari borders and temple designs.",
+    "display_order": 1,
+    "popular": true
+  },
+  {
+    "id": "banarasi-katan-silk",
+    "name": "Banarasi Katan Silk",
+    "code": "BANARASI_KATAN",
+    "category": "Pure Silk Sarees",
+    "description": "Lustrous Varanasi pure katan silk sarees woven with intricate floral jaal, kadwa motifs, and rich brocade pallus.",
+    "display_order": 2,
+    "popular": true
+  },
+  {
+    "id": "mysore-crepe-silk",
+    "name": "Mysore Crepe Silk",
+    "code": "MYSORE_SILK",
+    "category": "Pure Silk Sarees",
+    "description": "Feather-light authentic Karnataka Mysore crepe silk sarees with 100% pure gold zari borders.",
+    "display_order": 3,
+    "popular": true
+  },
+  {
+    "id": "chanderi-cotton-silk",
+    "name": "Chanderi Cotton Silk",
+    "code": "CHANDERI_COTTON",
+    "category": "Cotton & Handloom Sarees",
+    "description": "Sheer and glossy Madhya Pradesh Chanderi sarees with peacock, floral, and coin buttis.",
+    "display_order": 4,
+    "popular": true
+  },
+  {
+    "id": "mulmul-hand-block",
+    "name": "Mulmul Hand Block Printed",
+    "code": "MULMUL_BLOCK",
+    "category": "Cotton & Handloom Sarees",
+    "description": "Ultra-soft Jaipur sanganeri and bagru hand-block printed pure cotton mulmul sarees for summer comfort.",
+    "display_order": 5,
+    "popular": true
+  },
+  {
+    "id": "sequins-cutdana-designer",
+    "name": "Sequins & Cutdana Partywear",
+    "code": "SEQUIN_DESIGNER",
+    "category": "Designer & Party Wear Sarees",
+    "description": "Glamorous evening cocktail sarees crafted in organza and georgette with hand-embroidered sequin borders.",
+    "display_order": 6,
+    "popular": true
+  },
+  {
+    "id": "unstitched-cotton-suits",
+    "name": "Embroidered Cotton Suit Sets",
+    "code": "COTTON_SUIT_SET",
+    "category": "Cotton Dress Materials",
+    "description": "Premium 3-piece unstitched cotton salwar kameez sets with Lucknowi chikankari work and chiffon dupatta.",
+    "display_order": 7,
+    "popular": true
+  },
+  {
+    "id": "banarasi-festive-suits",
+    "name": "Banarasi Brocade Unstitched Suits",
+    "code": "BANARASI_SUITS",
+    "category": "Silk & Festive Dress Materials",
+    "description": "Heavily woven festive semi-stitched suit materials featuring brocade kurtas and woven meenakari dupattas.",
+    "display_order": 8,
+    "popular": false
+  },
+  {
+    "id": "flared-anarkali-kurtis",
+    "name": "Flared Anarkali Kurtis",
+    "code": "ANARKALI_KURTI",
+    "category": "Kurtis & Tunics",
+    "description": "Stitched floor-length and calf-length flared anarkali tunics in rayon, cotton, and georgette.",
+    "display_order": 9,
+    "popular": true
+  },
+  {
+    "id": "straight-office-kurtis",
+    "name": "Straight Cut Office Kurtis",
+    "code": "STRAIGHT_KURTI",
+    "category": "Kurtis & Tunics",
+    "description": "Minimalist collared and Mandarin neckline straight silhouette kurtas for professional and daily routine wear.",
+    "display_order": 10,
+    "popular": true
+  },
+  {
+    "id": "kurta-palazzo-sets",
+    "name": "Kurta with Palazzo Sets",
+    "code": "KURTA_PALAZZO",
+    "category": "Salwar Suits & Kurta Sets",
+    "description": "Coordinated 2-piece and 3-piece printed rayon kurta paired with wide-leg breezy palazzos.",
+    "display_order": 11,
+    "popular": true
+  },
+  {
+    "id": "heavy-bridal-velvet-lehenga",
+    "name": "Heavy Bridal Velvet Lehenga",
+    "code": "BRIDAL_VELVET",
+    "category": "Bridal & Festive Lehengas",
+    "description": "Opulent bridal wedding ghagra choli in micro velvet with zardozi, dori, and pearl work.",
+    "display_order": 12,
+    "popular": true
+  },
+  {
+    "id": "banarasi-zari-dupatta",
+    "name": "Banarasi Woven Zari Dupatta",
+    "code": "BANARASI_DUPATTA",
+    "category": "Dupattas, Shawls & Stoles",
+    "description": "Heavy traditional Banarasi art silk dupattas designed to elevate any plain kurti or lehenga.",
+    "display_order": 13,
+    "popular": false
+  },
+  {
+    "id": "raw-silk-fabric",
+    "name": "Pure Raw Silk Running Fabric",
+    "code": "RAW_SILK_FABRIC",
+    "category": "Fabrics & Running Material",
+    "description": "Textured raw silk fabric sold per meter for tailored blouses, waistcoats, and sherwanis.",
+    "display_order": 14,
+    "popular": false
+  },
+  {
+    "id": "maggam-aari-blouses",
+    "name": "Maggam & Aari Work Blouses",
+    "code": "MAGGAM_BLOUSE",
+    "category": "Ready-Made Designer Blouses",
+    "description": "Pre-stitched silk and brocade blouses with handcrafted bridal maggam hand embroidery.",
+    "display_order": 15,
+    "popular": true
+  }
+]

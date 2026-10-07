@@ -101,6 +101,15 @@ export const queryKeys = {
     detail: (id) => ["categories", "detail", id],
   },
 
+  subcategories: {
+    all: ["subcategories"],
+    list: (params) => ["subcategories", "list", params],
+    byCategory: (categoryId, params) => ["subcategories", "byCategory", categoryId, params],
+    byCompany: (companyId, params) => ["subcategories", "byCompany", companyId, params],
+    byCode: (companyId, code) => ["subcategories", "byCode", companyId, code],
+    detail: (id) => ["subcategories", "detail", id],
+  },
+
   roles: {
     all: ["roles"],
     list: (params) => ["roles", "list", params],

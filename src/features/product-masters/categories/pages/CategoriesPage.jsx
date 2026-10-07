@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
@@ -29,6 +29,8 @@ import {
   Building,
   Image as ImageIcon,
   ImageOff,
+  FolderTree,
+  Clock,
 } from "lucide-react";
 import PageHeader from "../../../../common/components/PageHeader.jsx";
 import { Button } from "../../../../common/components/ui/buttons/index.js";
@@ -43,151 +45,23 @@ import {
   useDeleteCategory,
   useDeleteCategoryImage,
 } from "../hooks/useCategories.js";
-import CategoryFormModal from "../components/CategoryFormModal.jsx";
-import CategoryDetailsModal from "../components/CategoryDetailsModal.jsx";
-import CategoryDeleteModal from "../components/CategoryDeleteModal.jsx";
-import CategoryFilterDropdown from "../components/CategoryFilterDropdown.jsx";
+import {
+  SubCategoryFormModal,
+  useCreateSubcategory,
+} from "../../sub-categories/index.js";
+import {
+  CategoryFormModal,
+  CategoryDetailsModal,
+  CategoryDeleteModal,
+  CategoryFilterDropdown,
+  CategoryRecentSearches,
+  CategoryThumb,
+  CategoriesSkeleton,
+  CategoryTableView,
+  CategoryCardsView,
+  CategoryAddSubcategoryModal,
+} from "../components/index.js";
 
-/**
- * Shimmering Loading Skeleton for Categories
- * Matches both Table and Card layouts with smooth pulsating placeholder elements.
- */
-function CategoriesSkeleton({ viewMode = "table" }) {
-  if (viewMode === "cards") {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {[...Array(6)].map((_, idx) => (
-          <div
-            key={idx}
-            className="rounded-2xl p-5 bg-base-100 border border-base-300 space-y-4 shadow-xs"
-          >
-            <div className="flex items-center justify-between">
-              <div className="h-6 w-20 bg-base-300/70 animate-pulse rounded-lg" />
-              <div className="h-6 w-16 bg-base-300/70 animate-pulse rounded-lg" />
-            </div>
-            <div className="h-36 w-full bg-base-300/60 animate-pulse rounded-xl" />
-            <div className="space-y-2">
-              <div className="h-5 w-3/4 bg-base-300/80 animate-pulse rounded" />
-              <div className="h-3.5 w-full bg-base-300/50 animate-pulse rounded" />
-            </div>
-            <div className="pt-3 border-t border-base-200 flex items-center justify-between">
-              <div className="h-4 w-24 bg-base-300/60 animate-pulse rounded" />
-              <div className="flex gap-2">
-                <div className="h-8 w-8 bg-base-300/70 animate-pulse rounded-lg" />
-                <div className="h-8 w-8 bg-base-300/70 animate-pulse rounded-lg" />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  // Table Skeleton
-  return (
-    <div className="bg-base-100 rounded-2xl border border-base-300 overflow-hidden shadow-2xs">
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-base-300 bg-base-200/50 text-[11px] font-semibold uppercase tracking-wider text-base-content/60">
-              <th className="py-3 px-5 w-20 text-center">Order</th>
-              <th className="py-3 px-4">Category Details</th>
-              <th className="py-3 px-4 hidden lg:table-cell">Description</th>
-              <th className="py-3 px-4">Catalog Status</th>
-              <th className="py-3 px-4 hidden md:table-cell">Last Updated</th>
-              <th className="py-3 px-5 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-base-200">
-            {[...Array(6)].map((_, idx) => (
-              <tr key={idx} className="hover:bg-base-200/30 transition-colors">
-                <td className="py-4 px-5 text-center">
-                  <div className="h-6 w-10 bg-base-300/70 animate-pulse rounded-lg mx-auto" />
-                </td>
-                <td className="py-4 px-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-base-300/80 animate-pulse shrink-0" />
-                    <div className="space-y-1.5 flex-1 min-w-[140px]">
-                      <div className="h-4 w-36 bg-base-300/80 animate-pulse rounded" />
-                      <div className="h-3.5 w-20 bg-base-300/50 animate-pulse rounded" />
-                    </div>
-                  </div>
-                </td>
-                <td className="py-4 px-4 hidden lg:table-cell">
-                  <div className="h-3.5 w-64 bg-base-300/60 animate-pulse rounded" />
-                </td>
-                <td className="py-4 px-4">
-                  <div className="h-6 w-24 bg-base-300/70 animate-pulse rounded-lg" />
-                </td>
-                <td className="py-4 px-4 hidden md:table-cell">
-                  <div className="h-3.5 w-28 bg-base-300/60 animate-pulse rounded" />
-                </td>
-                <td className="py-4 px-5 text-right">
-                  <div className="flex items-center justify-end gap-2">
-                    <div className="h-8 w-8 bg-base-300/70 animate-pulse rounded-lg" />
-                    <div className="h-8 w-8 bg-base-300/70 animate-pulse rounded-lg" />
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Thumbnail component with fallback icon and interactive high-res preview trigger
- */
-function CategoryThumb({ url, name, size = "md", onImageClick }) {
-  const [hasError, setHasError] = useState(false);
-
-  useEffect(() => {
-    setHasError(false);
-  }, [url]);
-
-  const sizeClasses =
-    size === "lg"
-      ? "w-full h-44 rounded-xl"
-      : size === "sm"
-      ? "w-9 h-9 rounded-lg"
-      : "w-12 h-12 rounded-xl";
-
-  const isClickable = Boolean(url && !hasError && onImageClick);
-
-  if (url && !hasError) {
-    return (
-      <div
-        className={`relative group/thumb overflow-hidden shrink-0 border border-base-300 bg-base-200/60 ${sizeClasses} ${
-          isClickable ? "cursor-pointer hover:border-primary/50" : ""
-        }`}
-        onClick={isClickable ? (e) => { e.stopPropagation(); onImageClick(url, name); } : undefined}
-        title={isClickable ? "Click to view full image in high quality" : undefined}
-      >
-        <img
-          src={url}
-          alt={name}
-          onError={() => setHasError(true)}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover/thumb:scale-105"
-        />
-        {isClickable && (
-          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/thumb:opacity-100 transition-opacity flex items-center justify-center text-white backdrop-blur-2xs">
-            <Maximize2 className={size === "lg" ? "size-6 drop-shadow-md" : "size-4 drop-shadow-md"} />
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className={`flex items-center justify-center shrink-0 border border-primary/20 bg-gradient-to-br from-primary/10 via-base-200 to-base-300/40 text-primary ${sizeClasses}`}
-    >
-      <Tags className={size === "lg" ? "w-10 h-10 opacity-70" : size === "sm" ? "w-4 h-4" : "w-5 h-5"} />
-    </div>
-  );
-}
 
 export default function CategoriesPage() {
   const navigate = useNavigate();
@@ -218,6 +92,7 @@ export default function CategoriesPage() {
   // Modals state
   const [modal, setModal] = useState({ open: false, mode: "add", data: null });
   const [detailsModal, setDetailsModal] = useState({ isOpen: false, data: null });
+  const [subcategoryModal, setSubcategoryModal] = useState({ isOpen: false, category: null });
   const [saving, setSaving] = useState(false);
   const [toDelete, setToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
@@ -225,6 +100,155 @@ export default function CategoriesPage() {
 
   // High-Quality Image Viewer Modal state
   const [imageViewer, setImageViewer] = useState({ isOpen: false, src: "", title: "" });
+
+  // Storage key for recent category searches (persistent across reloads)
+  const RECENT_SEARCHES_STORAGE_KEY = "pooja_fashion_recent_category_searches_v1";
+
+  // Recent searches state
+  const [recentSearches, setRecentSearches] = useState(() => {
+    try {
+      const stored = localStorage.getItem(RECENT_SEARCHES_STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+  // Recent searches state (closed by default; opens on search click, closes on outside click)
+  const [isRecentSearchesOpen, setIsRecentSearchesOpen] = useState(false);
+  const searchBoxRef = useRef(null);
+  const recentSearchesRef = useRef(null);
+
+  // Smoothly close recent searches when clicking anywhere outside the search box and recent searches
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const isInsideSearch =
+        searchBoxRef.current && searchBoxRef.current.contains(event.target);
+      const isInsideRecent =
+        recentSearchesRef.current &&
+        recentSearchesRef.current.contains(event.target);
+
+      if (!isInsideSearch && !isInsideRecent) {
+        setIsRecentSearchesOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, []);
+
+  // Sync / add recent search item (validates query against catalog)
+  const handleAddRecentSearch = (item) => {
+    if (!item) return;
+    const name =
+      typeof item === "string"
+        ? item
+        : item.name || item.categoryName || item.category_name || item.query;
+    if (!name || !name.trim()) return;
+
+    const queryTrim = name.trim();
+    const queryLower = queryTrim.toLowerCase();
+
+    // 1. Check if the query matches an existing category in catalog
+    const masterList = Array.isArray(allCategoriesResponse?.data)
+      ? allCategoriesResponse.data
+      : (allCategoriesResponse?.categories || []);
+    const currentList = Array.isArray(categoriesResponse?.data)
+      ? categoriesResponse.data
+      : (categoriesResponse?.categories || []);
+    const pool = [...masterList, ...currentList];
+
+    const matchingCategory = pool.find((cat) => {
+      const cName = (cat.categoryName || cat.category_name || "").toLowerCase();
+      const cCode = (cat.categoryCode || cat.category_code || "").toLowerCase();
+      return (
+        cName === queryLower ||
+        cCode === queryLower ||
+        (queryLower.length >= 2 && (cName.includes(queryLower) || cCode.includes(queryLower)))
+      );
+    });
+
+    // CRITICAL (User Request 2): Unmatched search (e.g. "sareesscsdc") that matches 0 categories MUST NOT be added!
+    if (typeof item === "string" && !matchingCategory) {
+      return;
+    }
+
+    // 2. Extract actual category details & its REAL photo from database (e.g. green saree)
+    const cat = matchingCategory || (typeof item === "object" ? item : null);
+    const realName = cat ? (cat.categoryName || cat.category_name || cat.name || queryTrim) : queryTrim;
+    const realCode = cat ? (cat.categoryCode || cat.category_code || cat.code || "") : "";
+    const rawImage = cat ? (cat.imageUrl || cat.image_url || cat.image || null) : null;
+    const realImage = rawImage && !rawImage.includes("images.unsplash.com") ? rawImage : null;
+
+    setRecentSearches((prev) => {
+      const newEntry = {
+        id: cat?.id || `search-${Date.now()}`,
+        name: realName,
+        code: realCode,
+        imageUrl: realImage, // Real photo from database or null if none
+        timestamp: Date.now(),
+        query: realName || queryTrim,
+      };
+
+      const filtered = prev.filter(
+        (s) => (s.name || s.query || "").toLowerCase() !== queryLower
+      );
+      const updated = [newEntry, ...filtered].slice(0, 10);
+      try {
+        localStorage.setItem(RECENT_SEARCHES_STORAGE_KEY, JSON.stringify(updated));
+      } catch (e) {
+        console.error("Failed to store recent search", e);
+      }
+      return updated;
+    });
+  };
+
+  const handleClearRecentSearches = () => {
+    setIsRecentSearchesOpen(false);
+    setTimeout(() => {
+      setRecentSearches([]);
+      try {
+        localStorage.setItem(RECENT_SEARCHES_STORAGE_KEY, JSON.stringify([]));
+      } catch (e) {
+        console.error(e);
+      }
+    }, 320);
+  };
+
+  const handleRemoveRecentSearch = (idOrQuery) => {
+    setRecentSearches((prev) => {
+      const updated = prev.filter(
+        (s) => s.id !== idOrQuery && s.name !== idOrQuery && s.query !== idOrQuery
+      );
+      try {
+        localStorage.setItem(RECENT_SEARCHES_STORAGE_KEY, JSON.stringify(updated));
+      } catch (e) {
+        console.error(e);
+      }
+      return updated;
+    });
+  };
+
+  const handleSelectRecentSearch = (item) => {
+    if (!item) return;
+    const term =
+      (typeof item === "string" ? item : null) ||
+      item.query ||
+      item.name ||
+      item.categoryName ||
+      item.category_name ||
+      "";
+    const cleanTerm = String(term).trim();
+    setSearch(cleanTerm);
+    setPage(1);
+    if (cleanTerm) {
+      handleAddRecentSearch(item);
+    }
+    setIsRecentSearchesOpen(false);
+  };
 
   const showNotification = (type, message) => {
     setNotification({ type, message });
@@ -253,6 +277,69 @@ export default function CategoriesPage() {
     { staleTime: 30000 }
   );
 
+  // Auto-populate initial recent searches from catalog or reference set with real images
+  const hasCheckedInitialRecentRef = useRef(false);
+  useEffect(() => {
+    if (hasCheckedInitialRecentRef.current) return;
+
+    try {
+      const existingStorage = localStorage.getItem(RECENT_SEARCHES_STORAGE_KEY);
+      // Case 1: First visit - seed with database categories that actually have images
+      if (existingStorage === null) {
+        hasCheckedInitialRecentRef.current = true;
+        const backendWithImages = (allCategoriesResponse?.data || []).filter(
+          (c) => Boolean(c.imageUrl || c.image_url)
+        );
+        let sample = [];
+        if (backendWithImages.length >= 2) {
+          sample = backendWithImages.slice(0, 8).map((cat) => ({
+            id: cat.id,
+            name: cat.categoryName || cat.category_name,
+            code: cat.categoryCode || cat.category_code,
+            imageUrl: cat.imageUrl || cat.image_url || null,
+            timestamp: Date.now(),
+            query: cat.categoryName || cat.category_name,
+          }));
+        }
+        setRecentSearches(sample);
+        localStorage.setItem(RECENT_SEARCHES_STORAGE_KEY, JSON.stringify(sample));
+      } else if (existingStorage !== null) {
+        hasCheckedInitialRecentRef.current = true;
+        // Case 2: Existing storage - repair and enrich any entries with their REAL database images or null
+        try {
+          const parsed = JSON.parse(existingStorage);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const masterList = Array.isArray(allCategoriesResponse?.data)
+              ? allCategoriesResponse.data
+              : (allCategoriesResponse?.categories || []);
+            const enriched = parsed.map((item) => {
+              const match = masterList.find(
+                (c) =>
+                  (c.categoryName || c.category_name || "").toLowerCase() ===
+                  (item.name || item.query || "").toLowerCase()
+              );
+              const realImg = match?.imageUrl || match?.image_url;
+              return {
+                ...item,
+                name: match?.categoryName || match?.category_name || item.name,
+                code: match?.categoryCode || match?.category_code || item.code,
+                query: match?.categoryName || match?.category_name || item.query || item.name,
+                // Only keep real uploaded database image; do not retain fake unsplash fallback images
+                imageUrl: realImg || (item.imageUrl && !item.imageUrl.includes("unsplash.com") ? item.imageUrl : null),
+              };
+            });
+            setRecentSearches(enriched);
+            localStorage.setItem(RECENT_SEARCHES_STORAGE_KEY, JSON.stringify(enriched));
+          }
+        } catch (parseErr) {
+          console.error("Failed to parse existing recent searches", parseErr);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, [allCategoriesResponse]);
+
   // Main list query with server pagination, search & status filter
   const queryParams = useMemo(() => {
     const isAll = limit === "All";
@@ -269,8 +356,8 @@ export default function CategoriesPage() {
     } else if (userCompanyId) {
       params.company_id = Number(userCompanyId);
     }
-    if (search.trim()) {
-      params.search = search.trim();
+    if ((search || "").trim()) {
+      params.search = (search || "").trim();
     }
     if (statusFilter === "active") {
       params.is_active = true;
@@ -300,6 +387,7 @@ export default function CategoriesPage() {
   const updateStatusMutation = useUpdateCategoryStatus();
   const deleteMutation = useDeleteCategory();
   const deleteImageMutation = useDeleteCategoryImage();
+  const createSubcategoryMutation = useCreateSubcategory();
 
   // Normalize list data
   const rawList = categoriesResponse?.data || categoriesResponse?.categories || [];
@@ -448,7 +536,7 @@ export default function CategoriesPage() {
   }, [page, totalPages]);
 
   const hasActiveFilters = Boolean(
-    search.trim() ||
+    (search || "").trim() ||
       statusFilter !== "" ||
       companyFilter !== "" ||
       mediaFilter !== "" ||
@@ -476,8 +564,30 @@ export default function CategoriesPage() {
 
   // Open modals
   const openAdd = () => setModal({ open: true, mode: "add", data: null });
-  const openEdit = (cat) => setModal({ open: true, mode: "edit", data: cat });
-  const openDetails = (cat) => setDetailsModal({ isOpen: true, data: cat });
+  const openEdit = (cat) => {
+    handleAddRecentSearch(cat);
+    setModal({ open: true, mode: "edit", data: cat });
+  };
+  const openAddSubcategory = (cat) => {
+    setSubcategoryModal({ isOpen: true, category: cat });
+  };
+
+  const handleCreateSubcategory = async ({ values, imageFile }) => {
+    try {
+      await createSubcategoryMutation.mutateAsync({ data: values, imageFile });
+      showNotification("success", `Subcategory "${values.subcategory_name}" created successfully!`);
+      setSubcategoryModal({ isOpen: false, category: null });
+    } catch (err) {
+      showNotification(
+        "error",
+        err?.response?.data?.message || err?.message || "Failed to create subcategory"
+      );
+    }
+  };
+  const openDetails = (cat) => {
+    handleAddRecentSearch(cat);
+    setDetailsModal({ isOpen: true, data: cat });
+  };
   const closeModal = () => !saving && setModal((m) => ({ ...m, open: false }));
 
   // Form submit handler
@@ -647,47 +757,50 @@ export default function CategoriesPage() {
         description="Comprehensive catalog classification for sarees, dress materials, fabrics, POS sequence ordering, and imagery."
         actions={
           <div className="flex items-center gap-2.5">
-            {/* View Mode Toggle */}
+            {/* View Mode Toggle with DaisyUI Tooltips */}
             <div className="flex items-center bg-base-200/80 rounded-xl p-1 border border-base-300">
-              <button
-                type="button"
-                onClick={() => setViewMode("table")}
-                className={`p-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-                  viewMode === "table"
-                    ? "bg-base-100 text-primary shadow-2xs font-semibold"
-                    : "text-base-content/60 hover:text-base-content"
-                }`}
-                title="Table View"
-                aria-label="Table View"
-              >
-                <TableIcon className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode("cards")}
-                className={`p-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-                  viewMode === "cards"
-                    ? "bg-base-100 text-primary shadow-2xs font-semibold"
-                    : "text-base-content/60 hover:text-base-content"
-                }`}
-                title="Cards View"
-                aria-label="Cards View"
-              >
-                <LayoutGrid className="w-4 h-4" />
-              </button>
+              <div className="tooltip tooltip-bottom" data-tip="Table View">
+                <button
+                  type="button"
+                  onClick={() => setViewMode("table")}
+                  className={`p-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                    viewMode === "table"
+                      ? "bg-base-100 text-primary shadow-2xs font-semibold"
+                      : "text-base-content/60 hover:text-base-content"
+                  }`}
+                  aria-label="Table View"
+                >
+                  <TableIcon className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="tooltip tooltip-bottom" data-tip="Cards View">
+                <button
+                  type="button"
+                  onClick={() => setViewMode("cards")}
+                  className={`p-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                    viewMode === "cards"
+                      ? "bg-base-100 text-primary shadow-2xs font-semibold"
+                      : "text-base-content/60 hover:text-base-content"
+                  }`}
+                  aria-label="Cards View"
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                </button>
+              </div>
             </div>
 
-            <Button
-              variant="outline"
-              size="sm"
-              icon={RefreshCw}
-              onClick={() => {
-                refetch();
-                refetchMaster();
-              }}
-              loading={isFetching && !isLoading}
-              title="Refresh Categories"
-            />
+            <div className="tooltip tooltip-bottom" data-tip="Refresh Categories">
+              <Button
+                variant="outline"
+                size="sm"
+                icon={RefreshCw}
+                onClick={() => {
+                  refetch();
+                  refetchMaster();
+                }}
+                loading={isFetching && !isLoading}
+              />
+            </div>
 
             <Button variant="clip-six" size="sm" icon={Plus} onClick={openAdd}>
               Add Category
@@ -774,119 +887,74 @@ export default function CategoriesPage() {
       {/* Filter and Search Toolbar */}
       <div className="rounded-2xl p-4 sm:p-5 bg-base-100 border border-base-300 shadow-xs space-y-3.5">
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
-          {/* Search box */}
-          <div className="relative flex-1 min-w-[240px] max-w-lg">
-            <Search className="w-4 h-4 text-base-content/40 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search category by name or code..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              className="w-full pl-9 pr-9 py-2 rounded-xl bg-base-200/60 border border-base-300 text-xs sm:text-sm text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-            />
-            {search && (
-              <button
-                type="button"
+          {/* Left: Search box + Quick Status Tabs */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 flex-1 min-w-0 max-w-2xl">
+            <div ref={searchBoxRef} className="relative flex-1 min-w-[220px]">
+              <Search className="w-4 h-4 text-base-content/40 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Search category by name or code..."
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                  if (recentSearches.length > 0) {
+                    setIsRecentSearchesOpen(true);
+                  }
+                }}
                 onClick={() => {
-                  setSearch("");
-                  setPage(1);
+                  if (recentSearches.length > 0) {
+                    setIsRecentSearchesOpen(true);
+                  }
                 }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/40 hover:text-base-content p-0.5 rounded cursor-pointer"
-                title="Clear search"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-
-          {/* Luxury Dropdowns & Filter Controls Cluster */}
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Company Filter (Only SuperAdmin and Admin without fixed company_id can select) */}
-            {canSelectCompany && companyOptions.length > 1 && (
-              <CategoryFilterDropdown
-                label="All Companies"
-                value={companyFilter}
-                options={companyOptions}
-                onChange={(val) => {
-                  setCompanyFilter(val);
-                  setPage(1);
+                onFocus={() => {
+                  if (recentSearches.length > 0) {
+                    setIsRecentSearchesOpen(true);
+                  }
                 }}
-                icon={Building}
-                minWidth="min-w-[155px]"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && (search || "").trim()) {
+                    handleAddRecentSearch((search || "").trim());
+                  }
+                }}
+                className="w-full pl-9 pr-18 py-2 rounded-xl bg-base-200/60 border border-base-300 text-xs sm:text-sm text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               />
-            )}
-
-            {/* Status Filter */}
-            <CategoryFilterDropdown
-              label="All Statuses"
-              value={statusFilter}
-              options={statusOptions}
-              onChange={(val) => {
-                setStatusFilter(val);
-                setPage(1);
-              }}
-              icon={Filter}
-              minWidth="min-w-[130px]"
-            />
-
-            {/* Media / Imagery Filter */}
-            <CategoryFilterDropdown
-              label="All Media"
-              value={mediaFilter}
-              options={mediaOptions}
-              onChange={(val) => {
-                setMediaFilter(val);
-                setPage(1);
-              }}
-              icon={ImageIcon}
-              minWidth="min-w-[130px]"
-            />
-
-            {/* Sort Criteria Dropdown */}
-            <CategoryFilterDropdown
-              label="Sort By"
-              value={sortBy}
-              options={sortOptions}
-              onChange={(val) => {
-                setSortBy(val);
-                setPage(1);
-              }}
-              icon={ArrowUpDown}
-              minWidth="min-w-[145px]"
-            />
-
-            {/* Sort Direction Toggle Button */}
-            <button
-              type="button"
-              onClick={() => {
-                setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
-                setPage(1);
-              }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all duration-200 cursor-pointer select-none ${
-                sortOrder === "desc"
-                  ? "border-primary bg-primary/10 text-primary shadow-xs ring-1 ring-primary/30"
-                  : "border-base-300 bg-base-100 text-base-content/70 hover:border-primary/40 hover:bg-base-200/50"
-              }`}
-              title={`Switch to ${sortOrder === "asc" ? "Descending (Z-A / High-Low)" : "Ascending (A-Z / Low-High)"}`}
-            >
-              {sortOrder === "asc" ? (
-                <>
-                  <ArrowUp className="w-3.5 h-3.5 text-primary" />
-                  <span className="uppercase text-[11px] font-bold">ASC</span>
-                </>
-              ) : (
-                <>
-                  <ArrowDown className="w-3.5 h-3.5 text-primary" />
-                  <span className="uppercase text-[11px] font-bold">DESC</span>
-                </>
-              )}
-            </button>
+              <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                {search && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearch("");
+                      setPage(1);
+                    }}
+                    className="text-base-content/40 hover:text-base-content p-1 rounded-lg hover:bg-base-300/50 transition-colors cursor-pointer"
+                    title="Clear search"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+                {recentSearches.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsRecentSearchesOpen((prev) => !prev);
+                    }}
+                    className={`p-1.5 rounded-lg text-xs font-medium cursor-pointer transition-colors ${
+                      isRecentSearchesOpen
+                        ? "text-primary bg-primary/10 shadow-2xs"
+                        : "text-base-content/40 hover:text-base-content hover:bg-base-300/50"
+                    }`}
+                    title={isRecentSearchesOpen ? "Hide recent searches" : "Show recent searches"}
+                  >
+                    <Clock className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            </div>
 
             {/* Quick Status Tabs Pills */}
-            <div className="flex items-center gap-1 bg-base-200/70 p-1 rounded-xl border border-base-300 overflow-x-auto">
+            <div className="flex items-center gap-1 bg-base-200/70 p-1 rounded-xl border border-base-300 shrink-0">
               {[
                 { key: "", label: "All", count: counts.total },
                 { key: "active", label: "Active", count: counts.active },
@@ -918,19 +986,98 @@ export default function CategoriesPage() {
                 </button>
               ))}
             </div>
+          </div>
 
-            {/* Reset Button */}
-            {hasActiveFilters && (
-              <button
-                type="button"
-                onClick={handleResetFilters}
-                className="px-2.5 py-1.5 text-xs font-semibold text-rose-500 hover:bg-rose-500/10 rounded-xl transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
-                title="Reset all filters"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span>Reset</span>
-              </button>
+          {/* Right: Dropdowns & Filter Controls Cluster */}
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            {/* Company Filter (Only SuperAdmin and Admin without fixed company_id can select) */}
+            {canSelectCompany && companyOptions.length > 1 && (
+              <CategoryFilterDropdown
+                label="All Companies"
+                value={companyFilter}
+                options={companyOptions}
+                onChange={(val) => {
+                  setCompanyFilter(val);
+                  setPage(1);
+                }}
+                icon={Building}
+                minWidth="min-w-[155px]"
+              />
             )}
+
+            {/* Media / Imagery Filter */}
+            <CategoryFilterDropdown
+              label="All Media"
+              value={mediaFilter}
+              options={mediaOptions}
+              onChange={(val) => {
+                setMediaFilter(val);
+                setPage(1);
+              }}
+              icon={ImageIcon}
+              minWidth="min-w-[125px]"
+            />
+
+            {/* Sort Criteria Dropdown */}
+            <CategoryFilterDropdown
+              label="Sort By"
+              value={sortBy}
+              options={sortOptions}
+              onChange={(val) => {
+                setSortBy(val);
+                setPage(1);
+              }}
+              icon={ArrowUpDown}
+              minWidth="min-w-[140px]"
+            />
+
+            {/* Sort Direction Toggle Button */}
+            <button
+              type="button"
+              onClick={() => {
+                setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+                setPage(1);
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all duration-200 cursor-pointer select-none ${
+                sortOrder === "desc"
+                  ? "border-primary bg-primary/10 text-primary shadow-xs ring-1 ring-primary/30"
+                  : "border-base-300 bg-base-100 text-base-content/70 hover:border-primary/40 hover:bg-base-200/50"
+              }`}
+              title={`Switch to ${sortOrder === "asc" ? "Descending (Z-A / High-Low)" : "Ascending (A-Z / Low-High)"}`}
+            >
+              {sortOrder === "asc" ? (
+                <>
+                  <ArrowUp className="w-3.5 h-3.5 text-primary" />
+                  <span className="uppercase text-[11px] font-bold">ASC</span>
+                </>
+              ) : (
+                <>
+                  <ArrowDown className="w-3.5 h-3.5 text-primary" />
+                  <span className="uppercase text-[11px] font-bold">DESC</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Smooth Animated Collapsible Recent Searches Strip */}
+        <div
+          ref={recentSearchesRef}
+          className={`accordion-grid ${
+            isRecentSearchesOpen && recentSearches.length > 0 ? "open" : "closed"
+          }`}
+        >
+          <div className="accordion-inner">
+            <div className="pt-2 pb-0.5">
+              <CategoryRecentSearches
+                recentSearches={recentSearches}
+                catalog={masterCategories}
+                onSelectSearch={handleSelectRecentSearch}
+                onClearAll={handleClearRecentSearches}
+                onRemoveItem={handleRemoveRecentSearch}
+                activeQuery={search}
+              />
+            </div>
           </div>
         </div>
 
@@ -942,7 +1089,7 @@ export default function CategoriesPage() {
                 <Filter className="w-3 h-3" /> Active Filters:
               </span>
 
-              {search.trim() && (
+              {(search || "").trim() && (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20 font-medium">
                   <span>Search: &ldquo;{search}&rdquo;</span>
                   <button
@@ -1085,347 +1232,43 @@ export default function CategoriesPage() {
           </div>
         </div>
       ) : viewMode === "table" ? (
-        /* TABLE VIEW */
-        <div className="bg-base-100 rounded-2xl border border-base-300 overflow-hidden shadow-2xs">
-          <div className="overflow-x-auto scroll-smooth">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-base-300 bg-base-200/50 text-[11px] font-semibold uppercase tracking-wider text-base-content/60">
-                  <th className="py-3 px-5 w-20 text-center">Order</th>
-                  <th className="py-3 px-4">Category Details</th>
-                  <th className="py-3 px-4 hidden sm:table-cell">Company</th>
-                  <th className="py-3 px-4 hidden lg:table-cell">Description</th>
-                  <th className="py-3 px-4">Catalog Status</th>
-                  <th className="py-3 px-4 hidden md:table-cell">Last Updated</th>
-                  <th className="py-3 px-5 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-base-200 text-sm">
-                {currentCategories.map((cat, index) => {
-                  const name = cat.categoryName || cat.category_name;
-                  const code = cat.categoryCode || cat.category_code;
-                  const imageUrl = cat.imageUrl || cat.image_url;
-                  const displayOrder = cat.displayOrder ?? cat.display_order ?? 0;
-                  const isActive =
-                    cat.isActive !== undefined ? cat.isActive : Boolean(cat.is_active);
-                  const updatedAt = cat.updatedAt || cat.updated_at;
-                  const desc = cat.description;
-                  const companyName = cat.companyName || cat.company_name || "Pooja Fashion";
-                  const companyCode = cat.companyCode || cat.company_code || null;
-
-                  return (
-                    <tr
-                      key={cat.id}
-                      className="hover:bg-base-200/50 transition-all duration-200 group animate-in fade-in-50 slide-in-from-bottom-2 duration-300 fill-mode-both"
-                      style={{ animationDelay: `${Math.min(index * 30, 240)}ms` }}
-                    >
-                      {/* Order */}
-                      <td className="py-3.5 px-5 text-center">
-                        <span className="inline-flex items-center justify-center min-w-8 px-2 py-1 rounded-lg bg-base-200 text-xs font-mono font-bold text-base-content/75 border border-base-300/80">
-                          #{displayOrder}
-                        </span>
-                      </td>
-
-                      {/* Category Info with Clickable High-Res Image */}
-                      <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-3">
-                          <CategoryThumb
-                            url={imageUrl}
-                            name={name}
-                            size="md"
-                            onImageClick={handleOpenImageViewer}
-                          />
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                              <button
-                                type="button"
-                                onClick={() => openDetails(cat)}
-                                className="font-bold text-base-content text-sm leading-snug hover:text-primary transition-colors cursor-pointer text-left truncate"
-                                title="Click to view category details"
-                              >
-                                {name}
-                              </button>
-                            </div>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-primary/10 text-primary border border-primary/20">
-                                {code}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => handleCopyCode(code, cat.id)}
-                                className="text-base-content/40 hover:text-primary transition-colors cursor-pointer p-0.5"
-                                title="Copy category code"
-                              >
-                                {copiedKey === cat.id ? (
-                                  <Check className="w-3 h-3 text-emerald-500" />
-                                ) : (
-                                  <Copy className="w-3 h-3" />
-                                )}
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Company Info */}
-                      <td className="py-3.5 px-4 hidden sm:table-cell">
-                        <div className="flex items-center gap-2">
-                          <span className="w-7 h-7 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0">
-                            <Building className="w-3.5 h-3.5" />
-                          </span>
-                          <div className="min-w-0">
-                            <span className="font-semibold text-xs text-base-content block truncate max-w-[130px]" title={companyName}>
-                              {companyName}
-                            </span>
-                            {companyCode && (
-                              <span className="badge badge-xs text-[9px] font-mono uppercase font-bold tracking-wider badge-ghost">
-                                {companyCode}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Description */}
-                      <td className="py-3.5 px-4 hidden lg:table-cell max-w-sm">
-                        <p className="line-clamp-2 text-xs text-base-content/70 leading-relaxed">
-                          {desc || <span className="italic text-base-content/40">No description provided</span>}
-                        </p>
-                      </td>
-
-                      {/* Status Toggle */}
-                      <td className="py-3.5 px-4">
-                        <label className="inline-flex cursor-pointer items-center gap-2">
-                          <input
-                            type="checkbox"
-                            className="toggle toggle-success toggle-sm"
-                            checked={isActive}
-                            disabled={updateStatusMutation.isPending}
-                            onChange={() => handleToggle(cat)}
-                            aria-label={`Toggle active status for ${name}`}
-                          />
-                          <span
-                            className={`px-2 py-0.5 rounded-lg text-xs font-semibold ${
-                              isActive
-                                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
-                                : "bg-base-200 text-base-content/50"
-                            }`}
-                          >
-                            {isActive ? "Active" : "Inactive"}
-                          </span>
-                        </label>
-                      </td>
-
-                      {/* Updated Date */}
-                      <td className="py-3.5 px-4 hidden md:table-cell whitespace-nowrap text-xs text-base-content/65 font-medium">
-                        {fmtDate(updatedAt)}
-                      </td>
-
-                      {/* Actions */}
-                      <td className="py-3.5 px-5 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => openDetails(cat)}
-                            className="p-1.5 rounded-lg text-base-content/60 hover:text-primary hover:bg-base-200 transition-colors cursor-pointer"
-                            title="View Category Details"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => openEdit(cat)}
-                            className="p-1.5 rounded-lg text-base-content/60 hover:text-primary hover:bg-base-200 transition-colors cursor-pointer"
-                            title="Edit Category"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setToDelete(cat)}
-                            className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-500/10 hover:text-rose-700 transition-colors cursor-pointer"
-                            title="Delete Category"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Table Footer Pagination */}
-          <Pagination
-            currentPage={page}
-            totalItems={totalItems}
-            pageSize={limit}
-            pageSizeOptions={[6, 10, 20, 50, "All"]}
-            onPageChange={setPage}
-            onPageSizeChange={(newSize) => {
-              setLimit(newSize);
-              setPage(1);
-            }}
-            showPageSizeSelector={true}
-            showFirstLast={true}
-          />
-        </div>
+        <CategoryTableView
+          categories={currentCategories}
+          totalItems={totalItems}
+          page={page}
+          limit={limit}
+          setPage={setPage}
+          setLimit={setLimit}
+          copiedKey={copiedKey}
+          onCopyCode={handleCopyCode}
+          onToggleStatus={handleToggle}
+          isStatusPending={updateStatusMutation.isPending}
+          onImageClick={handleOpenImageViewer}
+          onViewDetails={openDetails}
+          onEdit={openEdit}
+          onAddSubcategory={openAddSubcategory}
+          onDelete={setToDelete}
+          fmtDate={fmtDate}
+        />
       ) : (
-        /* CARDS VIEW - Grid Layout */
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {currentCategories.map((cat, index) => {
-              const name = cat.categoryName || cat.category_name;
-              const code = cat.categoryCode || cat.category_code;
-              const imageUrl = cat.imageUrl || cat.image_url;
-              const displayOrder = cat.displayOrder ?? cat.display_order ?? 0;
-              const isActive =
-                cat.isActive !== undefined ? cat.isActive : Boolean(cat.is_active);
-              const updatedAt = cat.updatedAt || cat.updated_at;
-              const desc = cat.description;
-              const companyName = cat.companyName || cat.company_name || "Pooja Fashion";
-              const companyCode = cat.companyCode || cat.company_code || null;
-
-              return (
-                <div
-                  key={cat.id}
-                  className="rounded-2xl p-5 bg-base-100 border border-base-300 hover:border-primary/40 hover:shadow-md transition-all duration-200 flex flex-col justify-between space-y-4 shadow-xs group animate-in fade-in-50 slide-in-from-bottom-3 duration-300 fill-mode-both"
-                  style={{ animationDelay: `${Math.min(index * 40, 320)}ms` }}
-                >
-                  <div>
-                    {/* Top badges */}
-                    <div className="flex items-center justify-between gap-2 mb-3">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="px-2 py-0.5 rounded-lg text-xs font-mono font-bold bg-base-200 text-base-content/75 border border-base-300/80">
-                          #{displayOrder}
-                        </span>
-                        <span className="px-2 py-0.5 rounded-lg text-xs font-mono font-semibold bg-primary/10 text-primary border border-primary/20">
-                          {code}
-                        </span>
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-base-200/90 text-base-content/70 border border-base-300" title={`Company: ${companyName}`}>
-                          <Building className="w-3 h-3 text-primary shrink-0" />
-                          <span className="truncate max-w-[100px]">{companyName}</span>
-                        </span>
-                      </div>
-
-                      <label className="inline-flex cursor-pointer items-center gap-1.5">
-                        <input
-                          type="checkbox"
-                          className="toggle toggle-success toggle-xs"
-                          checked={isActive}
-                          disabled={updateStatusMutation.isPending}
-                          onChange={() => handleToggle(cat)}
-                          aria-label={`Toggle active for ${name}`}
-                        />
-                        <span
-                          className={`text-[11px] font-semibold ${
-                            isActive ? "text-emerald-600" : "text-base-content/50"
-                          }`}
-                        >
-                          {isActive ? "Active" : "Inactive"}
-                        </span>
-                      </label>
-                    </div>
-
-                    {/* Image Banner / Media Preview with Click to Full View */}
-                    <div className="relative mb-3.5">
-                      <CategoryThumb
-                        url={imageUrl}
-                        name={name}
-                        size="lg"
-                        onImageClick={handleOpenImageViewer}
-                      />
-                    </div>
-
-                    {/* Category Title & Description */}
-                    <div className="space-y-1">
-                      <h3
-                        onClick={() => openDetails(cat)}
-                        className="text-base font-bold text-base-content leading-snug truncate group-hover:text-primary transition-colors cursor-pointer"
-                        title="Click to view details"
-                      >
-                        {name}
-                      </h3>
-                      <p className="text-xs text-base-content/65 line-clamp-2 leading-relaxed min-h-[32px]">
-                        {desc || <span className="italic text-base-content/40">No description provided</span>}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Card Footer */}
-                  <div className="pt-3 border-t border-base-200 flex items-center justify-between text-xs text-base-content/60">
-                    <span className="flex items-center gap-1 font-medium text-[11px]">
-                      <Calendar className="w-3.5 h-3.5 text-base-content/40" />
-                      {fmtDate(updatedAt)}
-                    </span>
-
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => handleCopyCode(code, cat.id)}
-                        className="p-1.5 rounded-lg text-base-content/60 hover:text-primary hover:bg-base-200 transition-colors cursor-pointer"
-                        title="Copy code"
-                      >
-                        {copiedKey === cat.id ? (
-                          <Check className="w-3.5 h-3.5 text-emerald-500" />
-                        ) : (
-                          <Copy className="w-3.5 h-3.5" />
-                        )}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => openDetails(cat)}
-                        className="p-1.5 rounded-lg text-base-content/60 hover:text-primary hover:bg-base-200 transition-colors cursor-pointer"
-                        title="View Category Details"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => openEdit(cat)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-primary hover:bg-primary/10 border border-primary/20 transition-all cursor-pointer shadow-2xs"
-                        title="Edit Category"
-                      >
-                        <Edit2 className="w-3 h-3" />
-                        <span>Edit</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setToDelete(cat)}
-                        className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-500/10 hover:text-rose-700 transition-colors cursor-pointer"
-                        title="Delete Category"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Cards Footer Pagination */}
-          <div className="bg-base-100 rounded-2xl border border-base-300 overflow-hidden shadow-2xs">
-            <Pagination
-              currentPage={page}
-              totalItems={totalItems}
-              pageSize={limit}
-              pageSizeOptions={[6, 12, 24, 48, "All"]}
-              onPageChange={setPage}
-              onPageSizeChange={(newSize) => {
-                setLimit(newSize);
-                setPage(1);
-              }}
-              showPageSizeSelector={true}
-              showFirstLast={true}
-            />
-          </div>
-        </div>
+        <CategoryCardsView
+          categories={currentCategories}
+          totalItems={totalItems}
+          page={page}
+          limit={limit}
+          setPage={setPage}
+          setLimit={setLimit}
+          copiedKey={copiedKey}
+          onCopyCode={handleCopyCode}
+          onToggleStatus={handleToggle}
+          isStatusPending={updateStatusMutation.isPending}
+          onImageClick={handleOpenImageViewer}
+          onViewDetails={openDetails}
+          onEdit={openEdit}
+          onAddSubcategory={openAddSubcategory}
+          onDelete={setToDelete}
+          fmtDate={fmtDate}
+        />
       )}
 
       {/* Add / Edit Category Modal */}
@@ -1449,6 +1292,16 @@ export default function CategoriesPage() {
         onToggleStatus={(cat) => handleToggle(cat)}
         onImageClick={handleOpenImageViewer}
         onNavigateFullPage={(catId) => navigate(`/products/categories/${catId}`)}
+        onAddSubcategory={(cat) => openAddSubcategory(cat)}
+      />
+
+      {/* Dedicated Add Subcategory Modal directly for selected Category (Locked Parent Category) */}
+      <CategoryAddSubcategoryModal
+        isOpen={subcategoryModal.isOpen}
+        category={subcategoryModal.category}
+        saving={createSubcategoryMutation.isPending}
+        onClose={() => setSubcategoryModal({ isOpen: false, category: null })}
+        onSubmit={handleCreateSubcategory}
       />
 
       {/* High-Quality Image Viewer Modal */}

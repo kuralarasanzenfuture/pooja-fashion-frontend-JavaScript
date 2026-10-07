@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useSelector } from "react-redux";
-import { X, Tags, Sparkles, Layers, Image as ImageIcon, Building } from "lucide-react";
+import { X, Tags, Sparkles, Building, ChevronDown, Check, Zap } from "lucide-react";
 import { Button } from "../../../../common/components/ui/buttons/index.js";
 import { useModalAnimation } from "../../../../common/hooks/useModalAnimation.js";
 import { CompanySelect } from "../../../company/components/index.js";
 import ImageUploader from "./ImageUploader.jsx";
+import { getPopularCategoryPresets, searchCategoryPresets } from "../data/index.js";
 
 const EMPTY = {
   company_id: "",
@@ -78,6 +79,34 @@ export default function CategoryFormModal({
   const [imageFile, setImageFile] = useState(null);
   const [objectUrl, setObjectUrl] = useState(null);
   const [removeImage, setRemoveImage] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestionContainerRef = useRef(null);
+
+  // Close suggestions dropdown on outside click
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (
+        suggestionContainerRef.current &&
+        !suggestionContainerRef.current.contains(e.target)
+      ) {
+        setShowSuggestions(false);
+      }
+    };
+    if (showSuggestions) {
+      document.addEventListener("mousedown", handleOutsideClick);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [showSuggestions]);
+
+  const filteredPresets = useMemo(() => {
+    return searchCategoryPresets(form.category_name);
+  }, [form.category_name]);
+
+  const popularPresets = useMemo(() => {
+    return getPopularCategoryPresets();
+  }, []);
 
   // Reset whenever modal opens or initialData changes
   useEffect(() => {
@@ -154,6 +183,39 @@ export default function CategoryFormModal({
       .slice(0, 50);
     setForm((f) => ({ ...f, category_code: autoCode }));
     if (errors.category_code) setErrors((er) => ({ ...er, category_code: undefined }));
+  };
+
+  const handleSelectPreset = (preset) => {
+    setForm((f) => {
+      const isAutoCode =
+        !f.category_code ||
+        f.category_code ===
+          f.category_name
+            .trim()
+            .toUpperCase()
+            .replace(/[^A-Z0-9]/g, "_")
+            .replace(/_+/g, "_")
+            .slice(0, 50);
+
+      return {
+        ...f,
+        category_name: preset.name,
+        category_code: isAutoCode || mode === "add" ? preset.code : f.category_code,
+        description: !f.description || mode === "add" ? preset.description : f.description,
+        display_order:
+          (!f.display_order || Number(f.display_order) === 0) && preset.display_order
+            ? preset.display_order
+            : f.display_order,
+      };
+    });
+
+    if (errors.category_name) {
+      setErrors((er) => ({ ...er, category_name: undefined }));
+    }
+    if (errors.category_code) {
+      setErrors((er) => ({ ...er, category_code: undefined }));
+    }
+    setShowSuggestions(false);
   };
 
   const handleSubmit = async (e) => {
@@ -269,28 +331,129 @@ export default function CategoryFormModal({
                 </div>
               )}
 
-              {/* Category Name */}
-              <div>
-                <label className="block text-xs font-semibold text-base-content/80 mb-1.5">
-                  Category Name <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Pure Silk Sarees, Cotton Dress Materials"
-                  className={`w-full px-3.5 py-2.5 rounded-xl bg-base-200/50 border text-sm text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all ${
-                    errors.category_name ? "border-rose-500 focus:border-rose-500" : "border-base-300"
-                  }`}
-                  value={form.category_name}
-                  onChange={set("category_name")}
-                  disabled={saving}
-                  maxLength={150}
-                  autoFocus
-                />
+              {/* Category Name with Presets & Autocomplete */}
+              <div className="relative" ref={suggestionContainerRef}>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-semibold text-base-content/80">
+                    Category Name <span className="text-rose-500">*</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowSuggestions((prev) => !prev)}
+                    className="text-[11px] text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer bg-primary/10 hover:bg-primary/20 px-2 py-0.5 rounded-lg border border-primary/20 transition-colors"
+                    title="Browse real-time fashion apparel presets"
+                  >
+                    <Zap className="size-3 text-amber-500 fill-amber-500" />
+                    <span>{showSuggestions ? "Hide Suggestions" : "⚡ Real-time Presets"}</span>
+                    <ChevronDown className={`size-3 transition-transform ${showSuggestions ? "rotate-180" : ""}`} />
+                  </button>
+                </div>
+
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="e.g. Pure Silk Sarees, Cotton Dress Materials"
+                    className={`w-full px-3.5 py-2.5 rounded-xl bg-base-200/50 border text-sm text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all ${
+                      errors.category_name ? "border-rose-500 focus:border-rose-500" : "border-base-300"
+                    }`}
+                    value={form.category_name}
+                    onChange={(e) => {
+                      set("category_name")(e);
+                      if (!showSuggestions) setShowSuggestions(true);
+                    }}
+                    onFocus={() => setShowSuggestions(true)}
+                    disabled={saving}
+                    maxLength={150}
+                    autoFocus
+                  />
+                </div>
+
+                {/* Real-time suggestions dropdown */}
+                {showSuggestions && (
+                  <div className="absolute z-30 left-0 right-0 mt-1 max-h-60 overflow-y-auto rounded-2xl bg-base-100 border border-base-300 shadow-xl p-1.5 space-y-1">
+                    <div className="px-2.5 py-1 text-[11px] font-semibold text-base-content/50 uppercase tracking-wider flex items-center justify-between border-b border-base-200 pb-1 mb-1">
+                      <span>Suggested Fashion Categories ({filteredPresets.length})</span>
+                      <span className="text-[10px] text-primary font-normal">click to auto-fill</span>
+                    </div>
+                    {filteredPresets.length === 0 ? (
+                      <div className="px-3 py-3 text-xs text-base-content/60 text-center">
+                        No matching presets found. You can still use &quot;{form.category_name}&quot; as a custom category!
+                      </div>
+                    ) : (
+                      filteredPresets.map((preset) => {
+                        const isSelected = form.category_name.trim().toLowerCase() === preset.name.toLowerCase();
+                        return (
+                          <button
+                            key={preset.id}
+                            type="button"
+                            onClick={() => handleSelectPreset(preset)}
+                            className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-start justify-between gap-3 group cursor-pointer ${
+                              isSelected
+                                ? "bg-primary/15 border border-primary/30 text-primary"
+                                : "hover:bg-base-200 text-base-content"
+                            }`}
+                          >
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-semibold text-xs leading-snug group-hover:text-primary transition-colors">
+                                  {preset.name}
+                                </span>
+                                <span className="text-[10px] px-1.5 py-0.2 rounded bg-base-200 text-base-content/70 border border-base-300 font-mono">
+                                  {preset.code}
+                                </span>
+                                <span className="text-[10px] px-1.5 py-0.2 rounded bg-primary/10 text-primary font-medium">
+                                  {preset.department}
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-base-content/60 truncate mt-0.5 max-w-md">
+                                {preset.description}
+                              </p>
+                            </div>
+                            {isSelected ? (
+                              <span className="shrink-0 p-1 rounded-full bg-primary text-white">
+                                <Check className="size-3" />
+                              </span>
+                            ) : (
+                              <span className="shrink-0 text-[10px] font-semibold opacity-0 group-hover:opacity-100 text-primary transition-opacity">
+                                Apply ↵
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
+
                 {errors.category_name && (
                   <span className="mt-1 block text-xs text-rose-500 font-medium">
                     {errors.category_name}
                   </span>
                 )}
+
+                {/* Quick chips below */}
+                <div className="mt-2 flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[11px] text-base-content/50 font-medium flex items-center gap-1">
+                    <Sparkles className="size-3 text-amber-500" /> Quick:
+                  </span>
+                  {popularPresets.slice(0, 5).map((preset) => {
+                    const active = form.category_name.trim().toLowerCase() === preset.name.toLowerCase();
+                    return (
+                      <button
+                        key={preset.id}
+                        type="button"
+                        onClick={() => handleSelectPreset(preset)}
+                        className={`text-[11px] px-2 py-0.5 rounded-lg border font-medium transition-all cursor-pointer ${
+                          active
+                            ? "bg-primary text-primary-content border-primary"
+                            : "bg-base-200/60 hover:bg-base-200 text-base-content/75 border-base-300 hover:border-primary/40"
+                        }`}
+                      >
+                        {preset.name}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Code & Display Order */}

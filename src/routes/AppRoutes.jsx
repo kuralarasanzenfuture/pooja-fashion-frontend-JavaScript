@@ -9,6 +9,10 @@ import CompanyViewPage from "../features/company/pages/CompanyViewPage.jsx";
 import BankMasterPage from "../features/bank-master/pages/BankMasterPage.jsx";
 import CategoriesPage from "../features/product-masters/categories/pages/CategoriesPage.jsx";
 import CategoryViewPage from "../features/product-masters/categories/pages/CategoryViewPage.jsx";
+import {
+  SubCategoriesPage,
+  SubCategoryViewPage,
+} from "../features/product-masters/sub-categories/index.js";
 import RolesPage from "../features/roles/pages/RolesPage.jsx";
 import UsersPage from "../features/users/pages/UsersPage.jsx";
 import UserViewPage from "../features/users/pages/UserViewPage.jsx";
@@ -137,6 +141,12 @@ export default function AppRoutes() {
           <Route path="/categories" element={<CategoriesPage />} />
           <Route path={ROUTES.CATEGORY_VIEW} element={<CategoryViewPage />} />
           <Route path="/categories/:id" element={<CategoryViewPage />} />
+          <Route path={ROUTES.SUBCATEGORIES} element={<SubCategoriesPage />} />
+          <Route path="/subcategories" element={<SubCategoriesPage />} />
+          <Route path="/products/subcategories" element={<SubCategoriesPage />} />
+          <Route path={ROUTES.SUBCATEGORY_VIEW} element={<SubCategoryViewPage />} />
+          <Route path="/subcategories/:id" element={<SubCategoryViewPage />} />
+          <Route path="/products/subcategories/:id" element={<SubCategoryViewPage />} />
 
           {/* Users & Roles Management (Admin & SuperAdmin only) */}
           <Route element={<RoleProtectedRoute allowedRoles={["ADMIN", "SUPERADMIN"]} />}>
