@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { NavLink, useLocation } from "react-router-dom";
 import { ChevronDown, ChevronRight, LogOut } from "lucide-react";
+import "./sidebar.css";
 
 export default function SidebarItem({
   item,
@@ -104,28 +105,37 @@ export default function SidebarItem({
           to={item.to || "#"}
           onClick={onNavigate}
           end={item.to === "/"}
+          data-nav-active={isCurrentActive ? "true" : undefined}
           className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all group ${
+            `sidebar-link relative z-10 flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 group ${
               isActive
-                ? "bg-primary text-primary-content shadow-xs font-bold"
-                : "text-base-content/70 hover:text-base-content hover:bg-base-200/80"
+                ? "text-primary-content font-bold"
+                : "text-base-content/70 hover:text-base-content hover:bg-base-200/50"
             } ${collapsed ? "justify-center px-0 py-2.5" : ""}`
           }
         >
           {Icon && (
             <Icon
-              className={`w-4.5 h-4.5 shrink-0 transition-transform group-hover:scale-110 ${
+              className={`sidebar-link-icon w-4.5 h-4.5 shrink-0 transition-all duration-200 group-hover:scale-110 ${
                 isCurrentActive ? "text-primary-content" : "text-base-content/60 group-hover:text-primary"
               }`}
             />
           )}
 
           {!collapsed && (
-            <span className="truncate flex-1 tracking-tight">{item.title}</span>
+            <span className="truncate flex-1 tracking-tight transition-opacity duration-200">
+              {item.title}
+            </span>
           )}
 
           {!collapsed && item.badge && (
-            <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-primary/15 text-primary">
+            <span
+              className={`sidebar-badge px-2 py-0.5 text-xs font-bold rounded-full transition-colors ${
+                isCurrentActive
+                  ? "bg-white/20 text-white"
+                  : "bg-primary/15 text-primary"
+              }`}
+            >
               {item.badge}
             </span>
           )}
@@ -167,22 +177,28 @@ export default function SidebarItem({
       {/* Accordion Trigger Header */}
       <button
         type="button"
+        data-nav-group-active={hasActiveChild ? "true" : undefined}
+        data-nav-group-open={isOpen && !collapsed ? "true" : undefined}
         onClick={() => {
           if (!collapsed) {
             setManualOpen(!isOpen);
           }
         }}
-        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer select-none group ${
+        className={`sidebar-link relative z-10 w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 cursor-pointer select-none group ${
           isOpen && !collapsed
-            ? "bg-base-200/90 text-base-content font-bold shadow-2xs"
-            : "text-base-content/70 hover:text-base-content hover:bg-base-200/70"
+            ? "text-base-content font-bold"
+            : hasActiveChild
+            ? "text-base-content font-semibold"
+            : "text-base-content/70 hover:text-base-content hover:bg-base-200/50"
         } ${collapsed ? "justify-center px-0 py-2.5" : ""}`}
         aria-expanded={isOpen}
       >
         {Icon && (
           <Icon
-            className={`w-4.5 h-4.5 shrink-0 transition-transform group-hover:scale-110 ${
-              isOpen ? "text-primary" : "text-base-content/60 group-hover:text-primary"
+            className={`sidebar-link-icon w-4.5 h-4.5 shrink-0 transition-all duration-200 group-hover:scale-110 ${
+              hasActiveChild || (isOpen && !collapsed)
+                ? "text-primary"
+                : "text-base-content/60 group-hover:text-primary"
             }`}
           />
         )}
@@ -194,14 +210,14 @@ export default function SidebarItem({
             </span>
 
             {item.badge && (
-              <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-primary/15 text-primary mr-1">
+              <span className="sidebar-badge px-2 py-0.5 text-xs font-bold rounded-full bg-primary/15 text-primary mr-1">
                 {item.badge}
               </span>
             )}
 
             <ChevronDown
-              className={`w-3.5 h-3.5 text-base-content/40 transition-transform duration-250 ease-in-out ${
-                isOpen ? "rotate-180 text-base-content" : ""
+              className={`w-3.5 h-3.5 text-base-content/40 transition-transform duration-300 ease-out ${
+                isOpen ? "rotate-180 text-primary" : ""
               }`}
             />
           </>
@@ -210,17 +226,15 @@ export default function SidebarItem({
 
       {/* Expanded Mode: Normal Accordion Submenu */}
       {!collapsed && (
-        <div
-          className={`grid transition-[grid-template-rows,opacity] duration-250 ease-in-out ${
-            isOpen ? "grid-rows-[1fr] opacity-100 mt-1" : "grid-rows-[0fr] opacity-0"
-          }`}
-        >
-          <div className="overflow-hidden">
-            <div className="pl-5 pr-1 py-0.5 space-y-0.5 border-l-2 border-base-300 ml-4.5 my-1">
-              {item.children.map((subItem) => (
+        <div className={`sidebar-submenu ${isOpen ? "is-open" : ""}`}>
+          <div className="sidebar-submenu-inner">
+            <div className="py-1 space-y-0.5">
+              {item.children.map((subItem, index) => (
                 <SubMenuItem
                   key={subItem.id}
                   item={subItem}
+                  index={index}
+                  parentOpen={isOpen}
                   onNavigate={onNavigate}
                   onLogout={onLogout}
                 />
@@ -297,7 +311,13 @@ export default function SidebarItem({
 }
 
 // SubMenuItem component handles second & third levels of navigation
-function SubMenuItem({ item, onNavigate, onLogout }) {
+function SubMenuItem({
+  item,
+  index = 0,
+  parentOpen = true,
+  onNavigate,
+  onLogout,
+}) {
   const location = useLocation();
   const [nestedOpen, setNestedOpen] = useState(false);
   const hasNested = item.children && item.children.length > 0;
@@ -331,13 +351,13 @@ function SubMenuItem({ item, onNavigate, onLogout }) {
         <button
           type="button"
           onClick={() => setNestedOpen((prev) => !prev)}
-          className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-semibold transition-colors text-left cursor-pointer ${
+          className={`w-full flex items-center justify-between px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-colors text-left cursor-pointer ${
             nestedOpen
               ? "text-base-content font-bold bg-base-200/80"
               : "text-base-content/75 hover:text-base-content hover:bg-base-200/50"
           }`}
         >
-          <span className="truncate flex-1 tracking-tight text-sm font-semibold">
+          <span className="truncate flex-1 tracking-tight">
             {item.title}
           </span>
           <ChevronRight
@@ -348,8 +368,8 @@ function SubMenuItem({ item, onNavigate, onLogout }) {
         </button>
 
         {nestedOpen && (
-          <div className="pl-3 py-1 space-y-0.5 border-l-2 border-base-300 ml-3.5 my-0.5">
-            {item.children.map((nested) => {
+          <div className="relative pl-3.5 py-1 space-y-0.5 border-l-2 border-base-200/80 dark:border-base-300/50 ml-3.5 my-0.5">
+            {item.children.map((nested, nIdx) => {
               const isNestedQuery = Boolean(nested.to && nested.to.includes("?"));
               const isNestedActive = isNestedQuery
                 ? currentFullPath === nested.to
@@ -360,15 +380,27 @@ function SubMenuItem({ item, onNavigate, onLogout }) {
                   key={nested.id}
                   to={nested.to || "#"}
                   onClick={onNavigate}
+                  data-active={isNestedActive ? "true" : undefined}
+                  style={parentOpen ? { animationDelay: `${nIdx * 35}ms` } : undefined}
                   className={() =>
-                    `block px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
+                    `sidebar-subitem-link group relative block px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${
+                      parentOpen ? "animate-subitem-cascade" : ""
+                    } ${
                       isNestedActive
-                        ? "bg-primary text-primary-content font-bold shadow-xs"
+                        ? "bg-primary/10 text-primary font-bold shadow-2xs dark:bg-primary/20"
                         : "text-base-content/75 hover:text-base-content hover:bg-base-200/60"
                     }`
                   }
                 >
-                  {nested.title}
+                  {isNestedActive && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute -left-[18px] top-1.5 bottom-1.5 w-[3px] rounded-full bg-primary shadow-xs shadow-primary/30"
+                    />
+                  )}
+                  <span className="truncate block group-hover:translate-x-0.5 transition-transform duration-150">
+                    {nested.title}
+                  </span>
                 </NavLink>
               );
             })}
@@ -382,17 +414,31 @@ function SubMenuItem({ item, onNavigate, onLogout }) {
     <NavLink
       to={item.to || "#"}
       onClick={onNavigate}
+      data-active={isItemActive ? "true" : undefined}
+      style={parentOpen ? { animationDelay: `${index * 35}ms` } : undefined}
       className={() =>
-        `flex items-center justify-between px-3 py-2 rounded-xl text-sm font-semibold transition-all ${
+        `sidebar-subitem-link group relative flex items-center justify-between px-3 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
+          parentOpen ? "animate-subitem-cascade" : ""
+        } ${
           isItemActive
-            ? "bg-primary text-primary-content font-bold shadow-xs"
-            : "text-base-content/70 hover:text-base-content hover:bg-base-200/70"
+            ? "bg-primary/10 text-primary font-bold shadow-2xs dark:bg-primary/20"
+            : "text-base-content/70 hover:text-base-content hover:bg-base-200/60"
         }`
       }
     >
-      <span className="truncate">{item.title}</span>
+      {/* Code & Chill Talvo active vertical indicator connected to the guide line */}
+      {isItemActive && (
+        <span
+          aria-hidden="true"
+          className="absolute -left-[20px] top-2 bottom-2 w-[3px] rounded-full bg-primary shadow-xs shadow-primary/30 animate-in fade-in zoom-in-75 duration-200"
+        />
+      )}
+
+      <span className="truncate group-hover:translate-x-0.5 transition-transform duration-150">
+        {item.title}
+      </span>
       {item.badge && (
-        <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-primary/15 text-primary">
+        <span className="sidebar-badge px-2 py-0.5 text-xs font-bold rounded-full bg-primary/15 text-primary">
           {item.badge}
         </span>
       )}

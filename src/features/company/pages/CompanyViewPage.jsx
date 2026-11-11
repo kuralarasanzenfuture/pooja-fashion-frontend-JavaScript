@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import ImageViewerModal from "../../../common/components/ui/ImageViewerModal.jsx";
 import { Button } from "../../../common/components/ui/buttons/index.js";
+import { SlidingTabs, AnimatedTabContent } from "../../../common/components/tabs/index.js";
 import {
   useCompany,
   useCompanies,
@@ -460,39 +461,23 @@ export default function CompanyViewPage({ isProfileMode = false, initialTab = "o
 
       {/* Main Tabbed Details Container */}
       <div className="rounded-3xl bg-base-100 border border-base-300 shadow-xs overflow-hidden transition-colors duration-200">
-        {/* Navigation Tabs Bar */}
-        <div className="flex items-center gap-2 px-6 pt-3 border-b border-base-300 bg-base-200/50 overflow-x-auto">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => {
-                  setActiveTab(tab.id);
-                  setSearchParams({ tab: tab.id });
-                }}
-                className={`flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-bold rounded-t-xl transition-all cursor-pointer whitespace-nowrap border-b-2 ${
-                  isActive
-                    ? "bg-primary text-primary-content border-primary shadow-sm shadow-primary/30"
-                    : "text-base-content/60 border-transparent hover:text-base-content hover:bg-base-200/80"
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span>{tab.label}</span>
-                <span
-                  className={`w-2 h-2 rounded-full ${tab.colorDot} ${
-                    isActive ? "ring-2 ring-primary-content/50" : ""
-                  }`}
-                />
-              </button>
-            );
-          })}
+        {/* Navigation Tabs Bar with Code & Chill Fluid Sliding Tabs */}
+        <div className="px-6 py-3 border-b border-base-300 bg-base-200/40 overflow-x-auto no-scrollbar">
+          <SlidingTabs
+            tabs={tabs}
+            activeTab={activeTab}
+            onChange={(tabId) => {
+              setActiveTab(tabId);
+              setSearchParams({ tab: tabId });
+            }}
+            variant="pill"
+            size="sm"
+          />
         </div>
 
         {/* Tab Body */}
         <div className="p-6 sm:p-8">
+          <AnimatedTabContent activeKey={activeTab}>
           {/* TAB 1: OVERVIEW & IDENTITY */}
           {activeTab === "overview" && (
             <div className="space-y-6 animate-in fade-in duration-150">
@@ -866,6 +851,7 @@ export default function CompanyViewPage({ isProfileMode = false, initialTab = "o
               </div>
             </div>
           )}
+          </AnimatedTabContent>
         </div>
       </div>
 

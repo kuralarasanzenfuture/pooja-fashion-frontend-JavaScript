@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import CategoryThumb from "./CategoryThumb.jsx";
 import Pagination from "../../../../common/components/ui/pagination/Pagination.jsx";
+import { formatCategoryName } from "../utils/categoryImageHelper.js";
 
 /**
  * CategoryCardsView
@@ -39,7 +40,7 @@ export default function CategoryCardsView({
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {categories.map((cat, index) => {
-          const name = cat.categoryName || cat.category_name;
+          const name = formatCategoryName(cat.categoryName || cat.category_name);
           const code = cat.categoryCode || cat.category_code;
           const imageUrl = cat.imageUrl || cat.image_url;
           const displayOrder = cat.displayOrder ?? cat.display_order ?? 0;

@@ -5,7 +5,7 @@ import {
   Tags,
   Check,
 } from "lucide-react";
-import { normalizeCategoryImageUrl } from "../utils/categoryImageHelper.js";
+import { normalizeCategoryImageUrl, formatCategoryName } from "../utils/categoryImageHelper.js";
 
 /**
  * Curated Luxury Pastel Color Themes matching reference image:
@@ -111,8 +111,9 @@ function RecentSearchCard({
 }) {
   const [imgError, setImgError] = useState(false);
 
-  const name =
-    item.name || item.categoryName || item.category_name || item.query || "Category";
+  const name = formatCategoryName(
+    item.name || item.categoryName || item.category_name || item.query || "Category"
+  );
   const code = item.code || item.categoryCode || item.category_code || "";
 
   // ALWAYS match against catalog to prioritize the REAL uploaded database image (e.g. green saree)

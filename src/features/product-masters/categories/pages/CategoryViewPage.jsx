@@ -50,6 +50,7 @@ import {
 import CategoryFormModal from "../components/CategoryFormModal.jsx";
 import CategoryDeleteModal from "../components/CategoryDeleteModal.jsx";
 import CategoryAddSubcategoryModal from "../components/CategoryAddSubcategoryModal.jsx";
+import { formatCategoryName } from "../utils/categoryImageHelper.js";
 
 export default function CategoryViewPage() {
   const { id } = useParams();
@@ -254,7 +255,7 @@ export default function CategoryViewPage() {
     );
   }
 
-  const name = category.categoryName || category.category_name;
+  const name = formatCategoryName(category.categoryName || category.category_name);
   const code = category.categoryCode || category.category_code;
   const imageUrl = category.imageUrl || category.image_url;
   const displayOrder = category.displayOrder ?? category.display_order ?? 0;

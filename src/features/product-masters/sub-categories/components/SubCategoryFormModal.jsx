@@ -13,7 +13,9 @@ import {
 import { Button } from "../../../../common/components/ui/buttons/index.js";
 import { useModalAnimation } from "../../../../common/hooks/useModalAnimation.js";
 import { useCategories } from "../../categories/hooks/useCategories.js";
+import { normalizeCategoryImageUrl, formatCategoryName } from "../../categories/utils/categoryImageHelper.js";
 import ImageUploader from "./ImageUploader.jsx";
+import ParentCategorySelect from "./ParentCategorySelect.jsx";
 import {
   getPopularSubcategoryPresets,
   searchSubcategoryPresets,
@@ -190,9 +192,13 @@ function SubCategoryFormContent({
     if (errors[key]) setErrors((er) => ({ ...er, [key]: undefined }));
   };
 
-  const handleCategoryChange = (e) => {
-    const catId = e.target.value;
-    const selectedCategory = categories.find((c) => String(c.id) === String(catId));
+  const handleCategoryChange = (valOrEvent, selectedCat) => {
+    const catId =
+      typeof valOrEvent === "object" && valOrEvent?.target
+        ? valOrEvent.target.value
+        : valOrEvent;
+    const selectedCategory =
+      selectedCat || categories.find((c) => String(c.id) === String(catId));
 
     setForm((f) => ({
       ...f,
@@ -274,7 +280,7 @@ function SubCategoryFormContent({
 
     const payload = {
       category_id: Number(form.category_id),
-      subcategory_name: form.subcategory_name.trim(),
+      subcategory_name: formatCategoryName(form.subcategory_name.trim()),
       subcategory_code: form.subcategory_code.trim().toUpperCase() || undefined,
       description: form.description.trim() || null,
       display_order: Number(form.display_order) || 0,
@@ -319,12 +325,22 @@ function SubCategoryFormContent({
         {isLocked && currentCategoryObj ? (
           <div className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-base-200/60 border border-primary/20">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="size-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs shrink-0">
-                {(currentCategoryObj.categoryName || currentCategoryObj.category_name || "C").charAt(0).toUpperCase()}
-              </div>
+              {(currentCategoryObj.imageUrl || currentCategoryObj.image_url) ? (
+                <div className="size-9 rounded-xl overflow-hidden border border-primary/20 bg-base-200 shrink-0 shadow-2xs">
+                  <img
+                    src={normalizeCategoryImageUrl(currentCategoryObj.imageUrl || currentCategoryObj.image_url)}
+                    alt={currentCategoryObj.categoryName || currentCategoryObj.category_name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="size-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs shrink-0">
+                  {(currentCategoryObj.categoryName || currentCategoryObj.category_name || "C").charAt(0).toUpperCase()}
+                </div>
+              )}
               <div className="min-w-0">
-                <span className="text-xs font-bold text-base-content block truncate">
-                  {currentCategoryObj.categoryName || currentCategoryObj.category_name}
+                <span className="text-xs sm:text-sm font-bold text-base-content block truncate">
+                  {formatCategoryName(currentCategoryObj.categoryName || currentCategoryObj.category_name)}
                 </span>
                 {(currentCategoryObj.categoryCode || currentCategoryObj.category_code) && (
                   <span className="text-[10px] font-mono font-semibold text-primary">
@@ -333,36 +349,19 @@ function SubCategoryFormContent({
                 )}
               </div>
             </div>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-base-100 text-primary text-[10px] font-bold border border-primary/20">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-base-100 text-primary text-[10px] font-bold border border-primary/20 shrink-0">
               <Lock className="size-3" />
               <span>LOCKED</span>
             </span>
           </div>
         ) : (
-          <div className="relative">
-            <select
-              value={form.category_id}
-              onChange={handleCategoryChange}
-              disabled={saving || categoriesLoading}
-              className={`w-full px-3.5 py-2.5 rounded-xl border bg-base-100 text-xs sm:text-sm text-base-content appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer ${
-                errors.category_id
-                  ? "border-rose-500 ring-2 ring-rose-500/20"
-                  : "border-base-300 hover:border-primary/40 focus:border-primary"
-              }`}
-            >
-              <option value="">Select a parent category...</option>
-              {categories.map((cat) => {
-                const catName = cat.categoryName || cat.category_name;
-                const catCode = cat.categoryCode || cat.category_code;
-                return (
-                  <option key={cat.id} value={cat.id}>
-                    {catName} {catCode ? `(${catCode})` : ""}
-                  </option>
-                );
-              })}
-            </select>
-            <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 size-4 text-base-content/40 pointer-events-none" />
-          </div>
+          <ParentCategorySelect
+            categories={categories}
+            value={form.category_id}
+            onChange={handleCategoryChange}
+            disabled={saving || categoriesLoading}
+            error={errors.category_id}
+          />
         )}
         {errors.category_id && (
           <p className="text-xs text-rose-500 font-medium">{errors.category_id}</p>
@@ -390,6 +389,14 @@ function SubCategoryFormContent({
           type="text"
           value={form.subcategory_name}
           onChange={set("subcategory_name")}
+          onBlur={() => {
+            if (form.subcategory_name) {
+              setForm((f) => ({
+                ...f,
+                subcategory_name: formatCategoryName(f.subcategory_name),
+              }));
+            }
+          }}
           onFocus={() => setShowSuggestions(true)}
           placeholder="e.g. Kanchipuram Pure Silk, Anarkali Kurtis, etc."
           maxLength={150}

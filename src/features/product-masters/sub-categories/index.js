@@ -4,6 +4,8 @@ export { default as SubCategoryFormModal } from "./components/SubCategoryFormMod
 export { default as SubCategoryDetailsModal } from "./components/SubCategoryDetailsModal.jsx";
 export { default as SubCategoryDeleteModal } from "./components/SubCategoryDeleteModal.jsx";
 export { default as SubCategoryFilterDropdown } from "./components/SubCategoryFilterDropdown.jsx";
+export { default as SubCategoryRecentSearches } from "./components/SubCategoryRecentSearches.jsx";
+export { default as ParentCategorySelect } from "./components/ParentCategorySelect.jsx";
 export { default as ImageUploader } from "./components/ImageUploader.jsx";
 export * from "./services/subCategoryService.js";
 export { default as subCategoryService } from "./services/subCategoryService.js";

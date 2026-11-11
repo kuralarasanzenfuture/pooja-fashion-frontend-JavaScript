@@ -25,12 +25,13 @@ import { Button } from "../../../../common/components/ui/buttons/index.js";
 
 // Font Options as seen in ui.shadcn.com/typeset
 const HEADING_BODY_FONTS = [
+  { id: "google-sans", label: "Google Sans (Default)", family: "'Google Sans Flex Variable', 'Google Sans Text', 'Google Sans', 'Roboto', sans-serif", category: "Sans" },
+  { id: "roboto", label: "Roboto", family: "'Roboto', sans-serif", category: "Sans" },
   { id: "geist", label: "Geist", family: "var(--font-geist, 'Geist Variable', sans-serif)", category: "Sans" },
   { id: "inter", label: "Inter", family: "'Inter', sans-serif", category: "Sans" },
   { id: "noto-sans", label: "Noto Sans", family: "'Noto Sans', sans-serif", category: "Sans" },
   { id: "nunito-sans", label: "Nunito Sans", family: "'Nunito Sans', sans-serif", category: "Sans" },
   { id: "figtree", label: "Figtree", family: "'Figtree', sans-serif", category: "Sans" },
-  { id: "roboto", label: "Roboto", family: "'Roboto', sans-serif", category: "Sans" },
   { id: "raleway", label: "Raleway", family: "'Raleway', sans-serif", category: "Sans" },
   { id: "dm-sans", label: "DM Sans", family: "'DM Sans', sans-serif", category: "Sans" },
   { id: "public-sans", label: "Public Sans", family: "'Public Sans', sans-serif", category: "Sans" },
@@ -180,7 +181,7 @@ const CONTENT_SAMPLES = [
 
 export default function FontSettings() {
   const dispatch = useDispatch();
-  const currentAppFontId = useSelector((state) => state.ui?.fontFamily) || (typeof window !== "undefined" ? localStorage.getItem("pooja_app_font") : "") || "outfit";
+  const currentAppFontId = useSelector((state) => state.ui?.fontFamily) || (typeof window !== "undefined" ? localStorage.getItem("pooja_app_font") : "") || "google-sans";
   const currentAppFontSize = useSelector((state) => state.ui?.fontSize) || (typeof window !== "undefined" ? localStorage.getItem("pooja_app_font_size") : "") || "15px";
   const currentAppHeading = useSelector((state) => state.ui?.headingFont) || (typeof window !== "undefined" ? localStorage.getItem("pooja_app_heading_font") : "") || "";
   const currentAppMono = useSelector((state) => state.ui?.monoFont) || (typeof window !== "undefined" ? localStorage.getItem("pooja_app_mono_font") : "") || "";
@@ -436,14 +437,14 @@ export default function FontSettings() {
     }
   };
 
-  // Reset to default Geist specs
+  // Reset to default Google Sans specs
   const handleReset = () => {
-    const defaultHeading = HEADING_BODY_FONTS[0]; // Geist
-    const defaultBody = HEADING_BODY_FONTS[0]; // Geist
+    const defaultHeading = HEADING_BODY_FONTS[0]; // Google Sans
+    const defaultBody = HEADING_BODY_FONTS[0]; // Google Sans
     const defaultMono = MONO_FONTS[0]; // Geist Mono
     const defaultMeasure = "80ch";
     const defaultSize = "15px";
-    const defaultLeading = LEADING_OPTIONS[1]; // Regular 1.75
+    const defaultLeading = LEADING_OPTIONS[0]; // Tight 1.6
     const defaultFlow = FLOW_OPTIONS[1];
 
     setHeadingFont(defaultHeading);

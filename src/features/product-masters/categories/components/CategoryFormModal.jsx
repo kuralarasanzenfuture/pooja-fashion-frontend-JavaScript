@@ -6,6 +6,7 @@ import { useModalAnimation } from "../../../../common/hooks/useModalAnimation.js
 import { CompanySelect } from "../../../company/components/index.js";
 import ImageUploader from "./ImageUploader.jsx";
 import { getPopularCategoryPresets, searchCategoryPresets } from "../data/index.js";
+import { formatCategoryName } from "../utils/categoryImageHelper.js";
 
 const EMPTY = {
   company_id: "",
@@ -234,7 +235,7 @@ export default function CategoryFormModal({
       values: {
         company_id: targetCompanyId,
         category_code: form.category_code.trim().toUpperCase(),
-        category_name: form.category_name.trim(),
+        category_name: formatCategoryName(form.category_name.trim()),
         description: form.description.trim(),
         display_order: Number(form.display_order) || 0,
         is_active: form.is_active,
@@ -360,6 +361,14 @@ export default function CategoryFormModal({
                     onChange={(e) => {
                       set("category_name")(e);
                       if (!showSuggestions) setShowSuggestions(true);
+                    }}
+                    onBlur={() => {
+                      if (form.category_name) {
+                        setForm((f) => ({
+                          ...f,
+                          category_name: formatCategoryName(f.category_name),
+                        }));
+                      }
                     }}
                     onFocus={() => setShowSuggestions(true)}
                     disabled={saving}

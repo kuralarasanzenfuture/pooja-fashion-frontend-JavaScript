@@ -1,10 +1,11 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Layers,
   Plus,
   RefreshCw,
+  RotateCw,
   Search,
   CheckCircle2,
   AlertCircle,
@@ -17,6 +18,9 @@ import {
   LayoutGrid,
   Table as TableIcon,
   ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Clock,
   Building,
   Image as ImageIcon,
   FolderTree,
@@ -40,6 +44,9 @@ import SubCategoryFormModal from "../components/SubCategoryFormModal.jsx";
 import SubCategoryDetailsModal from "../components/SubCategoryDetailsModal.jsx";
 import SubCategoryDeleteModal from "../components/SubCategoryDeleteModal.jsx";
 import SubCategoryFilterDropdown from "../components/SubCategoryFilterDropdown.jsx";
+import SubCategoryRecentSearches from "../components/SubCategoryRecentSearches.jsx";
+import { formatCategoryName } from "../../categories/utils/categoryImageHelper.js";
+import { SlidingTabs, AnimatedTabContent } from "../../../../common/components/tabs/index.js";
 
 /**
  * Shimmering Loading Skeleton for Subcategories
@@ -306,7 +313,7 @@ export default function SubCategoriesPage() {
   const categoryOptions = useMemo(() => {
     const base = categoriesList.map((c) => ({
       value: String(c.id),
-      label: c.categoryName || c.category_name,
+      label: formatCategoryName(c.categoryName || c.category_name),
       badge: c.categoryCode || c.category_code || null,
       icon: FolderTree,
     }));
@@ -339,6 +346,178 @@ export default function SubCategoriesPage() {
     (canSelectCompany && Boolean(companyFilter)) ||
     statusFilter !== "all" ||
     mediaFilter !== "all";
+
+  // Storage key for recent subcategory searches (persistent across reloads)
+  const RECENT_SEARCHES_STORAGE_KEY = "pooja_fashion_recent_subcategory_searches_v1";
+
+  // Recent searches state
+  const [recentSearches, setRecentSearches] = useState(() => {
+    try {
+      const stored = localStorage.getItem(RECENT_SEARCHES_STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Recent searches dropdown open/close state
+  const [isRecentSearchesOpen, setIsRecentSearchesOpen] = useState(false);
+  const searchBoxRef = useRef(null);
+  const recentSearchesRef = useRef(null);
+
+  // Close recent searches when clicking anywhere outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const isInsideSearch =
+        searchBoxRef.current && searchBoxRef.current.contains(event.target);
+      const isInsideRecent =
+        recentSearchesRef.current &&
+        recentSearchesRef.current.contains(event.target);
+
+      if (!isInsideSearch && !isInsideRecent) {
+        setIsRecentSearchesOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, []);
+
+  // Sync / add recent search item (validates against catalog)
+  const handleAddRecentSearch = (item) => {
+    if (!item) return;
+    const name =
+      typeof item === "string"
+        ? item
+        : item.name || item.subcategoryName || item.subcategory_name || item.query;
+    if (!name || !name.trim()) return;
+
+    const queryTrim = name.trim();
+    const queryLower = queryTrim.toLowerCase();
+
+    // Check if query matches an existing subcategory in catalog
+    const pool = [...masterSubcategories, ...currentSubcategories];
+    const matchingSubcategory = pool.find((sub) => {
+      const sName = (sub.subcategoryName || sub.subcategory_name || "").toLowerCase();
+      const sCode = (sub.subcategoryCode || sub.subcategory_code || "").toLowerCase();
+      return (
+        sName === queryLower ||
+        sCode === queryLower ||
+        (queryLower.length >= 2 && (sName.includes(queryLower) || sCode.includes(queryLower)))
+      );
+    });
+
+    if (typeof item === "string" && !matchingSubcategory) {
+      return;
+    }
+
+    const sub = matchingSubcategory || (typeof item === "object" ? item : null);
+    const realName = formatCategoryName(sub ? (sub.subcategoryName || sub.subcategory_name || sub.name || queryTrim) : queryTrim);
+    const realCode = sub ? (sub.subcategoryCode || sub.subcategory_code || sub.code || "") : "";
+    const parentName = formatCategoryName(sub ? (sub.categoryName || sub.category_name || sub.category?.category_name || "") : "");
+    const rawImage = sub ? (sub.imageUrl || sub.image_url || sub.image || null) : null;
+    const realImage = rawImage && !rawImage.includes("images.unsplash.com") ? rawImage : null;
+
+    setRecentSearches((prev) => {
+      const newEntry = {
+        id: sub?.id || `search-${Date.now()}`,
+        name: realName,
+        code: realCode,
+        categoryName: parentName,
+        imageUrl: realImage,
+        timestamp: Date.now(),
+        query: realName || queryTrim,
+      };
+
+      const filtered = prev.filter(
+        (s) => (s.name || s.query || "").toLowerCase() !== queryLower
+      );
+      const updated = [newEntry, ...filtered].slice(0, 10);
+      try {
+        localStorage.setItem(RECENT_SEARCHES_STORAGE_KEY, JSON.stringify(updated));
+      } catch (e) {
+        console.error("Failed to store recent search", e);
+      }
+      return updated;
+    });
+  };
+
+  const handleClearRecentSearches = () => {
+    setIsRecentSearchesOpen(false);
+    setTimeout(() => {
+      setRecentSearches([]);
+      try {
+        localStorage.setItem(RECENT_SEARCHES_STORAGE_KEY, JSON.stringify([]));
+      } catch (e) {
+        console.error(e);
+      }
+    }, 320);
+  };
+
+  const handleRemoveRecentSearch = (idOrQuery) => {
+    setRecentSearches((prev) => {
+      const updated = prev.filter(
+        (s) => s.id !== idOrQuery && s.name !== idOrQuery && s.query !== idOrQuery
+      );
+      try {
+        localStorage.setItem(RECENT_SEARCHES_STORAGE_KEY, JSON.stringify(updated));
+      } catch (e) {
+        console.error(e);
+      }
+      return updated;
+    });
+  };
+
+  const handleSelectRecentSearch = (item) => {
+    if (!item) return;
+    const term =
+      (typeof item === "string" ? item : null) ||
+      item.query ||
+      item.name ||
+      item.subcategoryName ||
+      item.subcategory_name ||
+      "";
+    const cleanTerm = String(term).trim();
+    setSearch(cleanTerm);
+    setPage(1);
+    if (cleanTerm) {
+      handleAddRecentSearch(item);
+    }
+    setIsRecentSearchesOpen(false);
+  };
+
+  // Auto-populate initial recent searches if empty from master catalog
+  const hasCheckedInitialRecentRef = useRef(false);
+  useEffect(() => {
+    if (hasCheckedInitialRecentRef.current) return;
+    if (masterSubcategories.length === 0) return;
+
+    try {
+      const existingStorage = localStorage.getItem(RECENT_SEARCHES_STORAGE_KEY);
+      if (!existingStorage || JSON.parse(existingStorage).length === 0) {
+        hasCheckedInitialRecentRef.current = true;
+        const sample = masterSubcategories.slice(0, 6).map((sub, i) => ({
+          id: sub.id,
+          name: formatCategoryName(sub.subcategoryName || sub.subcategory_name),
+          code: sub.subcategoryCode || sub.subcategory_code || "",
+          categoryName: formatCategoryName(sub.categoryName || sub.category_name || sub.category?.category_name || ""),
+          query: sub.subcategoryName || sub.subcategory_name,
+          imageUrl: sub.imageUrl || sub.image_url || null,
+          timestamp: Date.now() - (i + 1) * 3600000,
+        }));
+        setRecentSearches(sample);
+        localStorage.setItem(RECENT_SEARCHES_STORAGE_KEY, JSON.stringify(sample));
+      } else {
+        hasCheckedInitialRecentRef.current = true;
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [masterSubcategories]);
 
   const handleResetFilters = () => {
     setSearch("");
@@ -454,53 +633,36 @@ export default function SubCategoriesPage() {
       <PageHeader
         title="Subcategories Master"
         subtitle="Manage product subcategories, parent category hierarchies, and catalog classifications"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/" },
-          { label: "Product Master", href: "/products/categories" },
-          { label: "Subcategories" },
-        ]}
         actions={
           <div className="flex items-center gap-2.5">
-            <button
-              type="button"
-              onClick={() => {
-                refetch();
-                refetchMaster();
-              }}
-              disabled={isFetching}
-              title="Refresh subcategories"
-              className="p-2.5 rounded-xl border border-base-300 bg-base-100 hover:bg-base-200 text-base-content/70 hover:text-base-content transition-all cursor-pointer shadow-xs disabled:opacity-50"
-            >
-              <RefreshCw
-                className={`size-4 ${isFetching ? "animate-spin text-primary" : ""}`}
-              />
-            </button>
+            <div className="tooltip tooltip-bottom" data-tip="Refresh subcategories">
+              <button
+                type="button"
+                onClick={() => {
+                  refetch();
+                  refetchMaster();
+                }}
+                disabled={isFetching}
+                aria-label="Refresh subcategories"
+                className="p-2.5 rounded-xl border border-base-300 bg-base-100 hover:bg-base-200 text-base-content/70 hover:text-base-content transition-all cursor-pointer shadow-xs disabled:opacity-50"
+              >
+                <RotateCw
+                  className={`size-4 ${isFetching ? "animate-spin text-primary" : ""}`}
+                />
+              </button>
+            </div>
 
-            <div className="hidden sm:flex items-center rounded-xl border border-base-300 bg-base-100 p-0.5 shadow-xs">
-              <button
-                type="button"
-                onClick={() => setViewMode("table")}
-                className={`p-2 rounded-lg transition-all cursor-pointer ${
-                  viewMode === "table"
-                    ? "bg-primary text-primary-content font-bold shadow-xs"
-                    : "text-base-content/60 hover:text-base-content"
-                }`}
-                title="Table Layout"
-              >
-                <TableIcon className="size-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode("cards")}
-                className={`p-2 rounded-lg transition-all cursor-pointer ${
-                  viewMode === "cards"
-                    ? "bg-primary text-primary-content font-bold shadow-xs"
-                    : "text-base-content/60 hover:text-base-content"
-                }`}
-                title="Cards Layout"
-              >
-                <LayoutGrid className="size-4" />
-              </button>
+            <div className="hidden sm:block">
+              <SlidingTabs
+                tabs={[
+                  { id: "table", icon: TableIcon, label: "" },
+                  { id: "cards", icon: LayoutGrid, label: "" },
+                ]}
+                activeTab={viewMode}
+                onChange={setViewMode}
+                variant="segmented"
+                size="xs"
+              />
             </div>
 
             <Button
@@ -600,113 +762,198 @@ export default function SubCategoriesPage() {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="p-3.5 rounded-2xl bg-base-100 border border-base-300 shadow-xs flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
-          {/* Search Box */}
-          <div className="relative flex-1 min-w-[200px] max-w-sm">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-base-content/40" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
+      <div className="rounded-2xl p-4 sm:p-5 bg-base-100 border border-base-300 shadow-xs space-y-3.5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
+            {/* Search Box with Clock Toggle */}
+            <div ref={searchBoxRef} className="relative flex-1 min-w-[220px] max-w-sm">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-base-content/40 pointer-events-none" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                  if (recentSearches.length > 0) {
+                    setIsRecentSearchesOpen(true);
+                  }
+                }}
+                onClick={() => {
+                  if (recentSearches.length > 0) {
+                    setIsRecentSearchesOpen(true);
+                  }
+                }}
+                onFocus={() => {
+                  if (recentSearches.length > 0) {
+                    setIsRecentSearchesOpen(true);
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && (search || "").trim()) {
+                    handleAddRecentSearch((search || "").trim());
+                  }
+                }}
+                placeholder="Search by subcategory name, code..."
+                className="w-full pl-9 pr-18 py-2 rounded-xl border border-base-300 bg-base-100 text-xs text-base-content placeholder:text-base-content/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+              />
+              <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                {search && (
+                  <div className="tooltip tooltip-bottom" data-tip="Clear search">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearch("");
+                        setPage(1);
+                      }}
+                      className="text-base-content/40 hover:text-base-content p-1 rounded-lg hover:bg-base-200 transition-colors cursor-pointer"
+                      aria-label="Clear search"
+                    >
+                      <X className="size-3.5" />
+                    </button>
+                  </div>
+                )}
+                {recentSearches.length > 0 && (
+                  <div
+                    className="tooltip tooltip-bottom"
+                    data-tip={isRecentSearchesOpen ? "Hide recent searches" : "Recent searches"}
+                  >
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsRecentSearchesOpen((prev) => !prev);
+                      }}
+                      className={`p-1.5 rounded-lg text-xs font-medium cursor-pointer transition-colors ${
+                        isRecentSearchesOpen
+                          ? "text-primary bg-primary/10 shadow-2xs"
+                          : "text-base-content/40 hover:text-base-content hover:bg-base-200"
+                      }`}
+                      aria-label={isRecentSearchesOpen ? "Hide recent searches" : "Recent searches"}
+                    >
+                      <Clock className="size-3.5" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Company Filter (SuperAdmin) */}
+            {canSelectCompany && (
+              <SubCategoryFilterDropdown
+                label="Company"
+                value={companyFilter}
+                options={companyOptions}
+                onChange={(v) => {
+                  setCompanyFilter(v);
+                  setCategoryFilter("");
+                  setPage(1);
+                }}
+                icon={Building}
+                searchable={true}
+                searchPlaceholder="Search companies..."
+              />
+            )}
+
+            {/* Parent Category Filter */}
+            <SubCategoryFilterDropdown
+              label="Category"
+              value={categoryFilter}
+              options={categoryOptions}
+              onChange={(v) => {
+                setCategoryFilter(v);
                 setPage(1);
               }}
-              placeholder="Search by subcategory name, code..."
-              className="w-full pl-9 pr-8 py-2 rounded-xl border border-base-300 bg-base-100 text-xs text-base-content placeholder:text-base-content/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+              icon={FolderTree}
+              searchable={true}
+              searchPlaceholder="Search categories..."
             />
-            {search && (
+
+            {/* Status Filter */}
+            <SubCategoryFilterDropdown
+              label="Status"
+              value={statusFilter}
+              options={statusOptions}
+              onChange={(v) => {
+                setStatusFilter(v);
+                setPage(1);
+              }}
+            />
+
+            {/* Media Filter */}
+            <SubCategoryFilterDropdown
+              label="Visuals"
+              value={mediaFilter}
+              options={mediaOptions}
+              onChange={(v) => {
+                setMediaFilter(v);
+                setPage(1);
+              }}
+              icon={ImageIcon}
+            />
+
+            {/* Clear Filters Button */}
+            {hasActiveFilters && (
               <button
                 type="button"
-                onClick={() => setSearch("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-base-content/40 hover:text-base-content"
+                onClick={handleResetFilters}
+                className="px-2.5 py-1.5 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-500/10 transition-colors flex items-center gap-1 cursor-pointer"
               >
-                <X className="size-3.5" />
+                <RotateCcw className="size-3.5" />
+                <span>Reset</span>
               </button>
             )}
           </div>
 
-          {/* Company Filter (SuperAdmin) */}
-          {canSelectCompany && (
+          {/* Sort Controls */}
+          <div className="flex items-center gap-2">
             <SubCategoryFilterDropdown
-              label="Company"
-              value={companyFilter}
-              options={companyOptions}
-              onChange={(v) => {
-                setCompanyFilter(v);
-                setCategoryFilter("");
-                setPage(1);
-              }}
-              icon={Building}
+              label="Sort by"
+              value={sortBy}
+              options={sortOptions}
+              onChange={(v) => setSortBy(v)}
+              icon={ArrowUpDown}
             />
-          )}
 
-          {/* Parent Category Filter */}
-          <SubCategoryFilterDropdown
-            label="Category"
-            value={categoryFilter}
-            options={categoryOptions}
-            onChange={(v) => {
-              setCategoryFilter(v);
-              setPage(1);
-            }}
-            icon={FolderTree}
-          />
-
-          {/* Status Filter */}
-          <SubCategoryFilterDropdown
-            label="Status"
-            value={statusFilter}
-            options={statusOptions}
-            onChange={(v) => {
-              setStatusFilter(v);
-              setPage(1);
-            }}
-          />
-
-          {/* Media Filter */}
-          <SubCategoryFilterDropdown
-            label="Visuals"
-            value={mediaFilter}
-            options={mediaOptions}
-            onChange={(v) => {
-              setMediaFilter(v);
-              setPage(1);
-            }}
-            icon={ImageIcon}
-          />
-
-          {/* Clear Filters Button */}
-          {hasActiveFilters && (
             <button
               type="button"
-              onClick={handleResetFilters}
-              className="px-2.5 py-1.5 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-500/10 transition-colors flex items-center gap-1 cursor-pointer"
+              onClick={() => setSortOrder((o) => (o === "asc" ? "desc" : "asc"))}
+              aria-label={`Sort: ${sortOrder === "asc" ? "Ascending" : "Descending"}`}
+              className="p-2 rounded-xl border border-base-300 bg-base-100 hover:bg-base-200 text-base-content/70 hover:text-base-content transition-all cursor-pointer shadow-xs text-xs font-mono font-bold uppercase flex items-center gap-1"
             >
-              <RotateCcw className="size-3.5" />
-              <span>Reset</span>
+              {sortOrder === "asc" ? (
+                <>
+                  <ArrowUp className="size-3.5 text-primary" />
+                  <span>ASC</span>
+                </>
+              ) : (
+                <>
+                  <ArrowDown className="size-3.5 text-primary" />
+                  <span>DESC</span>
+                </>
+              )}
             </button>
-          )}
+          </div>
         </div>
 
-        {/* Sort Controls */}
-        <div className="flex items-center gap-2">
-          <SubCategoryFilterDropdown
-            label="Sort by"
-            value={sortBy}
-            options={sortOptions}
-            onChange={(v) => setSortBy(v)}
-            icon={ArrowUpDown}
-          />
-
-          <button
-            type="button"
-            onClick={() => setSortOrder((o) => (o === "asc" ? "desc" : "asc"))}
-            title={`Sort Order: ${sortOrder.toUpperCase()}`}
-            className="p-2 rounded-xl border border-base-300 bg-base-100 hover:bg-base-200 text-base-content/70 hover:text-base-content transition-all cursor-pointer shadow-xs text-xs font-mono font-bold uppercase"
-          >
-            {sortOrder}
-          </button>
+        {/* Smooth Animated Collapsible Recent Searches Strip */}
+        <div
+          ref={recentSearchesRef}
+          className={`accordion-grid ${
+            isRecentSearchesOpen && recentSearches.length > 0 ? "open" : "closed"
+          }`}
+        >
+          <div className="accordion-inner">
+            <div className="pt-2 pb-0.5">
+              <SubCategoryRecentSearches
+                recentSearches={recentSearches}
+                catalog={masterSubcategories}
+                onSelectSearch={handleSelectRecentSearch}
+                onClearAll={handleClearRecentSearches}
+                onRemoveItem={handleRemoveRecentSearch}
+                activeQuery={search}
+              />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -775,17 +1022,20 @@ export default function SubCategoriesPage() {
             </Button>
           )}
         </div>
-      ) : viewMode === "cards" ? (
-        /* Card / Grid View */
+      ) : (
+        <AnimatedTabContent activeKey={viewMode}>
+          {viewMode === "cards" ? (
+            /* Card / Grid View */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {currentSubcategories.map((subcat) => {
-            const name = subcat.subcategoryName || subcat.subcategory_name;
+            const name = formatCategoryName(subcat.subcategoryName || subcat.subcategory_name);
             const code = subcat.subcategoryCode || subcat.subcategory_code;
-            const catName =
+            const catName = formatCategoryName(
               subcat.categoryName ||
               subcat.category_name ||
               subcat.category?.category_name ||
-              "—";
+              "—"
+            );
             const imageUrl = subcat.imageUrl || subcat.image_url;
             const isActive =
               subcat.isActive !== undefined
@@ -802,28 +1052,36 @@ export default function SubCategoriesPage() {
                 className="group relative rounded-3xl border border-base-300 bg-base-100 p-5 space-y-4 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 flex flex-col justify-between"
               >
                 <div className="space-y-3.5">
-                  {/* Top Bar: Order & Status */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-lg bg-base-200 text-base-content/70">
-                      Order #{displayOrder}
-                    </span>
+                  {/* Top Bar: Order, Code & Status Toggle */}
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="px-2 py-0.5 rounded-lg text-xs font-mono font-bold bg-base-200 text-base-content/75 border border-base-300/80">
+                        #{displayOrder}
+                      </span>
+                      {code && (
+                        <span className="px-2 py-0.5 rounded-lg text-xs font-mono font-semibold bg-primary/10 text-primary border border-primary/20">
+                          {code}
+                        </span>
+                      )}
+                    </div>
 
-                    <button
-                      type="button"
-                      onClick={() => handleToggleStatus(subcat.id, !isActive)}
-                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1 ${
-                        isActive
-                          ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 hover:bg-emerald-500/20"
-                          : "bg-rose-500/10 text-rose-600 border border-rose-500/20 hover:bg-rose-500/20"
-                      }`}
-                    >
-                      <span
-                        className={`size-1.5 rounded-full ${
-                          isActive ? "bg-emerald-500" : "bg-rose-500"
-                        }`}
+                    <label className="inline-flex cursor-pointer items-center gap-1.5 select-none">
+                      <input
+                        type="checkbox"
+                        className="toggle toggle-success toggle-xs"
+                        checked={isActive}
+                        disabled={updateStatusMutation.isPending}
+                        onChange={() => handleToggleStatus(subcat.id, !isActive)}
+                        aria-label={`Toggle active status for ${name}`}
                       />
-                      <span>{isActive ? "Active" : "Inactive"}</span>
-                    </button>
+                      <span
+                        className={`text-[11px] font-semibold ${
+                          isActive ? "text-emerald-600 dark:text-emerald-400" : "text-base-content/50"
+                        }`}
+                      >
+                        {isActive ? "Active" : "Inactive"}
+                      </span>
+                    </label>
                   </div>
 
                   {/* Thumbnail & Title */}
@@ -835,20 +1093,22 @@ export default function SubCategoriesPage() {
                           alt={name}
                           className="w-full h-full object-cover transition-transform group-hover/thumb:scale-110"
                         />
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setImageViewer({
-                              isOpen: true,
-                              src: imageUrl,
-                              title: name,
-                            })
-                          }
-                          className="absolute inset-0 bg-black/40 opacity-0 group-hover/thumb:opacity-100 transition-opacity flex items-center justify-center text-white"
-                          title="View High-Resolution Image"
-                        >
-                          <Maximize2 className="size-4" />
-                        </button>
+                        <div className="tooltip tooltip-top tooltip-primary" data-tip="Click to view full image in high quality">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setImageViewer({
+                                isOpen: true,
+                                src: imageUrl,
+                                title: name,
+                              })
+                            }
+                            className="absolute inset-0 bg-black/40 opacity-0 group-hover/thumb:opacity-100 transition-opacity flex items-center justify-center text-white cursor-pointer"
+                            aria-label="View High-Resolution Image"
+                          >
+                            <Maximize2 className="size-4" />
+                          </button>
+                        </div>
                       </div>
                     ) : (
                       <div className="size-16 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 flex items-center justify-center text-primary shrink-0 shadow-2xs">
@@ -870,18 +1130,20 @@ export default function SubCategoriesPage() {
                           {code || "NO_CODE"}
                         </span>
                         {code && (
-                          <button
-                            type="button"
-                            onClick={() => handleCopyCode(code, subcat.id)}
-                            className="text-base-content/40 hover:text-primary transition-colors"
-                            title="Copy Code"
-                          >
-                            {copiedCode === subcat.id ? (
-                              <Check className="size-3 text-emerald-500" />
-                            ) : (
-                              <Copy className="size-3" />
-                            )}
-                          </button>
+                          <div className="tooltip tooltip-top" data-tip={copiedCode === subcat.id ? "Copied code!" : "Copy code"}>
+                            <button
+                              type="button"
+                              onClick={() => handleCopyCode(code, subcat.id)}
+                              className="text-base-content/40 hover:text-primary transition-colors cursor-pointer"
+                              aria-label="Copy Code"
+                            >
+                              {copiedCode === subcat.id ? (
+                                <Check className="size-3 text-emerald-500" />
+                              ) : (
+                                <Copy className="size-3" />
+                              )}
+                            </button>
+                          </div>
                         )}
                       </div>
 
@@ -903,36 +1165,42 @@ export default function SubCategoriesPage() {
 
                 {/* Card Actions Footer */}
                 <div className="flex items-center justify-between pt-3 border-t border-base-200">
-                  <button
-                    type="button"
-                    onClick={() => setDetailsModal({ isOpen: true, data: subcat })}
-                    className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
-                  >
-                    <Eye className="size-3.5" />
-                    <span>Quick View</span>
-                  </button>
+                  <div className="tooltip tooltip-top" data-tip="View Details">
+                    <button
+                      type="button"
+                      onClick={() => setDetailsModal({ isOpen: true, data: subcat })}
+                      className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <Eye className="size-3.5" />
+                      <span>Quick View</span>
+                    </button>
+                  </div>
 
                   <div className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setFormModal({ isOpen: true, mode: "edit", data: subcat })
-                      }
-                      className="p-1.5 rounded-lg text-base-content/60 hover:text-primary hover:bg-base-200 transition-colors cursor-pointer"
-                      title="Edit Subcategory"
-                    >
-                      <Edit2 className="size-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setDeleteModal({ isOpen: true, data: subcat })
-                      }
-                      className="p-1.5 rounded-lg text-base-content/60 hover:text-rose-600 hover:bg-rose-500/10 transition-colors cursor-pointer"
-                      title="Delete Subcategory"
-                    >
-                      <Trash2 className="size-4" />
-                    </button>
+                    <div className="tooltip tooltip-top" data-tip="Edit Subcategory">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFormModal({ isOpen: true, mode: "edit", data: subcat })
+                        }
+                        className="p-1.5 rounded-lg text-base-content/60 hover:text-primary hover:bg-base-200 transition-colors cursor-pointer"
+                        aria-label="Edit Subcategory"
+                      >
+                        <Edit2 className="size-4" />
+                      </button>
+                    </div>
+                    <div className="tooltip tooltip-top tooltip-error" data-tip="Delete Subcategory">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setDeleteModal({ isOpen: true, data: subcat })
+                        }
+                        className="p-1.5 rounded-lg text-base-content/60 hover:text-rose-600 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                        aria-label="Delete Subcategory"
+                      >
+                        <Trash2 className="size-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -956,15 +1224,17 @@ export default function SubCategoriesPage() {
               </thead>
               <tbody className="divide-y divide-base-200">
                 {currentSubcategories.map((subcat) => {
-                  const name =
-                    subcat.subcategoryName || subcat.subcategory_name;
+                  const name = formatCategoryName(
+                    subcat.subcategoryName || subcat.subcategory_name
+                  );
                   const code =
                     subcat.subcategoryCode || subcat.subcategory_code;
-                  const catName =
+                  const catName = formatCategoryName(
                     subcat.categoryName ||
                     subcat.category_name ||
                     subcat.category?.category_name ||
-                    "—";
+                    "—"
+                  );
                   const imageUrl = subcat.imageUrl || subcat.image_url;
                   const isActive =
                     subcat.isActive !== undefined
@@ -997,20 +1267,22 @@ export default function SubCategoriesPage() {
                                 alt={name}
                                 className="w-full h-full object-cover transition-transform group-hover/thumb:scale-110"
                               />
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setImageViewer({
-                                    isOpen: true,
-                                    src: imageUrl,
-                                    title: name,
-                                  })
-                                }
-                                className="absolute inset-0 bg-black/40 opacity-0 group-hover/thumb:opacity-100 transition-opacity flex items-center justify-center text-white"
-                                title="Expand image"
-                              >
-                                <Maximize2 className="size-3.5" />
-                              </button>
+                              <div className="tooltip tooltip-top tooltip-primary" data-tip="Click to view full image in high quality">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setImageViewer({
+                                      isOpen: true,
+                                      src: imageUrl,
+                                      title: name,
+                                    })
+                                  }
+                                  className="absolute inset-0 bg-black/40 opacity-0 group-hover/thumb:opacity-100 transition-opacity flex items-center justify-center text-white cursor-pointer"
+                                  aria-label="Expand image"
+                                >
+                                  <Maximize2 className="size-3.5" />
+                                </button>
+                              </div>
                             </div>
                           ) : (
                             <div className="size-12 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0 shadow-2xs">
@@ -1032,18 +1304,20 @@ export default function SubCategoriesPage() {
                                 {code || "NO_CODE"}
                               </span>
                               {code && (
-                                <button
-                                  type="button"
-                                  onClick={() => handleCopyCode(code, subcat.id)}
-                                  className="text-base-content/40 hover:text-primary transition-colors"
-                                  title="Copy Code"
-                                >
-                                  {copiedCode === subcat.id ? (
-                                    <Check className="size-3 text-emerald-500" />
-                                  ) : (
-                                    <Copy className="size-3" />
-                                  )}
-                                </button>
+                                <div className="tooltip tooltip-top" data-tip={copiedCode === subcat.id ? "Copied code!" : "Copy code"}>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleCopyCode(code, subcat.id)}
+                                    className="text-base-content/40 hover:text-primary transition-colors cursor-pointer"
+                                    aria-label="Copy Code"
+                                  >
+                                    {copiedCode === subcat.id ? (
+                                      <Check className="size-3 text-emerald-500" />
+                                    ) : (
+                                      <Copy className="size-3" />
+                                    )}
+                                  </button>
+                                </div>
                               )}
                             </div>
                           </div>
@@ -1068,21 +1342,23 @@ export default function SubCategoriesPage() {
                       </td>
 
                       {/* Catalog Status Toggle */}
-                      <td className="py-4 px-4">
-                        <label className="flex items-center gap-2 cursor-pointer select-none">
+                      <td className="py-3.5 px-4">
+                        <label className="inline-flex cursor-pointer items-center gap-2 select-none">
                           <input
                             type="checkbox"
                             checked={isActive}
+                            disabled={updateStatusMutation.isPending}
                             onChange={() =>
                               handleToggleStatus(subcat.id, !isActive)
                             }
-                            className="toggle toggle-primary toggle-sm"
+                            className="toggle toggle-success toggle-sm"
+                            aria-label={`Toggle active status for ${name}`}
                           />
                           <span
-                            className={`text-xs font-semibold ${
+                            className={`px-2 py-0.5 rounded-lg text-xs font-semibold ${
                               isActive
-                                ? "text-emerald-600 dark:text-emerald-400"
-                                : "text-base-content/40"
+                                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                                : "bg-base-200 text-base-content/50"
                             }`}
                           >
                             {isActive ? "Active" : "Inactive"}
@@ -1091,42 +1367,48 @@ export default function SubCategoriesPage() {
                       </td>
 
                       {/* Actions */}
-                      <td className="py-4 px-5 text-right">
+                      <td className="py-3.5 px-5 text-right">
                         <div className="flex items-center justify-end gap-1">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setDetailsModal({ isOpen: true, data: subcat })
-                            }
-                            className="p-1.5 rounded-lg text-base-content/50 hover:text-primary hover:bg-base-200 transition-colors cursor-pointer"
-                            title="Quick View"
-                          >
-                            <Eye className="size-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setFormModal({
-                                isOpen: true,
-                                mode: "edit",
-                                data: subcat,
-                              })
-                            }
-                            className="p-1.5 rounded-lg text-base-content/50 hover:text-primary hover:bg-base-200 transition-colors cursor-pointer"
-                            title="Edit"
-                          >
-                            <Edit2 className="size-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setDeleteModal({ isOpen: true, data: subcat })
-                            }
-                            className="p-1.5 rounded-lg text-base-content/50 hover:text-rose-600 hover:bg-rose-500/10 transition-colors cursor-pointer"
-                            title="Delete"
-                          >
-                            <Trash2 className="size-4" />
-                          </button>
+                          <div className="tooltip tooltip-left" data-tip="View Details">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setDetailsModal({ isOpen: true, data: subcat })
+                              }
+                              className="p-1.5 rounded-lg text-base-content/50 hover:text-primary hover:bg-base-200 transition-colors cursor-pointer"
+                              aria-label="View Details"
+                            >
+                              <Eye className="size-4" />
+                            </button>
+                          </div>
+                          <div className="tooltip tooltip-left" data-tip="Edit Subcategory">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setFormModal({
+                                  isOpen: true,
+                                  mode: "edit",
+                                  data: subcat,
+                                })
+                              }
+                              className="p-1.5 rounded-lg text-base-content/50 hover:text-primary hover:bg-base-200 transition-colors cursor-pointer"
+                              aria-label="Edit Subcategory"
+                            >
+                              <Edit2 className="size-4" />
+                            </button>
+                          </div>
+                          <div className="tooltip tooltip-left tooltip-error" data-tip="Delete Subcategory">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setDeleteModal({ isOpen: true, data: subcat })
+                              }
+                              className="p-1.5 rounded-lg text-base-content/50 hover:text-rose-600 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                              aria-label="Delete Subcategory"
+                            >
+                              <Trash2 className="size-4" />
+                            </button>
+                          </div>
                         </div>
                       </td>
                     </tr>
@@ -1136,6 +1418,8 @@ export default function SubCategoriesPage() {
             </table>
           </div>
         </div>
+      )}
+      </AnimatedTabContent>
       )}
 
       {/* Pagination Footer */}

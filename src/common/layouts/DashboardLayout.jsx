@@ -23,7 +23,7 @@ export default function DashboardLayout() {
         />
 
         {/* Content Area - Full width responsive container */}
-        <main className="flex-1 h-full overflow-y-auto min-h-0 w-full scrollbar-thin">
+        <main className="flex-1 h-full overflow-y-auto overflow-x-hidden min-h-0 w-full scrollbar-thin">
           <div className="w-full p-4 sm:p-6 lg:p-6 xl:px-8">
             <Outlet />
           </div>

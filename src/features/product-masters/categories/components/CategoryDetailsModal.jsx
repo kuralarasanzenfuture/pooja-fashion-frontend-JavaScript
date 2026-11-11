@@ -22,6 +22,7 @@ import {
 import { Button } from "../../../../common/components/ui/buttons/index.js";
 import { useModalAnimation } from "../../../../common/hooks/useModalAnimation.js";
 import { useSubcategories } from "../../sub-categories/hooks/useSubCategories.js";
+import { formatCategoryName } from "../utils/categoryImageHelper.js";
 
 /**
  * Category Details Quick View Modal with Subcategory Management
@@ -57,7 +58,7 @@ export default function CategoryDetailsModal({
 
   if (!isRendered || !category) return null;
 
-  const name = category.categoryName || category.category_name;
+  const name = formatCategoryName(category.categoryName || category.category_name);
   const code = category.categoryCode || category.category_code;
   const imageUrl = category.imageUrl || category.image_url;
   const displayOrder = category.displayOrder ?? category.display_order ?? 0;

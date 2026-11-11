@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   Type,
@@ -17,6 +17,8 @@ import {
   StoreSettings,
   SecuritySettings,
 } from "./components/index.js";
+import SidebarNavPill from "../../components/sidebar/SidebarNavPill.jsx";
+import { AnimatedTabContent } from "../../components/tabs/index.js";
 
 const TABS = [
   { id: "themes", label: "DaisyUI Themes", icon: Palette, description: "All 29 curated theme palettes" },
@@ -57,6 +59,7 @@ export default function SettingsPage() {
   };
 
   const [activeTab, setActiveTab] = useState(() => resolveTab(urlTab));
+  const navRef = useRef(null);
 
   useEffect(() => {
     if (urlTab) {
@@ -92,7 +95,10 @@ export default function SettingsPage() {
               </span>
             </div>
 
-            <nav className="space-y-1.5">
+            <nav ref={navRef} className="space-y-1.5 relative">
+              {/* Code & Chill Fluid Sliding Pill for Settings Tabs */}
+              <SidebarNavPill navRef={navRef} />
+
               {TABS.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -101,11 +107,12 @@ export default function SettingsPage() {
                   <button
                     key={tab.id}
                     type="button"
+                    data-nav-active={isActive ? "true" : undefined}
                     onClick={() => handleTabChange(tab.id)}
-                    className={`w-full flex items-start gap-3 p-3 rounded-2xl text-left transition-all cursor-pointer ${
+                    className={`relative z-10 w-full flex items-start gap-3 p-3 rounded-2xl text-left transition-colors duration-200 cursor-pointer ${
                       isActive
-                        ? "bg-primary text-primary-content shadow-sm shadow-primary/25 font-bold"
-                        : "text-base-content/70 hover:text-base-content hover:bg-base-200 font-semibold"
+                        ? "text-primary-content font-bold"
+                        : "text-base-content/70 hover:text-base-content hover:bg-base-200/50 font-semibold"
                     }`}
                   >
                     <div
@@ -121,7 +128,7 @@ export default function SettingsPage() {
                       <div className="text-xs font-bold leading-tight">{tab.label}</div>
                       <div
                         className={`text-[11px] font-medium truncate mt-0.5 ${
-                          isActive ? "text-primary-content/80" : "text-base-content/50"
+                          isActive ? "text-primary-content/85" : "text-base-content/50"
                         }`}
                       >
                         {tab.description}
@@ -147,11 +154,13 @@ export default function SettingsPage() {
 
         {/* Right Active Tab Content Area */}
         <main className="flex-1 p-6 md:p-8 bg-base-100 min-w-0">
-          {activeTab === "themes" && <ThemeSettings />}
-          {activeTab === "fonts" && <FontSettings />}
-          {activeTab === "profile" && <ProfileSettings />}
-          {activeTab === "store" && <StoreSettings />}
-          {activeTab === "security" && <SecuritySettings />}
+          <AnimatedTabContent activeKey={activeTab}>
+            {activeTab === "themes" && <ThemeSettings />}
+            {activeTab === "fonts" && <FontSettings />}
+            {activeTab === "profile" && <ProfileSettings />}
+            {activeTab === "store" && <StoreSettings />}
+            {activeTab === "security" && <SecuritySettings />}
+          </AnimatedTabContent>
         </main>
       </div>
     </div>

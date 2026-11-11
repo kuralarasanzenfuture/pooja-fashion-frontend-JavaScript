@@ -1,11 +1,38 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const savedFont = typeof window !== "undefined" ? localStorage.getItem("pooja_app_font") || "outfit" : "outfit";
-const savedFontSize = typeof window !== "undefined" ? localStorage.getItem("pooja_app_font_size") || "15px" : "15px";
-const savedTheme = typeof window !== "undefined" ? localStorage.getItem("pooja_app_theme") || "light" : "light";
-const savedHeadingFont = typeof window !== "undefined" ? localStorage.getItem("pooja_app_heading_font") || "" : "";
-const savedMonoFont = typeof window !== "undefined" ? localStorage.getItem("pooja_app_mono_font") || "" : "";
-const savedLineHeight = typeof window !== "undefined" ? localStorage.getItem("pooja_app_line_height") || "1.75" : "1.75";
+const DEFAULT_FONT = "google-sans";
+const DEFAULT_FONT_SIZE = "15px";
+const DEFAULT_LINE_HEIGHT = "1.6";
+
+// Automatic migration: if previously defaulted to "outfit", migrate to "google-sans"
+let savedFont = DEFAULT_FONT;
+let savedFontSize = DEFAULT_FONT_SIZE;
+let savedTheme = "light";
+let savedHeadingFont = "";
+let savedMonoFont = "";
+let savedLineHeight = DEFAULT_LINE_HEIGHT;
+
+if (typeof window !== "undefined") {
+  const fontV2 = localStorage.getItem("pooja_app_font_v2");
+  const storedFont = localStorage.getItem("pooja_app_font");
+  if (!fontV2) {
+    localStorage.setItem("pooja_app_font_v2", "true");
+    if (!storedFont || storedFont === "outfit") {
+      localStorage.setItem("pooja_app_font", DEFAULT_FONT);
+      savedFont = DEFAULT_FONT;
+    } else {
+      savedFont = storedFont;
+    }
+  } else {
+    savedFont = storedFont || DEFAULT_FONT;
+  }
+
+  savedFontSize = localStorage.getItem("pooja_app_font_size") || DEFAULT_FONT_SIZE;
+  savedTheme = localStorage.getItem("pooja_app_theme") || "light";
+  savedHeadingFont = localStorage.getItem("pooja_app_heading_font") || "";
+  savedMonoFont = localStorage.getItem("pooja_app_mono_font") || "";
+  savedLineHeight = localStorage.getItem("pooja_app_line_height") || DEFAULT_LINE_HEIGHT;
+}
 
 if (typeof document !== "undefined") {
   document.documentElement.setAttribute("data-font", savedFont);

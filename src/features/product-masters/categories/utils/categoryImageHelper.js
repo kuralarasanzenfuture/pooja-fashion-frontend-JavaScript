@@ -111,6 +111,32 @@ const FASHION_KEYWORD_IMAGES = [
 ];
 
 /**
+ * Normalizes category / classification titles into clean Title Case.
+ * Corrects irregular casing and trailing uppercase characters (e.g. "sareeS" -> "Sarees").
+ */
+export function formatCategoryName(name = "") {
+  if (!name || typeof name !== "string") return name || "";
+  const trimmed = name.trim();
+  if (!trimmed || trimmed === "—") return trimmed;
+
+  return trimmed
+    .split(/(\s+|[-/&])/g)
+    .map((token) => {
+      if (!token || /^\s+$/.test(token) || /^[-/&]$/.test(token)) {
+        return token;
+      }
+
+      const upperAcronyms = ["ERP", "POS", "ID", "GST", "SMS", "SKU", "HSN", "VIP", "USA", "UK"];
+      if (upperAcronyms.includes(token.toUpperCase())) {
+        return token.toUpperCase();
+      }
+
+      return token.charAt(0).toUpperCase() + token.slice(1).toLowerCase();
+    })
+    .join("");
+}
+
+/**
  * Normalizes relative URLs (/uploads/...) and handles backend paths.
  */
 export function normalizeCategoryImageUrl(url) {

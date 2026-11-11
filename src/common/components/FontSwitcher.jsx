@@ -12,22 +12,22 @@ import {
 
 const FONT_OPTIONS = [
   {
-    id: "outfit",
-    name: "Modern Luxe",
-    preview: "Outfit",
-    badge: "Recommended",
-    badgeColor: "bg-sky-100 text-[#1e3a8a] border-sky-200",
-    description: "Modern Boutique & High Fashion",
+    id: "google-sans",
+    name: "Google Sans / AI Clean",
+    preview: "Google Sans",
+    badge: "Default",
+    badgeColor: "bg-blue-100 text-blue-900 border-blue-200",
+    description: "Ultra-Clean, Crisp & Readable",
     icon: Sparkles,
   },
   {
-    id: "luxury",
-    name: "Royal Boutique",
-    preview: "Playfair Display",
-    badge: "Heritage Silk",
-    badgeColor: "bg-amber-100 text-amber-900 border-amber-200",
-    description: "Royal Sarees & Bridal Studio",
-    icon: Crown,
+    id: "outfit",
+    name: "Modern Luxe",
+    preview: "Outfit",
+    badge: "Boutique",
+    badgeColor: "bg-sky-100 text-[#1e3a8a] border-sky-200",
+    description: "Modern Boutique & High Fashion",
+    icon: Sparkles,
   },
   {
     id: "jakarta",
@@ -47,11 +47,20 @@ const FONT_OPTIONS = [
     description: "Textile ERP & Accounting",
     icon: Layers,
   },
+  {
+    id: "luxury",
+    name: "Royal Boutique",
+    preview: "Playfair Display",
+    badge: "Heritage Silk",
+    badgeColor: "bg-amber-100 text-amber-900 border-amber-200",
+    description: "Royal Sarees & Bridal Studio",
+    icon: Crown,
+  },
 ];
 
 export default function FontSwitcher({ className = "" }) {
   const dispatch = useDispatch();
-  const currentFont = useSelector((state) => state.ui?.fontFamily) || "outfit";
+  const currentFont = useSelector((state) => state.ui?.fontFamily) || "google-sans";
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 

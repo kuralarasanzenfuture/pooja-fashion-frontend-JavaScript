@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
@@ -13,6 +13,8 @@ import { ROUTES } from "../../../constants/routes.js";
 import { SIDEBAR_MENU_DATA } from "./menuData.js";
 import SidebarItem from "./SidebarItem.jsx";
 import SidebarSearch from "./SidebarSearch.jsx";
+import SidebarNavPill from "./SidebarNavPill.jsx";
+import "./sidebar.css";
 
 export default function Sidebar({
   mobileOpen = false,
@@ -22,6 +24,8 @@ export default function Sidebar({
   const navigate = useNavigate();
   const sidebarOpen = useSelector((state) => state.ui?.sidebarOpen ?? true);
   const [searchQuery, setSearchQuery] = useState("");
+  const desktopNavRef = useRef(null);
+  const mobileNavRef = useRef(null);
 
   // Lock background scroll when modal sidebar is open
   useEffect(() => {
@@ -129,7 +133,16 @@ export default function Sidebar({
 
         {/* Scrollable Middle Content ONLY - Clean invisible scrollbar on mobile drawer, sleek thin on desktop */}
         <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden py-1.5 no-scrollbar lg:scrollbar-thin">
-          <nav className="space-y-0.5">
+          <nav
+            ref={isMobile ? mobileNavRef : desktopNavRef}
+            className="sidebar-nav-track relative"
+          >
+            {/* Code & Chill Tend / Ignara Signature Fluid Sliding Pill */}
+            <SidebarNavPill
+              navRef={isMobile ? mobileNavRef : desktopNavRef}
+              collapsed={isCollapsed}
+            />
+
             {filteredMenu.map((item) => (
               <SidebarItem
                 key={item.id}
@@ -188,8 +201,8 @@ export default function Sidebar({
           1. Desktop Collapsible Sidebar
           ======================================================== */}
       <aside
-        className={`hidden lg:flex flex-col h-full border-r border-base-200 bg-base-100 shrink-0 transition-[width] duration-200 ease-out z-20 overflow-hidden will-change-[width] ${
-          sidebarOpen ? "w-68" : "w-[68px]"
+        className={`hidden lg:flex flex-col h-full border-r border-base-200 bg-base-100 shrink-0 transition-[width] duration-300 cubic-bezier(0.16, 1, 0.3, 1) z-20 overflow-hidden will-change-[width] ${
+          sidebarOpen ? "w-68" : "w-[68px] sidebar-collapsed"
         }`}
       >
         {renderSidebarContent(false)}

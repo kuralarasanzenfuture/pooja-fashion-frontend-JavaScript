@@ -12,6 +12,7 @@ import { Button } from "../../../../common/components/ui/buttons/index.js";
 import { useModalAnimation } from "../../../../common/hooks/useModalAnimation.js";
 import CategoryThumb from "./CategoryThumb.jsx";
 import ImageUploader from "../../sub-categories/components/ImageUploader.jsx";
+import { formatCategoryName } from "../utils/categoryImageHelper.js";
 import {
   getPopularSubcategoryPresets,
   searchSubcategoryPresets,
@@ -112,7 +113,7 @@ export default function CategoryAddSubcategoryModal({
   }, [showSuggestions]);
 
   // Filter presets prioritizing the parent category
-  const categoryName = category?.categoryName || category?.category_name || "Category";
+  const categoryName = formatCategoryName(category?.categoryName || category?.category_name || "Category");
   const categoryCode = category?.categoryCode || category?.category_code || "";
   const categoryImage = category?.imageUrl || category?.image_url || null;
 
@@ -176,7 +177,7 @@ export default function CategoryAddSubcategoryModal({
     const payload = {
       category_id: Number(category.id),
       company_id: category.companyId || category.company_id ? Number(category.companyId || category.company_id) : undefined,
-      subcategory_name: form.subcategory_name.trim(),
+      subcategory_name: formatCategoryName(form.subcategory_name.trim()),
       subcategory_code: form.subcategory_code.trim().toUpperCase() || undefined,
       description: form.description.trim() || null,
       display_order: Number(form.display_order) || 0,

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "../../../../common/components/ui/buttons/index.js";
 import { useModalAnimation } from "../../../../common/hooks/useModalAnimation.js";
+import { formatCategoryName } from "../../categories/utils/categoryImageHelper.js";
 
 /**
  * SubCategory Details Quick View Modal
@@ -37,19 +38,21 @@ export default function SubCategoryDetailsModal({
 
   if (!isRendered || !subcategory) return null;
 
-  const name =
+  const name = formatCategoryName(
     subcategory.subcategoryName ||
     subcategory.subcategory_name ||
-    "Unnamed Subcategory";
+    "Unnamed Subcategory"
+  );
   const code =
     subcategory.subcategoryCode ||
     subcategory.subcategory_code ||
     "—";
-  const categoryName =
+  const categoryName = formatCategoryName(
     subcategory.categoryName ||
     subcategory.category_name ||
     subcategory.category?.category_name ||
-    "—";
+    "—"
+  );
   const categoryCode =
     subcategory.categoryCode ||
     subcategory.category_code ||
@@ -231,24 +234,26 @@ export default function SubCategoryDetailsModal({
                     {code}
                   </span>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleCopyCode}
-                  className="px-2 py-1 rounded-lg text-xs font-semibold border border-base-300 bg-base-100 hover:bg-base-200 text-base-content/70 hover:text-base-content transition-all cursor-pointer flex items-center gap-1.5"
-                  title="Copy Code"
-                >
-                  {copied ? (
-                    <>
-                      <Check className="size-3.5 text-emerald-500" />
-                      <span className="text-emerald-500">Copied</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="size-3.5" />
-                      <span>Copy</span>
-                    </>
-                  )}
-                </button>
+                <div className="tooltip tooltip-left" data-tip={copied ? "Copied code!" : "Copy code"}>
+                  <button
+                    type="button"
+                    onClick={handleCopyCode}
+                    className="px-2 py-1 rounded-lg text-xs font-semibold border border-base-300 bg-base-100 hover:bg-base-200 text-base-content/70 hover:text-base-content transition-all cursor-pointer flex items-center gap-1.5"
+                    aria-label="Copy Code"
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="size-3.5 text-emerald-500" />
+                        <span className="text-emerald-500">Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="size-3.5" />
+                        <span>Copy</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

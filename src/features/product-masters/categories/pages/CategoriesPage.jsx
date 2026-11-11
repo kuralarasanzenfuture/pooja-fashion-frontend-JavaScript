@@ -36,6 +36,7 @@ import PageHeader from "../../../../common/components/PageHeader.jsx";
 import { Button } from "../../../../common/components/ui/buttons/index.js";
 import Pagination from "../../../../common/components/ui/pagination/Pagination.jsx";
 import ImageViewerModal from "../../../../common/components/ui/ImageViewerModal.jsx";
+import { SlidingTabs, AnimatedTabContent } from "../../../../common/components/tabs/index.js";
 import { useCompanies } from "../../../company/hooks/useCompanies.js";
 import {
   useCategories,
@@ -61,6 +62,7 @@ import {
   CategoryCardsView,
   CategoryAddSubcategoryModal,
 } from "../components/index.js";
+import { formatCategoryName } from "../utils/categoryImageHelper.js";
 
 
 export default function CategoriesPage() {
@@ -178,7 +180,7 @@ export default function CategoriesPage() {
 
     // 2. Extract actual category details & its REAL photo from database (e.g. green saree)
     const cat = matchingCategory || (typeof item === "object" ? item : null);
-    const realName = cat ? (cat.categoryName || cat.category_name || cat.name || queryTrim) : queryTrim;
+    const realName = formatCategoryName(cat ? (cat.categoryName || cat.category_name || cat.name || queryTrim) : queryTrim);
     const realCode = cat ? (cat.categoryCode || cat.category_code || cat.code || "") : "";
     const rawImage = cat ? (cat.imageUrl || cat.image_url || cat.image || null) : null;
     const realImage = rawImage && !rawImage.includes("images.unsplash.com") ? rawImage : null;
@@ -294,11 +296,11 @@ export default function CategoriesPage() {
         if (backendWithImages.length >= 2) {
           sample = backendWithImages.slice(0, 8).map((cat) => ({
             id: cat.id,
-            name: cat.categoryName || cat.category_name,
+            name: formatCategoryName(cat.categoryName || cat.category_name),
             code: cat.categoryCode || cat.category_code,
             imageUrl: cat.imageUrl || cat.image_url || null,
             timestamp: Date.now(),
-            query: cat.categoryName || cat.category_name,
+            query: formatCategoryName(cat.categoryName || cat.category_name),
           }));
         }
         setRecentSearches(sample);
@@ -757,36 +759,18 @@ export default function CategoriesPage() {
         description="Comprehensive catalog classification for sarees, dress materials, fabrics, POS sequence ordering, and imagery."
         actions={
           <div className="flex items-center gap-2.5">
-            {/* View Mode Toggle with DaisyUI Tooltips */}
-            <div className="flex items-center bg-base-200/80 rounded-xl p-1 border border-base-300">
-              <div className="tooltip tooltip-bottom" data-tip="Table View">
-                <button
-                  type="button"
-                  onClick={() => setViewMode("table")}
-                  className={`p-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-                    viewMode === "table"
-                      ? "bg-base-100 text-primary shadow-2xs font-semibold"
-                      : "text-base-content/60 hover:text-base-content"
-                  }`}
-                  aria-label="Table View"
-                >
-                  <TableIcon className="w-4 h-4" />
-                </button>
-              </div>
-              <div className="tooltip tooltip-bottom" data-tip="Cards View">
-                <button
-                  type="button"
-                  onClick={() => setViewMode("cards")}
-                  className={`p-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-                    viewMode === "cards"
-                      ? "bg-base-100 text-primary shadow-2xs font-semibold"
-                      : "text-base-content/60 hover:text-base-content"
-                  }`}
-                  aria-label="Cards View"
-                >
-                  <LayoutGrid className="w-4 h-4" />
-                </button>
-              </div>
+            {/* View Mode Toggle with Code & Chill Fluid Sliding Tabs */}
+            <div className="flex items-center">
+              <SlidingTabs
+                tabs={[
+                  { id: "table", icon: TableIcon, label: "" },
+                  { id: "cards", icon: LayoutGrid, label: "" },
+                ]}
+                activeTab={viewMode}
+                onChange={setViewMode}
+                variant="segmented"
+                size="xs"
+              />
             </div>
 
             <div className="tooltip tooltip-bottom" data-tip="Refresh Categories">
@@ -1231,44 +1215,48 @@ export default function CategoriesPage() {
             </Button>
           </div>
         </div>
-      ) : viewMode === "table" ? (
-        <CategoryTableView
-          categories={currentCategories}
-          totalItems={totalItems}
-          page={page}
-          limit={limit}
-          setPage={setPage}
-          setLimit={setLimit}
-          copiedKey={copiedKey}
-          onCopyCode={handleCopyCode}
-          onToggleStatus={handleToggle}
-          isStatusPending={updateStatusMutation.isPending}
-          onImageClick={handleOpenImageViewer}
-          onViewDetails={openDetails}
-          onEdit={openEdit}
-          onAddSubcategory={openAddSubcategory}
-          onDelete={setToDelete}
-          fmtDate={fmtDate}
-        />
       ) : (
-        <CategoryCardsView
-          categories={currentCategories}
-          totalItems={totalItems}
-          page={page}
-          limit={limit}
-          setPage={setPage}
-          setLimit={setLimit}
-          copiedKey={copiedKey}
-          onCopyCode={handleCopyCode}
-          onToggleStatus={handleToggle}
-          isStatusPending={updateStatusMutation.isPending}
-          onImageClick={handleOpenImageViewer}
-          onViewDetails={openDetails}
-          onEdit={openEdit}
-          onAddSubcategory={openAddSubcategory}
-          onDelete={setToDelete}
-          fmtDate={fmtDate}
-        />
+        <AnimatedTabContent activeKey={viewMode}>
+          {viewMode === "table" ? (
+            <CategoryTableView
+              categories={currentCategories}
+              totalItems={totalItems}
+              page={page}
+              limit={limit}
+              setPage={setPage}
+              setLimit={setLimit}
+              copiedKey={copiedKey}
+              onCopyCode={handleCopyCode}
+              onToggleStatus={handleToggle}
+              isStatusPending={updateStatusMutation.isPending}
+              onImageClick={handleOpenImageViewer}
+              onViewDetails={openDetails}
+              onEdit={openEdit}
+              onAddSubcategory={openAddSubcategory}
+              onDelete={setToDelete}
+              fmtDate={fmtDate}
+            />
+          ) : (
+            <CategoryCardsView
+              categories={currentCategories}
+              totalItems={totalItems}
+              page={page}
+              limit={limit}
+              setPage={setPage}
+              setLimit={setLimit}
+              copiedKey={copiedKey}
+              onCopyCode={handleCopyCode}
+              onToggleStatus={handleToggle}
+              isStatusPending={updateStatusMutation.isPending}
+              onImageClick={handleOpenImageViewer}
+              onViewDetails={openDetails}
+              onEdit={openEdit}
+              onAddSubcategory={openAddSubcategory}
+              onDelete={setToDelete}
+              fmtDate={fmtDate}
+            />
+          )}
+        </AnimatedTabContent>
       )}
 
       {/* Add / Edit Category Modal */}

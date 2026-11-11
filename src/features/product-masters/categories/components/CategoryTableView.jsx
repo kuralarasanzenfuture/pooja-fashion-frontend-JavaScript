@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import CategoryThumb from "./CategoryThumb.jsx";
 import Pagination from "../../../../common/components/ui/pagination/Pagination.jsx";
+import { formatCategoryName } from "../utils/categoryImageHelper.js";
 
 /**
  * CategoryTableView
@@ -51,7 +52,7 @@ export default function CategoryTableView({
           </thead>
           <tbody className="divide-y divide-base-200 text-sm">
             {categories.map((cat, index) => {
-              const name = cat.categoryName || cat.category_name;
+              const name = formatCategoryName(cat.categoryName || cat.category_name);
               const code = cat.categoryCode || cat.category_code;
               const imageUrl = cat.imageUrl || cat.image_url;
               const displayOrder = cat.displayOrder ?? cat.display_order ?? 0;

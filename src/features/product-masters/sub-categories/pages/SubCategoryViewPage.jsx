@@ -29,6 +29,7 @@ import {
 } from "../hooks/useSubCategories.js";
 import SubCategoryFormModal from "../components/SubCategoryFormModal.jsx";
 import SubCategoryDeleteModal from "../components/SubCategoryDeleteModal.jsx";
+import { formatCategoryName } from "../../categories/utils/categoryImageHelper.js";
 
 export default function SubCategoryViewPage() {
   const { id } = useParams();
@@ -108,13 +109,14 @@ export default function SubCategoryViewPage() {
     );
   }
 
-  const name = subcategory.subcategoryName || subcategory.subcategory_name;
+  const name = formatCategoryName(subcategory.subcategoryName || subcategory.subcategory_name);
   const code = subcategory.subcategoryCode || subcategory.subcategory_code || "—";
-  const catName =
+  const catName = formatCategoryName(
     subcategory.categoryName ||
     subcategory.category_name ||
     subcategory.category?.category_name ||
-    "—";
+    "—"
+  );
   const catId =
     subcategory.categoryId ||
     subcategory.category_id ||
@@ -220,12 +222,6 @@ export default function SubCategoryViewPage() {
       <PageHeader
         title={name}
         subtitle={`Subcategory Record #${id} • Sequence Order #${displayOrder}`}
-        breadcrumbs={[
-          { label: "Dashboard", href: "/" },
-          { label: "Product Master", href: "/products/categories" },
-          { label: "Subcategories", href: "/products/subcategories" },
-          { label: name },
-        ]}
         actions={
           <div className="flex items-center gap-2">
             <button
