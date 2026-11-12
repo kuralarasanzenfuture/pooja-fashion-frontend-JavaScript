@@ -125,7 +125,7 @@ export default function SubCategoryFilterDropdown({
   };
 
   const selectedOption = options.find((opt) => String(opt.value) === String(value));
-  const isFiltered = value !== "" && value !== undefined && value !== null;
+  const isFiltered = value !== "" && value !== undefined && value !== null && value !== "all";
   const displayLabel = selectedOption ? selectedOption.label : label;
 
   return (
@@ -134,37 +134,32 @@ export default function SubCategoryFilterDropdown({
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className={`flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all duration-200 cursor-pointer select-none focus:outline-none ${minWidth} ${
-          isOpen
-            ? "border-primary bg-primary/5 text-primary ring-2 ring-primary/20 shadow-xs"
-            : isFiltered
-            ? "border-primary bg-primary/10 text-primary font-semibold shadow-xs ring-1 ring-primary/30"
-            : "border-base-300 bg-base-100 text-base-content hover:border-primary/40 hover:bg-base-200/50"
-        }`}
-        aria-haspopup="listbox"
         aria-expanded={isOpen}
+        aria-haspopup="listbox"
+        className={`group inline-flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer select-none border ${minWidth} ${
+          isOpen
+            ? "border-primary bg-primary/10 text-primary shadow-xs ring-2 ring-primary/20"
+            : isFiltered
+            ? "border-primary/40 bg-primary/5 text-primary hover:border-primary/70 hover:bg-primary/10"
+            : "border-base-300 bg-base-100 text-base-content/80 hover:bg-base-200 hover:border-base-content/20"
+        }`}
       >
-        <div className="flex items-center gap-1.5 min-w-0 truncate">
+        <div className="flex items-center gap-2 truncate">
           {Icon && (
             <Icon
               className={`w-3.5 h-3.5 shrink-0 transition-colors ${
-                isFiltered || isOpen ? "text-primary" : "text-base-content/50"
+                isFiltered || isOpen ? "text-primary" : "text-base-content/50 group-hover:text-base-content/70"
               }`}
             />
           )}
           <span className="truncate">{displayLabel}</span>
         </div>
 
-        <div className="flex items-center gap-1 shrink-0 ml-1">
-          {isFiltered && (
-            <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0 animate-pulse" />
-          )}
-          <ChevronDown
-            className={`w-3.5 h-3.5 transition-transform duration-200 ${
-              isOpen ? "rotate-180 text-primary" : "text-base-content/40"
-            }`}
-          />
-        </div>
+        <ChevronDown
+          className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ${
+            isOpen ? "rotate-180 text-primary" : "text-base-content/40 group-hover:text-base-content/60"
+          }`}
+        />
       </button>
 
       {/* Floating Menu Popup */}

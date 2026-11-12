@@ -1,0 +1,67 @@
+[
+  {
+    "id": "men-apparel",
+    "name": "Men Apparel",
+    "code": "MEN_APPAREL",
+    "description": "Standard menswear sizing for shirts, kurtas, and t-shirts (S, M, L, XL, XXL, 3XL).",
+    "sample_sizes": ["S", "M", "L", "XL", "XXL", "3XL"],
+    "popular": true
+  },
+  {
+    "id": "women-apparel",
+    "name": "Women Apparel",
+    "code": "WOMEN_APPAREL",
+    "description": "Standard womenswear sizing for kurtis, tops, suits, and dresses (XS, S, M, L, XL, XXL).",
+    "sample_sizes": ["XS", "S", "M", "L", "XL", "XXL"],
+    "popular": true
+  },
+  {
+    "id": "saree-blouse",
+    "name": "Saree Blouse Sizing",
+    "code": "SAREE_BLOUSE",
+    "description": "Bust-measurement based stitched and ready-to-wear saree blouse sizing in inches.",
+    "sample_sizes": ["32", "34", "36", "38", "40", "42", "44"],
+    "popular": true
+  },
+  {
+    "id": "kids-apparel",
+    "name": "Kids Apparel",
+    "code": "KIDS_APPAREL",
+    "description": "Standard children's garments sizing numbered by age brackets and length.",
+    "sample_sizes": ["20", "22", "24", "26", "28", "30", "32"],
+    "popular": true
+  },
+  {
+    "id": "infants-toddler",
+    "name": "Infants & Toddler",
+    "code": "INFANTS_TODDLER",
+    "description": "Newborn, baby, and toddler wear sized by age months.",
+    "sample_sizes": ["0-3M", "3-6M", "6-12M", "12-18M", "18-24M"],
+    "popular": false
+  },
+  {
+    "id": "men-waist",
+    "name": "Trouser & Dhoti Waist",
+    "code": "TROUSER_WAIST",
+    "description": "Waist circumferences in inches for formal trousers, pyjamas, and churidars.",
+    "sample_sizes": ["28", "30", "32", "34", "36", "38", "40"],
+    "popular": true
+  },
+  {
+    "id": "footwear",
+    "name": "Footwear (UK/India)",
+    "code": "FOOTWEAR_IND",
+    "description": "Standard footwear sizing scale for mojris, juttis, and shoes.",
+    "sample_sizes": ["5", "6", "7", "8", "9", "10", "11"],
+    "popular": false
+  },
+  {
+    "id": "free-size",
+    "name": "Free Size / Unstitched",
+    "code": "FREE_SIZE",
+    "description": "Universal one-size fits all apparel, sarees, shawls, stoles, and unstitched thaan fabric.",
+    "sample_sizes": ["Free Size", "Unstitched"],
+    "popular": true
+  }
+]
+

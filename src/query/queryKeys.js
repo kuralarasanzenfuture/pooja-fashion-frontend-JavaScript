@@ -101,6 +101,38 @@ export const queryKeys = {
     detail: (id) => ["categories", "detail", id],
   },
 
+  brands: {
+    all: ["brands"],
+    list: (params) => ["brands", "list", params],
+    allList: (params) => ["brands", "allList", params],
+    stats: (params) => ["brands", "stats", params],
+    byCompany: (companyId, params) => ["brands", "byCompany", companyId, params],
+    byCode: (companyId, code) => ["brands", "byCode", companyId, code],
+    detail: (id) => ["brands", "detail", id],
+  },
+
+  sizeGroups: {
+    all: ["sizeGroups"],
+    list: (params) => ["sizeGroups", "list", params],
+    allList: (params) => ["sizeGroups", "allList", params],
+    tree: (params) => ["sizeGroups", "tree", params],
+    stats: (params) => ["sizeGroups", "stats", params],
+    byCompany: (companyId, params) => ["sizeGroups", "byCompany", companyId, params],
+    byCode: (companyId, code) => ["sizeGroups", "byCode", companyId, code],
+    detail: (id) => ["sizeGroups", "detail", id],
+  },
+
+  sizes: {
+    all: ["sizes"],
+    list: (params) => ["sizes", "list", params],
+    allList: (params) => ["sizes", "allList", params],
+    stats: (params) => ["sizes", "stats", params],
+    bySizeGroup: (sizeGroupId, params) => ["sizes", "bySizeGroup", sizeGroupId, params],
+    byCompany: (companyId, params) => ["sizes", "byCompany", companyId, params],
+    byCode: (sizeGroupId, code) => ["sizes", "byCode", sizeGroupId, code],
+    detail: (id) => ["sizes", "detail", id],
+  },
+
   subcategories: {
     all: ["subcategories"],
     list: (params) => ["subcategories", "list", params],

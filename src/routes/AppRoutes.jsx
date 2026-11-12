@@ -13,6 +13,18 @@ import {
   SubCategoriesPage,
   SubCategoryViewPage,
 } from "../features/product-masters/sub-categories/index.js";
+import {
+  BrandsPage,
+  BrandViewPage,
+} from "../features/product-masters/brand/index.js";
+import {
+  SizeGroupsPage,
+  SizeGroupViewPage,
+} from "../features/product-masters/size_groups/index.js";
+import {
+  SizesPage,
+  SizeViewPage,
+} from "../features/product-masters/sizes/index.js";
 import RolesPage from "../features/roles/pages/RolesPage.jsx";
 import UsersPage from "../features/users/pages/UsersPage.jsx";
 import UserViewPage from "../features/users/pages/UserViewPage.jsx";
@@ -147,6 +159,26 @@ export default function AppRoutes() {
           <Route path={ROUTES.SUBCATEGORY_VIEW} element={<SubCategoryViewPage />} />
           <Route path="/subcategories/:id" element={<SubCategoryViewPage />} />
           <Route path="/products/subcategories/:id" element={<SubCategoryViewPage />} />
+          <Route path={ROUTES.BRANDS} element={<BrandsPage />} />
+          <Route path="/brands" element={<BrandsPage />} />
+          <Route path="/products/brands" element={<BrandsPage />} />
+          <Route path={ROUTES.BRAND_VIEW} element={<BrandViewPage />} />
+          <Route path="/brands/:id" element={<BrandViewPage />} />
+          <Route path="/products/brands/:id" element={<BrandViewPage />} />
+          <Route path={ROUTES.SIZE_GROUPS} element={<SizeGroupsPage />} />
+          <Route path="/size-groups" element={<SizeGroupsPage />} />
+          <Route path="/products/size-groups" element={<SizeGroupsPage />} />
+          <Route path="/products/size_groups" element={<SizeGroupsPage />} />
+          <Route path={ROUTES.SIZE_GROUP_VIEW} element={<SizeGroupViewPage />} />
+          <Route path="/size-groups/:id" element={<SizeGroupViewPage />} />
+          <Route path="/products/size-groups/:id" element={<SizeGroupViewPage />} />
+          <Route path="/products/size_groups/:id" element={<SizeGroupViewPage />} />
+          <Route path={ROUTES.SIZES} element={<SizesPage />} />
+          <Route path="/sizes" element={<SizesPage />} />
+          <Route path="/products/sizes" element={<SizesPage />} />
+          <Route path={ROUTES.SIZE_VIEW} element={<SizeViewPage />} />
+          <Route path="/sizes/:id" element={<SizeViewPage />} />
+          <Route path="/products/sizes/:id" element={<SizeViewPage />} />
 
           {/* Users & Roles Management (Admin & SuperAdmin only) */}
           <Route element={<RoleProtectedRoute allowedRoles={["ADMIN", "SUPERADMIN"]} />}>

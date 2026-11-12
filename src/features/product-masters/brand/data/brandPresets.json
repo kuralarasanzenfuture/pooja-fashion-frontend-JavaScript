@@ -1,0 +1,93 @@
+[
+  {
+    "id": "manyavar",
+    "name": "Manyavar",
+    "code": "MANYAVAR",
+    "website_url": "https://www.manyavar.com",
+    "description": "India's premier men's ethnic and wedding wear destination featuring kurtas, sherwanis, and festive ensembles.",
+    "display_order": 1,
+    "popular": true
+  },
+  {
+    "id": "mohey",
+    "name": "Mohey",
+    "code": "MOHEY",
+    "website_url": "https://www.manyavar.com/mohey",
+    "description": "Luxury women's bridal drapes, lehengas, and celebration sarees under the Vedant Fashions umbrella.",
+    "display_order": 2,
+    "popular": true
+  },
+  {
+    "id": "fabindia",
+    "name": "Fabindia",
+    "code": "FABINDIA",
+    "website_url": "https://www.fabindia.com",
+    "description": "Celebrated handcrafted apparel, organic cotton kurtis, block-print sarees, and authentic Indian handloom textiles.",
+    "display_order": 3,
+    "popular": true
+  },
+  {
+    "id": "biba",
+    "name": "Biba",
+    "code": "BIBA",
+    "website_url": "https://www.biba.in",
+    "description": "Contemporary ethnic wear brand offering stylish salwar-suit sets, printed dupattas, anarkalis, and festive fusion wear.",
+    "display_order": 4,
+    "popular": true
+  },
+  {
+    "id": "soch",
+    "name": "Soch",
+    "code": "SOCH",
+    "website_url": "https://www.soch.com",
+    "description": "Designer ethnic lifestyle retail brand specialising in designer sarees, tunic sets, readymade blouses, and bridal lehengas.",
+    "display_order": 5,
+    "popular": true
+  },
+  {
+    "id": "nalli",
+    "name": "Nalli Silks",
+    "code": "NALLI_SILKS",
+    "website_url": "https://www.nalli.com",
+    "description": "Historic silk house founded in 1928, synonymous with authentic Kanchipuram and heritage Indian silk weaves.",
+    "display_order": 6,
+    "popular": true
+  },
+  {
+    "id": "w-for-woman",
+    "name": "W for Woman",
+    "code": "W_FOR_WOMAN",
+    "website_url": "https://wforwoman.com",
+    "description": "Modern premium fashion brand for the contemporary Indian woman blending chic silhouettes with ethnic motifs.",
+    "display_order": 7,
+    "popular": false
+  },
+  {
+    "id": "kalamandir",
+    "name": "Kalamandir",
+    "code": "KALAMANDIR",
+    "website_url": "https://www.kalamandir.com",
+    "description": "Traditional South Indian wedding saree emporium with rich Dharmavaram, Gadwal, and bridal silk collections.",
+    "display_order": 8,
+    "popular": false
+  },
+  {
+    "id": "raymond",
+    "name": "Raymond",
+    "code": "RAYMOND",
+    "website_url": "https://www.raymond.in",
+    "description": "Renowned textile conglomerate providing fine worsted suiting fabrics, linen thaan rolls, and bespoke shirting materials.",
+    "display_order": 9,
+    "popular": true
+  },
+  {
+    "id": "meena-bazaar",
+    "name": "Meena Bazaar",
+    "code": "MEENA_BAZAAR",
+    "website_url": "https://meenabazaar.com",
+    "description": "Heritage Delhi bridal brand famed for exquisite zari work, sequins embroidery, georgette party drapes, and gowns.",
+    "display_order": 10,
+    "popular": false
+  }
+]
+

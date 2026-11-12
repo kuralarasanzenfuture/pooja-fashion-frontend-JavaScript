@@ -840,7 +840,7 @@ export default function SubCategoriesPage() {
             {/* Company Filter (SuperAdmin) */}
             {canSelectCompany && (
               <SubCategoryFilterDropdown
-                label="Company"
+                label="All Companies"
                 value={companyFilter}
                 options={companyOptions}
                 onChange={(v) => {
@@ -856,7 +856,7 @@ export default function SubCategoriesPage() {
 
             {/* Parent Category Filter */}
             <SubCategoryFilterDropdown
-              label="Category"
+              label="All Categories"
               value={categoryFilter}
               options={categoryOptions}
               onChange={(v) => {
@@ -870,7 +870,7 @@ export default function SubCategoriesPage() {
 
             {/* Status Filter */}
             <SubCategoryFilterDropdown
-              label="Status"
+              label="All Statuses"
               value={statusFilter}
               options={statusOptions}
               onChange={(v) => {
@@ -881,7 +881,7 @@ export default function SubCategoriesPage() {
 
             {/* Media Filter */}
             <SubCategoryFilterDropdown
-              label="Visuals"
+              label="All Visuals"
               value={mediaFilter}
               options={mediaOptions}
               onChange={(v) => {
@@ -896,7 +896,7 @@ export default function SubCategoriesPage() {
               <button
                 type="button"
                 onClick={handleResetFilters}
-                className="px-2.5 py-1.5 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-500/10 transition-colors flex items-center gap-1 cursor-pointer"
+                className="px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold text-rose-600 hover:bg-rose-500/10 transition-colors flex items-center gap-1 cursor-pointer"
               >
                 <RotateCcw className="size-3.5" />
                 <span>Reset</span>
@@ -917,20 +917,10 @@ export default function SubCategoriesPage() {
             <button
               type="button"
               onClick={() => setSortOrder((o) => (o === "asc" ? "desc" : "asc"))}
-              aria-label={`Sort: ${sortOrder === "asc" ? "Ascending" : "Descending"}`}
-              className="p-2 rounded-xl border border-base-300 bg-base-100 hover:bg-base-200 text-base-content/70 hover:text-base-content transition-all cursor-pointer shadow-xs text-xs font-mono font-bold uppercase flex items-center gap-1"
+              className="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold border border-base-300 bg-base-100 hover:bg-base-200 text-base-content transition-all cursor-pointer"
+              title={`Sort: ${sortOrder === "asc" ? "Ascending" : "Descending"}`}
             >
-              {sortOrder === "asc" ? (
-                <>
-                  <ArrowUp className="size-3.5 text-primary" />
-                  <span>ASC</span>
-                </>
-              ) : (
-                <>
-                  <ArrowDown className="size-3.5 text-primary" />
-                  <span>DESC</span>
-                </>
-              )}
+              <span>{sortOrder === "asc" ? "↑ ASC" : "↓ DESC"}</span>
             </button>
           </div>
         </div>

@@ -1,0 +1,143 @@
+[
+  {
+    "code": "XS",
+    "name": "Extra Small",
+    "displayOrder": 1,
+    "groupCode": "WOMEN",
+    "description": "Standard Extra Small chest 34-36 inch"
+  },
+  {
+    "code": "S",
+    "name": "Small",
+    "displayOrder": 2,
+    "groupCode": "MEN",
+    "description": "Standard Small chest 36-38 inch"
+  },
+  {
+    "code": "M",
+    "name": "Medium",
+    "displayOrder": 3,
+    "groupCode": "MEN",
+    "description": "Standard Medium chest 38-40 inch"
+  },
+  {
+    "code": "L",
+    "name": "Large",
+    "displayOrder": 4,
+    "groupCode": "MEN",
+    "description": "Standard Large chest 40-42 inch"
+  },
+  {
+    "code": "XL",
+    "name": "Extra Large",
+    "displayOrder": 5,
+    "groupCode": "MEN",
+    "description": "Standard Extra Large chest 42-44 inch"
+  },
+  {
+    "code": "XXL",
+    "name": "Double Extra Large",
+    "displayOrder": 6,
+    "groupCode": "MEN",
+    "description": "Standard Double Extra Large chest 44-46 inch"
+  },
+  {
+    "code": "3XL",
+    "name": "Triple Extra Large",
+    "displayOrder": 7,
+    "groupCode": "MEN",
+    "description": "Standard Triple Extra Large chest 46-48 inch"
+  },
+  {
+    "code": "28",
+    "name": "Waist 28",
+    "displayOrder": 1,
+    "groupCode": "TROUSER_WAIST",
+    "description": "Waist measurement 28 inches"
+  },
+  {
+    "code": "30",
+    "name": "Waist 30",
+    "displayOrder": 2,
+    "groupCode": "TROUSER_WAIST",
+    "description": "Waist measurement 30 inches"
+  },
+  {
+    "code": "32",
+    "name": "Waist 32",
+    "displayOrder": 3,
+    "groupCode": "TROUSER_WAIST",
+    "description": "Waist measurement 32 inches"
+  },
+  {
+    "code": "34",
+    "name": "Waist 34",
+    "displayOrder": 4,
+    "groupCode": "TROUSER_WAIST",
+    "description": "Waist measurement 34 inches"
+  },
+  {
+    "code": "36",
+    "name": "Waist 36",
+    "displayOrder": 5,
+    "groupCode": "TROUSER_WAIST",
+    "description": "Waist measurement 36 inches"
+  },
+  {
+    "code": "38",
+    "name": "Waist 38 / Blouse 38",
+    "displayOrder": 6,
+    "groupCode": "SAREE_BLOUSE",
+    "description": "Standard stitched bust 38 inches"
+  },
+  {
+    "code": "40",
+    "name": "Blouse 40",
+    "displayOrder": 7,
+    "groupCode": "SAREE_BLOUSE",
+    "description": "Standard stitched bust 40 inches"
+  },
+  {
+    "code": "FREE",
+    "name": "Free Size",
+    "displayOrder": 1,
+    "groupCode": "FREE_SIZE",
+    "description": "Universal one-size fits all for sarees and dupattas"
+  },
+  {
+    "code": "UK-6",
+    "name": "UK 6 / Euro 40",
+    "displayOrder": 1,
+    "groupCode": "FOOTWEAR",
+    "description": "Footwear size UK 6"
+  },
+  {
+    "code": "UK-7",
+    "name": "UK 7 / Euro 41",
+    "displayOrder": 2,
+    "groupCode": "FOOTWEAR",
+    "description": "Footwear size UK 7"
+  },
+  {
+    "code": "UK-8",
+    "name": "UK 8 / Euro 42",
+    "displayOrder": 3,
+    "groupCode": "FOOTWEAR",
+    "description": "Footwear size UK 8"
+  },
+  {
+    "code": "UK-9",
+    "name": "UK 9 / Euro 43",
+    "displayOrder": 4,
+    "groupCode": "FOOTWEAR",
+    "description": "Footwear size UK 9"
+  },
+  {
+    "code": "UK-10",
+    "name": "UK 10 / Euro 44",
+    "displayOrder": 5,
+    "groupCode": "FOOTWEAR",
+    "description": "Footwear size UK 10"
+  }
+]
+
