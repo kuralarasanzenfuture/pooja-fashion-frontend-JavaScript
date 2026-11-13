@@ -655,8 +655,8 @@ export default function SubCategoriesPage() {
             <div className="hidden sm:block">
               <SlidingTabs
                 tabs={[
-                  { id: "table", icon: TableIcon, label: "" },
-                  { id: "cards", icon: LayoutGrid, label: "" },
+                  { id: "table", icon: TableIcon, label: "Table" },
+                  { id: "cards", icon: LayoutGrid, label: "Cards" },
                 ]}
                 activeTab={viewMode}
                 onChange={setViewMode}
@@ -1065,8 +1065,10 @@ export default function SubCategoriesPage() {
                         aria-label={`Toggle active status for ${name}`}
                       />
                       <span
-                        className={`text-[11px] font-semibold ${
-                          isActive ? "text-emerald-600 dark:text-emerald-400" : "text-base-content/50"
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+                          isActive
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/40"
+                            : "bg-rose-50 text-rose-700 border-rose-200/80 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800/40"
                         }`}
                       >
                         {isActive ? "Active" : "Inactive"}
@@ -1345,10 +1347,10 @@ export default function SubCategoriesPage() {
                             aria-label={`Toggle active status for ${name}`}
                           />
                           <span
-                            className={`px-2 py-0.5 rounded-lg text-xs font-semibold ${
+                            className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
                               isActive
-                                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
-                                : "bg-base-200 text-base-content/50"
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/40"
+                                : "bg-rose-50 text-rose-700 border-rose-200/80 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800/40"
                             }`}
                           >
                             {isActive ? "Active" : "Inactive"}

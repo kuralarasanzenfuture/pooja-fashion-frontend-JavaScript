@@ -85,8 +85,10 @@ export default function CategoryCardsView({
                       aria-label={`Toggle active for ${name}`}
                     />
                     <span
-                      className={`text-[11px] font-semibold ${
-                        isActive ? "text-emerald-600" : "text-base-content/50"
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+                        isActive
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/40"
+                          : "bg-rose-50 text-rose-700 border-rose-200/80 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800/40"
                       }`}
                     >
                       {isActive ? "Active" : "Inactive"}

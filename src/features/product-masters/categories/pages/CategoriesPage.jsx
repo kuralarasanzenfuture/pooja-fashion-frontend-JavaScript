@@ -761,8 +761,8 @@ export default function CategoriesPage() {
             <div className="flex items-center">
               <SlidingTabs
                 tabs={[
-                  { id: "table", icon: TableIcon, label: "" },
-                  { id: "cards", icon: LayoutGrid, label: "" },
+                  { id: "table", icon: TableIcon, label: "Table" },
+                  { id: "cards", icon: LayoutGrid, label: "Cards" },
                 ]}
                 activeTab={viewMode}
                 onChange={setViewMode}

@@ -89,12 +89,12 @@ export default function SizeGroupSelect({
         onClick={() => !disabled && setIsOpen((prev) => !prev)}
         className={`w-full px-3.5 py-2.5 text-sm rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-2.5 bg-base-100 ${
           disabled
-            ? "opacity-50 cursor-not-allowed bg-base-200"
+            ? "opacity-50 cursor-not-allowed bg-base-200 border-base-300"
             : isOpen
-            ? "border-primary ring-2 ring-primary/20 shadow-sm"
+            ? "border-primary bg-primary/5 ring-2 ring-primary/20 shadow-xs"
             : error
-            ? "border-error focus:border-error ring-1 ring-error/20"
-            : "border-base-300 hover:border-primary/50"
+            ? "border-rose-500 ring-2 ring-rose-500/20 text-rose-600"
+            : "border-base-300 hover:border-primary/50 hover:bg-base-200/30"
         }`}
       >
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -165,7 +165,7 @@ export default function SizeGroupSelect({
                     className={`flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all ${
                       isSelected
                         ? "bg-primary text-primary-content shadow-xs font-semibold"
-                        : "hover:bg-base-200/80 text-base-content"
+                        : "hover:bg-primary/10 hover:text-primary text-base-content"
                     }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
