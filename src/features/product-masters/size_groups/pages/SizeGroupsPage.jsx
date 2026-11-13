@@ -284,6 +284,16 @@ export default function SizeGroupsPage() {
     return [{ value: "", label: "All Companies", icon: Building }, ...Array.from(map.values())];
   }, [companiesList, treeGroups]);
 
+  // Status options for filter dropdown
+  const statusOptions = useMemo(
+    () => [
+      { value: "", label: "All Statuses" },
+      { value: "active", label: "Active", dotColor: "bg-emerald-500" },
+      { value: "inactive", label: "Inactive", dotColor: "bg-rose-500" },
+    ],
+    []
+  );
+
   // Recent search sync
   const handleAddRecentSearch = (item) => {
     if (!item) return;
@@ -754,40 +764,6 @@ export default function SizeGroupsPage() {
                 />
               </div>
             </div>
-
-            {/* Quick Status Tabs Pills */}
-            <div className="flex items-center gap-1 bg-base-200/70 p-1 rounded-xl border border-base-300 shrink-0">
-              {[
-                { key: "", label: "All", count: counts.total },
-                { key: "active", label: "Active", count: counts.active },
-                { key: "inactive", label: "Inactive", count: counts.inactive },
-              ].map((tab) => (
-                <button
-                  key={tab.key}
-                  type="button"
-                  onClick={() => {
-                    setStatusFilter(tab.key);
-                    setPage(1);
-                  }}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                    statusFilter === tab.key
-                      ? "bg-base-100 text-primary shadow-xs"
-                      : "text-base-content/60 hover:text-base-content hover:bg-base-100/50"
-                  }`}
-                >
-                  <span>{tab.label}</span>
-                  <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                      statusFilter === tab.key
-                        ? "bg-primary/10 text-primary"
-                        : "bg-base-300/50 text-base-content/50"
-                    }`}
-                  >
-                    {tab.count}
-                  </span>
-                </button>
-              ))}
-            </div>
           </div>
 
           {/* Right: Filters & Sorting */}
@@ -808,6 +784,18 @@ export default function SizeGroupsPage() {
                 searchPlaceholder="Search company..."
               />
             )}
+
+            {/* Status Filter */}
+            <SizeGroupFilterDropdown
+              label="All Statuses"
+              value={statusFilter}
+              options={statusOptions}
+              onChange={(val) => {
+                setStatusFilter(val);
+                setPage(1);
+              }}
+              minWidth="min-w-[135px]"
+            />
 
             {/* Sort Field */}
             <SizeGroupFilterDropdown

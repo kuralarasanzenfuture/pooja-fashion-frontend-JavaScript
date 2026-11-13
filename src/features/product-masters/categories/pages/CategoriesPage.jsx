@@ -464,21 +464,19 @@ export default function CategoriesPage() {
 
   const statusOptions = useMemo(
     () => [
-      { value: "", label: "All Statuses", icon: Filter },
+      { value: "", label: "All Statuses" },
       {
         value: "active",
-        label: "Active Catalog",
+        label: "Active",
         dotColor: "bg-emerald-500",
-        badge: `${counts.active}`,
       },
       {
         value: "inactive",
-        label: "Inactive Catalog",
+        label: "Inactive",
         dotColor: "bg-rose-500",
-        badge: `${counts.inactive}`,
       },
     ],
-    [counts.active, counts.inactive]
+    []
   );
 
   const mediaOptions = useMemo(
@@ -936,40 +934,6 @@ export default function CategoriesPage() {
                 )}
               </div>
             </div>
-
-            {/* Quick Status Tabs Pills */}
-            <div className="flex items-center gap-1 bg-base-200/70 p-1 rounded-xl border border-base-300 shrink-0">
-              {[
-                { key: "", label: "All", count: counts.total },
-                { key: "active", label: "Active", count: counts.active },
-                { key: "inactive", label: "Inactive", count: counts.inactive },
-              ].map((tab) => (
-                <button
-                  key={tab.key}
-                  type="button"
-                  onClick={() => {
-                    setStatusFilter(tab.key);
-                    setPage(1);
-                  }}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-                    statusFilter === tab.key
-                      ? "bg-base-100 text-primary shadow-2xs font-bold"
-                      : "text-base-content/65 hover:text-base-content"
-                  }`}
-                >
-                  <span>{tab.label}</span>
-                  <span
-                    className={`px-1.5 py-0.2 rounded-full text-[10px] ${
-                      statusFilter === tab.key
-                        ? "bg-primary/10 text-primary"
-                        : "bg-base-300/80 text-base-content/60"
-                    }`}
-                  >
-                    {tab.count}
-                  </span>
-                </button>
-              ))}
-            </div>
           </div>
 
           {/* Right: Dropdowns & Filter Controls Cluster */}
@@ -988,6 +952,18 @@ export default function CategoriesPage() {
                 minWidth="min-w-[150px]"
               />
             )}
+
+            {/* Status Filter */}
+            <CategoryFilterDropdown
+              label="All Statuses"
+              value={statusFilter}
+              options={statusOptions}
+              onChange={(val) => {
+                setStatusFilter(val);
+                setPage(1);
+              }}
+              minWidth="min-w-[135px]"
+            />
 
             {/* Media / Imagery Filter */}
             <CategoryFilterDropdown

@@ -125,7 +125,9 @@ export default function BrandFilterDropdown({
         }`}
       >
         <div className="flex items-center gap-2 truncate">
-          {Icon && (
+          {selectedOption?.dotColor ? (
+            <span className={`w-2 h-2 rounded-full shrink-0 ${selectedOption.dotColor}`} />
+          ) : Icon ? (
             <Icon
               className={`w-3.5 h-3.5 shrink-0 transition-colors ${
                 isOpen || (value !== "" && value !== undefined && value !== null)
@@ -133,7 +135,7 @@ export default function BrandFilterDropdown({
                   : "text-base-content/50 group-hover:text-base-content/70"
               }`}
             />
-          )}
+          ) : null}
           <span className="truncate">
             {selectedOption?.label || label || "Select option"}
           </span>
@@ -198,28 +200,30 @@ export default function BrandFilterDropdown({
                     aria-selected={active}
                     onClick={() => handleSelect(option.value)}
                     onMouseEnter={() => setHighlightedIndex(idx)}
-                    className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors cursor-pointer text-left ${
+                    className={`w-full flex items-center justify-between gap-2.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer text-left ${
                       active
-                        ? "bg-primary text-white font-semibold shadow-xs"
+                        ? "bg-primary text-primary-content font-bold shadow-xs"
                         : isHighlighted
-                        ? "bg-base-200 text-base-content"
-                        : "text-base-content/80 hover:bg-base-200/60"
+                        ? "bg-primary/10 text-primary font-medium"
+                        : "text-base-content hover:bg-primary/10 hover:text-primary font-medium"
                     }`}
                   >
-                    <div className="flex items-center gap-2 truncate min-w-0">
-                      {OptIcon && (
+                    <div className="flex items-center gap-2.5 truncate min-w-0">
+                      {option.dotColor ? (
+                        <span className={`w-2 h-2 rounded-full shrink-0 ${option.dotColor}`} />
+                      ) : OptIcon ? (
                         <OptIcon
                           className={`w-3.5 h-3.5 shrink-0 ${
-                            active ? "text-white" : "text-base-content/50"
+                            active ? "text-primary-content" : "text-base-content/40"
                           }`}
                         />
-                      )}
+                      ) : null}
                       <span className="truncate">{option.label}</span>
                       {option.badge && (
                         <span
                           className={`px-1.5 py-0.5 rounded text-[10px] font-mono shrink-0 ${
                             active
-                              ? "bg-white/20 text-white"
+                              ? "bg-white/20 text-primary-content"
                               : "bg-base-200 text-base-content/60 border border-base-300"
                           }`}
                         >
@@ -228,7 +232,7 @@ export default function BrandFilterDropdown({
                       )}
                     </div>
 
-                    {active && <Check className="w-3.5 h-3.5 shrink-0 text-white" />}
+                    {active && <Check className="w-4 h-4 shrink-0 text-primary-content ml-1" />}
                   </button>
                 );
               })

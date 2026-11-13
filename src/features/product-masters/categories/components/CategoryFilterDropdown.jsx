@@ -140,13 +140,15 @@ export default function CategoryFilterDropdown({
         }`}
       >
         <div className="flex items-center gap-2 truncate">
-          {Icon && (
+          {selectedOption?.dotColor ? (
+            <span className={`w-2 h-2 rounded-full shrink-0 ${selectedOption.dotColor}`} />
+          ) : Icon ? (
             <Icon
               className={`w-3.5 h-3.5 shrink-0 transition-colors ${
                 isFiltered || isOpen ? "text-primary" : "text-base-content/50 group-hover:text-base-content/70"
               }`}
             />
-          )}
+          ) : null}
           <span className="truncate">{displayLabel}</span>
         </div>
 

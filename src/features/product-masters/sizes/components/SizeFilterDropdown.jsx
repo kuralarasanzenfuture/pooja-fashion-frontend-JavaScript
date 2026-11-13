@@ -1,9 +1,10 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { ChevronDown, Check, Search, X } from "lucide-react";
 
 /**
- * Filter Dropdown matching standardized sizing
- * Trigger: px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold border
+ * SizeFilterDropdown
+ * Standardized luxury filter dropdown matching Subcategory/Category/Brand dropdown design
+ * with dot indicator support, keyboard navigation, and responsive placement.
  */
 export default function SizeFilterDropdown({
   label,
@@ -11,11 +12,11 @@ export default function SizeFilterDropdown({
   options = [],
   onChange,
   icon: Icon,
+  minWidth = "min-w-[140px]",
+  showAll = false,
+  allLabel = "All",
   searchable = false,
   searchPlaceholder = "Search...",
-  minWidth = "min-w-[140px]",
-  showAll = true,
-  allLabel = "All",
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -23,19 +24,17 @@ export default function SizeFilterDropdown({
   const dropdownRef = useRef(null);
   const searchInputRef = useRef(null);
 
-  // Close on outside click
+  // Close when clicking outside
   useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setIsOpen(false);
       }
-    }
+    };
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
   // Focus search input when opened
@@ -58,13 +57,9 @@ export default function SizeFilterDropdown({
   });
 
   const selectedOption = options.find((opt) => String(opt.value) === String(value));
-  const isFiltered = value !== "" && value !== null && value !== undefined;
+  const isFiltered = value !== "" && value !== null && value !== undefined && value !== "all";
 
-  const currentLabel = isFiltered
-    ? selectedOption?.label || selectedOption?.name || value
-    : showAll
-    ? `${allLabel} ${label}`
-    : label;
+  const currentLabel = selectedOption?.label || selectedOption?.name || label;
 
   const handleSelect = (val) => {
     onChange(val);
@@ -101,7 +96,7 @@ export default function SizeFilterDropdown({
   };
 
   return (
-    <div className="relative inline-block" ref={dropdownRef}>
+    <div className="relative inline-block text-left" ref={dropdownRef}>
       {/* Standardized Trigger Button */}
       <button
         type="button"
@@ -117,14 +112,16 @@ export default function SizeFilterDropdown({
             : "border-base-300 bg-base-100 text-base-content/80 hover:bg-base-200 hover:border-base-content/20"
         }`}
       >
-        <span className="flex items-center gap-1.5 truncate">
-          {Icon && (
+        <span className="flex items-center gap-2 truncate">
+          {selectedOption?.dotColor ? (
+            <span className={`w-2 h-2 rounded-full shrink-0 ${selectedOption.dotColor}`} />
+          ) : Icon ? (
             <Icon
               className={`w-3.5 h-3.5 shrink-0 ${
                 isFiltered || isOpen ? "text-primary" : "text-base-content/50"
               }`}
             />
-          )}
+          ) : null}
           <span className="truncate">{currentLabel}</span>
         </span>
         <ChevronDown
@@ -136,7 +133,7 @@ export default function SizeFilterDropdown({
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 sm:left-0 sm:right-auto mt-2 w-56 sm:w-64 rounded-2xl border border-base-300 bg-base-100 p-1.5 shadow-xl z-40 animate-in fade-in-50 zoom-in-95 duration-150">
+        <div className="absolute right-0 sm:left-0 sm:right-auto mt-1.5 min-w-[180px] max-w-xs rounded-2xl border border-base-300 bg-base-100 p-1.5 shadow-2xl z-50 animate-in fade-in-50 zoom-in-95 duration-150">
           {/* Search Box */}
           {searchable && (
             <div className="p-1 mb-1 border-b border-base-200">
@@ -145,19 +142,17 @@ export default function SizeFilterDropdown({
                 <input
                   ref={searchInputRef}
                   type="text"
-                  value={search}
-                  onChange={(e) => {
-                    setSearch(e.target.value);
-                    setHighlightedIndex(0);
-                  }}
                   placeholder={searchPlaceholder}
-                  className="w-full pl-8 pr-7 py-1.5 rounded-xl bg-base-200/60 border border-base-300/80 text-xs text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-8 pr-7 py-1 text-xs rounded-lg bg-base-200/50 border-0 focus:ring-1 focus:ring-primary text-base-content placeholder:text-base-content/40"
+                  onClick={(e) => e.stopPropagation()}
                 />
                 {search && (
                   <button
                     type="button"
                     onClick={() => setSearch("")}
-                    className="absolute right-2 text-base-content/40 hover:text-base-content cursor-pointer"
+                    className="absolute right-2 text-base-content/40 hover:text-base-content p-0.5"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -168,18 +163,18 @@ export default function SizeFilterDropdown({
 
           {/* Options List */}
           <div className="max-h-56 overflow-y-auto space-y-0.5 py-0.5">
-            {showAll && !search && (
+            {showAll && !search && !options.some((o) => o.value === "") && (
               <button
                 type="button"
                 onClick={() => handleSelect("")}
-                className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors cursor-pointer text-left ${
+                className={`w-full flex items-center justify-between gap-2.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer text-left ${
                   !isFiltered
-                    ? "bg-primary text-white font-semibold shadow-xs"
-                    : "text-base-content/80 hover:bg-base-200"
+                    ? "bg-primary text-primary-content font-bold shadow-xs"
+                    : "text-base-content hover:bg-primary/10 hover:text-primary font-medium"
                 }`}
               >
                 <span>{allLabel} {label}</span>
-                {!isFiltered && <Check className="w-3.5 h-3.5 shrink-0" />}
+                {!isFiltered && <Check className="w-4 h-4 shrink-0 text-primary-content ml-1" />}
               </button>
             )}
 
@@ -190,20 +185,27 @@ export default function SizeFilterDropdown({
 
                 return (
                   <button
-                    key={option.value}
+                    key={String(option.value)}
                     type="button"
                     onClick={() => handleSelect(option.value)}
                     onMouseEnter={() => setHighlightedIndex(idx)}
-                    className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors cursor-pointer text-left ${
+                    className={`w-full flex items-center justify-between gap-2.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer text-left ${
                       active
-                        ? "bg-primary text-white font-semibold shadow-xs"
+                        ? "bg-primary text-primary-content font-bold shadow-xs"
                         : isHighlighted
-                        ? "bg-base-200 text-base-content"
-                        : "text-base-content/80 hover:bg-base-200/60"
+                        ? "bg-primary/10 text-primary font-medium"
+                        : "text-base-content hover:bg-primary/10 hover:text-primary font-medium"
                     }`}
                   >
-                    <span className="truncate">{option.label || option.name}</span>
-                    {active && <Check className="w-3.5 h-3.5 shrink-0 text-white" />}
+                    <div className="flex items-center gap-2.5 min-w-0 truncate">
+                      {option.dotColor ? (
+                        <span className={`w-2 h-2 rounded-full shrink-0 ${option.dotColor}`} />
+                      ) : option.icon ? (
+                        <option.icon className={`w-3.5 h-3.5 shrink-0 ${active ? "text-primary-content" : "text-base-content/40"}`} />
+                      ) : null}
+                      <span className="truncate">{option.label || option.name}</span>
+                    </div>
+                    {active && <Check className="w-4 h-4 shrink-0 text-primary-content ml-1" />}
                   </button>
                 );
               })
@@ -218,4 +220,3 @@ export default function SizeFilterDropdown({
     </div>
   );
 }
-
