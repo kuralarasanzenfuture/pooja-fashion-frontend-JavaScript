@@ -38,6 +38,8 @@ export const ROUTES = {
   SIZE_GROUP_VIEW: "/products/size-groups/:id",
   SIZES: "/products/sizes",
   SIZE_VIEW: "/products/sizes/:id",
+  COLORS: "/products/colors",
+  COLOR_VIEW: "/products/colors/:id",
   ROLES: "/users/roles",
   ROLES_ALT: "/roles",
   USERS: "/users",

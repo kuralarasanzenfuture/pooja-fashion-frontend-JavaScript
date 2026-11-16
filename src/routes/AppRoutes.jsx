@@ -25,6 +25,10 @@ import {
   SizesPage,
   SizeViewPage,
 } from "../features/product-masters/sizes/index.js";
+import {
+  ColorsPage,
+  ColorViewPage,
+} from "../features/product-masters/colors/index.js";
 import RolesPage from "../features/roles/pages/RolesPage.jsx";
 import UsersPage from "../features/users/pages/UsersPage.jsx";
 import UserViewPage from "../features/users/pages/UserViewPage.jsx";
@@ -179,6 +183,12 @@ export default function AppRoutes() {
           <Route path={ROUTES.SIZE_VIEW} element={<SizeViewPage />} />
           <Route path="/sizes/:id" element={<SizeViewPage />} />
           <Route path="/products/sizes/:id" element={<SizeViewPage />} />
+          <Route path={ROUTES.COLORS} element={<ColorsPage />} />
+          <Route path="/colors" element={<ColorsPage />} />
+          <Route path="/products/colors" element={<ColorsPage />} />
+          <Route path={ROUTES.COLOR_VIEW} element={<ColorViewPage />} />
+          <Route path="/colors/:id" element={<ColorViewPage />} />
+          <Route path="/products/colors/:id" element={<ColorViewPage />} />
 
           {/* Users & Roles Management (Admin & SuperAdmin only) */}
           <Route element={<RoleProtectedRoute allowedRoles={["ADMIN", "SUPERADMIN"]} />}>

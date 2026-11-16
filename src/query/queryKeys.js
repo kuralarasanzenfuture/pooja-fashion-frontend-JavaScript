@@ -133,6 +133,16 @@ export const queryKeys = {
     detail: (id) => ["sizes", "detail", id],
   },
 
+  colors: {
+    all: ["colors"],
+    list: (params) => ["colors", "list", params],
+    allList: (params) => ["colors", "allList", params],
+    stats: (params) => ["colors", "stats", params],
+    byCompany: (companyId, params) => ["colors", "byCompany", companyId, params],
+    byCode: (companyId, code) => ["colors", "byCode", companyId, code],
+    detail: (id) => ["colors", "detail", id],
+  },
+
   subcategories: {
     all: ["subcategories"],
     list: (params) => ["subcategories", "list", params],
