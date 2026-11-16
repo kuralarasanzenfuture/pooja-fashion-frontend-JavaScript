@@ -51,3 +51,4 @@ export default function MaterialsSkeleton({ viewMode = "table" }) {
     </div>
   );
 }
+

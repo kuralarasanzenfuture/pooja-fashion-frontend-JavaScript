@@ -9,3 +9,4 @@ export { default as MaterialDetailsModal } from "./MaterialDetailsModal.jsx";
 export { default as MaterialDeleteModal } from "./MaterialDeleteModal.jsx";
 export { default as MaterialSeedDefaultsModal } from "./MaterialSeedDefaultsModal.jsx";
 export { default as MaterialSelect } from "./MaterialSelect.jsx";
+

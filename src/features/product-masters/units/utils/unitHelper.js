@@ -62,3 +62,4 @@ export function getUnitTheme(code = "") {
   const index = Math.abs(hash) % UNIT_PALETTES.length;
   return UNIT_PALETTES[index];
 }
+

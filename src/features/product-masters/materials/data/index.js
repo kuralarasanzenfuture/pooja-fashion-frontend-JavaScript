@@ -28,3 +28,4 @@ export default {
   POPULAR_MATERIAL_PRESETS,
   searchMaterialPresets,
 };
+

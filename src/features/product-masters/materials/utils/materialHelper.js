@@ -60,3 +60,4 @@ export function getMaterialTheme(name = "") {
   const index = Math.abs(hash) % MATERIAL_PALETTES.length;
   return MATERIAL_PALETTES[index];
 }
+

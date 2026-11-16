@@ -185,7 +185,7 @@ export default function MaterialFormModal({
       aria-modal="true"
     >
       <div
-        className={`w-full max-w-lg bg-base-100 rounded-3xl shadow-2xl border border-base-200 overflow-hidden ${cardClasses}`}
+        className={`w-full max-w-2xl bg-base-100 rounded-3xl shadow-2xl border border-base-200 overflow-hidden ${cardClasses}`}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-base-200">
@@ -304,60 +304,65 @@ export default function MaterialFormModal({
             </div>
           )}
 
-          {/* Material Name */}
-          <div>
-            <label className="text-xs sm:text-sm font-bold text-base-content block mb-1.5">
-              Material Name <span className="text-rose-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={form.material_name}
-              onChange={(e) => handleChange("material_name", e.target.value)}
-              placeholder="e.g. Cotton, Pure Silk, Georgette, Banarasi..."
-              className={`w-full px-3.5 py-2.5 rounded-xl bg-base-200/60 border text-xs sm:text-sm text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
-                errors.material_name
-                  ? "border-rose-500 focus:border-rose-500"
-                  : "border-base-300 focus:border-primary"
-              }`}
-            />
-            {errors.material_name && (
-              <p className="text-xs text-rose-500 mt-1 font-medium">
-                {errors.material_name}
-              </p>
-            )}
-          </div>
-
-          {/* Material Code */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs sm:text-sm font-bold text-base-content">
-                Material Code
-              </label>
-              {!codeManuallyEdited && form.material_code && (
-                <span className="text-[11px] text-primary font-medium">
-                  Auto-generated from name
-                </span>
+          {/* Material Name & Code (Single Row) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Material Name */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5 h-5">
+                <label className="text-xs sm:text-sm font-bold text-base-content">
+                  Material Name <span className="text-rose-500">*</span>
+                </label>
+              </div>
+              <input
+                type="text"
+                value={form.material_name}
+                onChange={(e) => handleChange("material_name", e.target.value)}
+                placeholder="e.g. Cotton, Pure Silk, Georgette, Banarasi..."
+                className={`w-full px-3.5 py-2.5 rounded-xl bg-base-200/60 border text-xs sm:text-sm text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                  errors.material_name
+                    ? "border-rose-500 focus:border-rose-500"
+                    : "border-base-300 focus:border-primary"
+                }`}
+              />
+              {errors.material_name && (
+                <p className="text-xs text-rose-500 mt-1 font-medium">
+                  {errors.material_name}
+                </p>
               )}
             </div>
-            <input
-              type="text"
-              value={form.material_code}
-              onChange={(e) => {
-                setCodeManuallyEdited(true);
-                handleChange("material_code", e.target.value.toUpperCase());
-              }}
-              placeholder="e.g. COTTON, SILK, BANARASI-SILK..."
-              className={`w-full px-3.5 py-2.5 rounded-xl bg-base-200/60 border font-mono uppercase text-xs sm:text-sm text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
-                errors.material_code
-                  ? "border-rose-500 focus:border-rose-500"
-                  : "border-base-300 focus:border-primary"
-              }`}
-            />
-            {errors.material_code && (
-              <p className="text-xs text-rose-500 mt-1 font-medium">
-                {errors.material_code}
-              </p>
-            )}
+
+            {/* Material Code */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5 h-5">
+                <label className="text-xs sm:text-sm font-bold text-base-content">
+                  Material Code
+                </label>
+                {!codeManuallyEdited && form.material_code && (
+                  <span className="text-[10px] sm:text-[11px] text-primary font-medium truncate">
+                    Auto-generated from name
+                  </span>
+                )}
+              </div>
+              <input
+                type="text"
+                value={form.material_code}
+                onChange={(e) => {
+                  setCodeManuallyEdited(true);
+                  handleChange("material_code", e.target.value.toUpperCase());
+                }}
+                placeholder="e.g. COTTON, SILK, BANARASI-SILK..."
+                className={`w-full px-3.5 py-2.5 rounded-xl bg-base-200/60 border font-mono uppercase text-xs sm:text-sm text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                  errors.material_code
+                    ? "border-rose-500 focus:border-rose-500"
+                    : "border-base-300 focus:border-primary"
+                }`}
+              />
+              {errors.material_code && (
+                <p className="text-xs text-rose-500 mt-1 font-medium">
+                  {errors.material_code}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Description */}
@@ -370,7 +375,7 @@ export default function MaterialFormModal({
               value={form.description}
               onChange={(e) => handleChange("description", e.target.value)}
               placeholder="e.g. Traditional natural breathable fabric, ideal for bridal sarees and lehengas..."
-              className="w-full px-3.5 py-2 rounded-xl bg-base-200/60 border border-base-300 text-xs sm:text-sm text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-base-200/60 border border-base-300 text-xs sm:text-sm text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
             />
           </div>
 
@@ -417,3 +422,4 @@ export default function MaterialFormModal({
     </div>
   );
 }
+
