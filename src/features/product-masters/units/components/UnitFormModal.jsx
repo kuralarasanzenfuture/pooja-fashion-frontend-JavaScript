@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useSelector } from "react-redux";
 import {
   X,
@@ -88,12 +88,35 @@ export default function UnitFormModal({
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
   const [codeManuallyEdited, setCodeManuallyEdited] = useState(false);
-  const [isPresetsOpen, setIsPresetsOpen] = useState(false);
-  const [presetSearch, setPresetSearch] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestionContainerRef = useRef(null);
 
-  const presets = useMemo(() => {
-    return presetSearch ? searchUnitPresets(presetSearch) : UNIT_PRESETS;
-  }, [presetSearch]);
+  // Close suggestions on outside click
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (
+        suggestionContainerRef.current &&
+        !suggestionContainerRef.current.contains(e.target)
+      ) {
+        setShowSuggestions(false);
+      }
+    };
+
+    if (showSuggestions) {
+      document.addEventListener("mousedown", handleOutsideClick);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [showSuggestions]);
+
+  // Autocomplete suggestions matching what user has typed in unit_name
+  const filteredPresets = useMemo(() => {
+    if (!form.unit_name || !form.unit_name.trim()) {
+      return POPULAR_UNITS;
+    }
+    return searchUnitPresets(form.unit_name);
+  }, [form.unit_name]);
 
   useEffect(() => {
     if (!isModalOpen) return;
@@ -125,8 +148,7 @@ export default function UnitFormModal({
       setCodeManuallyEdited(false);
     }
     setErrors({});
-    setIsPresetsOpen(false);
-    setPresetSearch("");
+    setShowSuggestions(false);
   }, [isModalOpen, isEditing, initialData, initialCompanyId, userCompanyId]);
 
   const handleChange = (field, value) => {
@@ -153,7 +175,9 @@ export default function UnitFormModal({
       decimal_places: preset.decimal_places ?? 0,
     }));
     setCodeManuallyEdited(true);
-    setIsPresetsOpen(false);
+    setShowSuggestions(false);
+    if (errors.unit_name) setErrors((er) => ({ ...er, unit_name: undefined }));
+    if (errors.unit_code) setErrors((er) => ({ ...er, unit_code: undefined }));
   };
 
   const handleSubmit = async (e) => {
@@ -223,80 +247,6 @@ export default function UnitFormModal({
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
-          {/* Quick Pick Presets (Only in Add Mode) */}
-          {!isEditing && (
-            <div className="p-4 rounded-2xl bg-primary/5 border border-primary/15 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-primary flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  Quick Pick Unit Presets
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setIsPresetsOpen((prev) => !prev)}
-                  className="text-xs font-semibold text-primary hover:underline flex items-center gap-0.5 cursor-pointer"
-                >
-                  <span>{isPresetsOpen ? "Close Presets" : "Browse All (30)"}</span>
-                  <ChevronDown
-                    className={`w-3.5 h-3.5 transition-transform ${isPresetsOpen ? "rotate-180" : ""}`}
-                  />
-                </button>
-              </div>
-
-              {/* Popular quick chips */}
-              <div className="flex flex-wrap gap-1.5">
-                {POPULAR_UNITS.map((preset) => (
-                  <button
-                    key={preset.code}
-                    type="button"
-                    onClick={() => handleSelectPreset(preset)}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold bg-base-100 hover:bg-primary hover:text-primary-content border border-base-300 hover:border-primary transition-all shadow-2xs cursor-pointer group"
-                  >
-                    <span>{preset.name}</span>
-                    <span className="text-[10px] opacity-60 font-mono">({preset.code})</span>
-                  </button>
-                ))}
-              </div>
-
-              {/* Browse All Expandable Dropdown */}
-              {isPresetsOpen && (
-                <div className="pt-2 border-t border-primary/10 space-y-2">
-                  <input
-                    type="text"
-                    placeholder="Search 30 standard units..."
-                    value={presetSearch}
-                    onChange={(e) => setPresetSearch(e.target.value)}
-                    className="w-full px-3 py-1.5 text-xs rounded-xl bg-base-100 border border-base-300 focus:outline-none focus:border-primary"
-                  />
-                  <div className="max-h-40 overflow-y-auto space-y-1 pr-1">
-                    {presets.map((preset) => (
-                      <div
-                        key={preset.code}
-                        onClick={() => handleSelectPreset(preset)}
-                        className="flex items-center justify-between p-2 rounded-xl bg-base-100 hover:bg-primary/10 border border-base-200 hover:border-primary/30 cursor-pointer transition-colors"
-                      >
-                        <div className="flex items-center gap-2">
-                          <UnitThumb name={preset.name} code={preset.code} size="xs" />
-                          <div>
-                            <span className="text-xs font-bold text-base-content block">
-                              {preset.name}
-                            </span>
-                            <span className="text-[10px] text-base-content/50 font-mono">
-                              {preset.code} • {preset.decimal_places} decimals
-                            </span>
-                          </div>
-                        </div>
-                        <span className="text-[11px] text-base-content/60 truncate max-w-[150px]">
-                          {preset.desc}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
           {/* Target Company Select (SuperAdmin / Admin only) */}
           {canSelectCompany && (
             <div>
@@ -313,17 +263,33 @@ export default function UnitFormModal({
 
           {/* Unit Name & Code (Single Row) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Unit Name */}
-            <div>
+            {/* Unit Name with Autocomplete Presets Dropdown */}
+            <div className="relative" ref={suggestionContainerRef}>
               <div className="flex items-center justify-between mb-1.5 h-5">
-                <label className="text-xs sm:text-sm font-bold text-base-content">
+                <label className="text-xs sm:text-sm font-bold text-base-content flex items-center gap-1">
                   Unit Name <span className="text-rose-500">*</span>
                 </label>
+                {!isEditing && (
+                  <button
+                    type="button"
+                    onClick={() => setShowSuggestions((prev) => !prev)}
+                    className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <Sparkles className="w-3 h-3" />
+                    <span>Unit Presets</span>
+                  </button>
+                )}
               </div>
               <input
                 type="text"
                 value={form.unit_name}
-                onChange={(e) => handleChange("unit_name", e.target.value)}
+                onChange={(e) => {
+                  handleChange("unit_name", e.target.value);
+                  if (!showSuggestions && !isEditing) setShowSuggestions(true);
+                }}
+                onFocus={() => {
+                  if (!isEditing) setShowSuggestions(true);
+                }}
                 placeholder="e.g. Pieces, Meter, Kilogram, Pair, Set..."
                 className={`w-full px-3.5 py-2.5 rounded-xl bg-base-200/60 border text-xs sm:text-sm text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
                   errors.unit_name
@@ -335,6 +301,57 @@ export default function UnitFormModal({
                 <p className="text-xs text-rose-500 mt-1 font-medium">
                   {errors.unit_name}
                 </p>
+              )}
+
+              {/* Floating Autocomplete Presets Dropdown */}
+              {!isEditing && showSuggestions && (
+                <div className="absolute top-full left-0 right-0 mt-1.5 z-50 rounded-2xl bg-base-100 border border-base-200 shadow-2xl p-1.5 max-h-56 overflow-y-auto space-y-1">
+                  <div className="px-2 py-1 text-[11px] font-bold uppercase tracking-wider text-base-content/50 flex items-center justify-between border-b border-base-200 pb-1 mb-1">
+                    <span>
+                      {form.unit_name?.trim()
+                        ? `Suggested Units (${filteredPresets.length})`
+                        : "Standard Presets"}
+                    </span>
+                    <span className="text-[10px] text-primary lowercase font-medium">
+                      click to autofill
+                    </span>
+                  </div>
+
+                  {filteredPresets.length === 0 ? (
+                    <div className="px-3 py-3 text-xs text-base-content/60 text-center">
+                      No matching preset. Custom unit &quot;{form.unit_name}&quot; will be used.
+                    </div>
+                  ) : (
+                    filteredPresets.slice(0, 15).map((preset) => (
+                      <button
+                        key={preset.code}
+                        type="button"
+                        onClick={() => handleSelectPreset(preset)}
+                        className="w-full text-left px-2.5 py-2 rounded-xl hover:bg-primary/10 transition-colors flex items-center justify-between group cursor-pointer border border-transparent hover:border-primary/20"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <UnitThumb name={preset.name} code={preset.code} size="xs" />
+                          <div className="min-w-0">
+                            <span className="text-xs font-bold text-base-content group-hover:text-primary block truncate">
+                              {preset.name}
+                            </span>
+                            <span className="text-[11px] text-base-content/50 block truncate max-w-[180px] sm:max-w-[240px]">
+                              {preset.desc || `${preset.decimal_places} decimal places`}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0 ml-2">
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-lg bg-base-200 group-hover:bg-primary/20 text-base-content/70 group-hover:text-primary font-semibold block">
+                            {preset.code}
+                          </span>
+                          <span className="text-[9px] text-base-content/40 block mt-0.5">
+                            {preset.decimal_places} dec
+                          </span>
+                        </div>
+                      </button>
+                    ))
+                  )}
+                </div>
               )}
             </div>
 
