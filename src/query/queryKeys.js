@@ -143,6 +143,26 @@ export const queryKeys = {
     detail: (id) => ["colors", "detail", id],
   },
 
+  materials: {
+    all: ["materials"],
+    list: (params) => ["materials", "list", params],
+    allList: (params) => ["materials", "allList", params],
+    stats: (params) => ["materials", "stats", params],
+    byCompany: (companyId, params) => ["materials", "byCompany", companyId, params],
+    byCode: (companyId, code) => ["materials", "byCode", companyId, code],
+    detail: (id) => ["materials", "detail", id],
+  },
+
+  units: {
+    all: ["units"],
+    list: (params) => ["units", "list", params],
+    allList: (params) => ["units", "allList", params],
+    stats: (params) => ["units", "stats", params],
+    byCompany: (companyId, params) => ["units", "byCompany", companyId, params],
+    byCode: (companyId, code) => ["units", "byCode", companyId, code],
+    detail: (id) => ["units", "detail", id],
+  },
+
   subcategories: {
     all: ["subcategories"],
     list: (params) => ["subcategories", "list", params],

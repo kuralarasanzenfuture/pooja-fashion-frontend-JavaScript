@@ -29,6 +29,14 @@ import {
   ColorsPage,
   ColorViewPage,
 } from "../features/product-masters/colors/index.js";
+import {
+  MaterialsPage,
+  MaterialViewPage,
+} from "../features/product-masters/materials/index.js";
+import {
+  UnitsPage,
+  UnitViewPage,
+} from "../features/product-masters/units/index.js";
 import RolesPage from "../features/roles/pages/RolesPage.jsx";
 import UsersPage from "../features/users/pages/UsersPage.jsx";
 import UserViewPage from "../features/users/pages/UserViewPage.jsx";
@@ -189,6 +197,18 @@ export default function AppRoutes() {
           <Route path={ROUTES.COLOR_VIEW} element={<ColorViewPage />} />
           <Route path="/colors/:id" element={<ColorViewPage />} />
           <Route path="/products/colors/:id" element={<ColorViewPage />} />
+          <Route path={ROUTES.MATERIALS} element={<MaterialsPage />} />
+          <Route path="/materials" element={<MaterialsPage />} />
+          <Route path="/products/materials" element={<MaterialsPage />} />
+          <Route path={ROUTES.MATERIAL_VIEW} element={<MaterialViewPage />} />
+          <Route path="/materials/:id" element={<MaterialViewPage />} />
+          <Route path="/products/materials/:id" element={<MaterialViewPage />} />
+          <Route path={ROUTES.UNITS} element={<UnitsPage />} />
+          <Route path="/units" element={<UnitsPage />} />
+          <Route path="/products/units" element={<UnitsPage />} />
+          <Route path={ROUTES.UNIT_VIEW} element={<UnitViewPage />} />
+          <Route path="/units/:id" element={<UnitViewPage />} />
+          <Route path="/products/units/:id" element={<UnitViewPage />} />
 
           {/* Users & Roles Management (Admin & SuperAdmin only) */}
           <Route element={<RoleProtectedRoute allowedRoles={["ADMIN", "SUPERADMIN"]} />}>

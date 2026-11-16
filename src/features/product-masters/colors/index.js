@@ -18,3 +18,4 @@ export * from "./components/index.js";
 // Pages
 export { default as ColorsPage } from "./pages/ColorsPage.jsx";
 export { default as ColorViewPage } from "./pages/ColorViewPage.jsx";
+

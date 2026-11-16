@@ -9,3 +9,4 @@ export { default as ColorDetailsModal } from "./ColorDetailsModal.jsx";
 export { default as ColorDeleteModal } from "./ColorDeleteModal.jsx";
 export { default as ColorSeedDefaultsModal } from "./ColorSeedDefaultsModal.jsx";
 export { default as ColorSelect } from "./ColorSelect.jsx";
+

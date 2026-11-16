@@ -80,3 +80,4 @@ export default function ColorsSkeleton({ viewMode = "table" }) {
     </div>
   );
 }
+
