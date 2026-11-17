@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useSelector } from "react-redux";
-import { X, Tag, Sparkles, Building, ChevronDown, Check, Zap, Globe } from "lucide-react";
+import { X, Tag, Sparkles, ChevronDown, Zap, Globe } from "lucide-react";
 import { Button } from "../../../../common/components/ui/buttons/index.js";
 import { useModalAnimation } from "../../../../common/hooks/useModalAnimation.js";
 import { CompanySelect } from "../../../company/components/index.js";
@@ -72,6 +72,7 @@ function validate(values, canSelectCompany) {
 
 /**
  * Add / Edit Brand Form Modal
+ * Upgraded to spacious max-w-4xl width with balanced 2-column layout (Form Fields + Logo/Status).
  */
 export default function BrandFormModal({
   open,
@@ -84,6 +85,7 @@ export default function BrandFormModal({
   onSubmit,
 }) {
   const isModalOpen = open ?? isOpen ?? false;
+  const isEdit = mode === "edit";
   const { isRendered, handleClose, backdropClasses, cardClasses } = useModalAnimation(
     isModalOpen,
     onClose
@@ -219,15 +221,13 @@ export default function BrandFormModal({
       values: form,
       logoFile,
       removeLogo,
-      isEdit: mode === "edit",
+      isEdit,
     });
 
     if (result?.errors) {
       setErrors(result.errors);
     }
   };
-
-  const isEdit = mode === "edit";
 
   return (
     <div
@@ -237,23 +237,23 @@ export default function BrandFormModal({
       aria-modal="true"
     >
       <div
-        className={`relative w-full max-w-2xl bg-base-100 rounded-3xl shadow-2xl border border-base-300 overflow-hidden ${cardClasses}`}
+        className={`relative w-full max-w-4xl bg-base-100 rounded-3xl shadow-2xl border border-base-200 overflow-hidden ${cardClasses}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="flex items-start justify-between px-6 pt-5 pb-4 border-b border-base-200">
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-base-200">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
               <Tag className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-extrabold text-base-content tracking-tight">
+              <h2 className="text-lg font-black text-base-content tracking-tight">
                 {isEdit ? "Edit Brand Master" : "Create New Brand"}
               </h2>
               <p className="text-xs text-base-content/60 mt-0.5">
                 {isEdit
-                  ? "Update brand details, logo asset, and catalog status"
-                  : "Register an apparel brand, manufacturer, or designer label"}
+                  ? "Update brand details, logo asset, and catalog status."
+                  : "Register an apparel brand, manufacturer, or designer label."}
               </p>
             </div>
           </div>
@@ -261,20 +261,20 @@ export default function BrandFormModal({
           <button
             type="button"
             onClick={handleClose}
-            className="p-1.5 rounded-xl text-base-content/40 hover:text-base-content hover:bg-base-200 transition-colors cursor-pointer"
-            title="Close modal"
+            className="p-1.5 rounded-xl hover:bg-base-200 text-base-content/60 hover:text-base-content transition-colors cursor-pointer"
+            aria-label="Close modal"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Modal Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5 max-h-[80vh] overflow-y-auto scrollbar-thin">
+        {/* Modal Body Form */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[82vh] overflow-y-auto">
           {/* Quick Presets Picker (in add mode) */}
           {!isEdit && (
-            <div className="relative">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-semibold text-base-content/70 flex items-center gap-1.5">
+            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-3.5 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-primary flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-primary" />
                   <span>Popular Brand Presets</span>
                 </span>
@@ -288,25 +288,45 @@ export default function BrandFormModal({
                 </button>
               </div>
 
+              {/* Quick Pick Chips */}
+              <div className="flex flex-wrap items-center gap-1.5">
+                {presets.slice(0, 6).map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => handleSelectPreset(p)}
+                    className="px-2.5 py-1 rounded-xl bg-base-100 hover:bg-primary hover:text-white border border-primary/20 text-xs font-medium text-base-content/80 transition-all flex items-center gap-1 cursor-pointer"
+                  >
+                    <Zap className="w-3 h-3 text-amber-500 shrink-0" />
+                    <span className="truncate">{p.name}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Collapsible Presets Search Panel */}
               {isPresetsOpen && (
-                <div className="p-3 rounded-2xl bg-base-200/60 border border-base-300 space-y-2 mb-3">
+                <div className="pt-2 space-y-2 border-t border-primary/15 animate-in fade-in-50 duration-150">
                   <input
                     type="text"
                     value={presetSearch}
                     onChange={(e) => setPresetSearch(e.target.value)}
                     placeholder="Search brand preset (Manyavar, Fabindia, Biba, Raymond...)"
-                    className="w-full px-3 py-1.5 text-xs rounded-xl bg-base-100 border border-base-300 focus:outline-none focus:border-primary"
+                    className="w-full px-3 py-1.5 text-xs rounded-xl bg-base-100 border border-base-300 text-base-content placeholder:text-base-content/40 focus:outline-none focus:border-primary"
                   />
-                  <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pt-1">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-36 overflow-y-auto pt-1">
                     {presets.map((p) => (
                       <button
                         key={p.id}
                         type="button"
                         onClick={() => handleSelectPreset(p)}
-                        className="px-2.5 py-1 rounded-xl bg-base-100 hover:bg-primary hover:text-white border border-base-300 text-xs font-medium text-base-content/80 transition-colors flex items-center gap-1.5 cursor-pointer"
+                        className="p-2 rounded-xl bg-base-100 hover:bg-primary/10 border border-base-300 hover:border-primary text-left transition-all flex flex-col gap-0.5 cursor-pointer group"
                       >
-                        <Zap className="w-3 h-3 text-amber-500" />
-                        <span>{p.name}</span>
+                        <span className="text-xs font-bold text-base-content group-hover:text-primary truncate">
+                          {p.name}
+                        </span>
+                        <span className="font-mono text-[10px] text-primary/80">
+                          {p.code}
+                        </span>
                       </button>
                     ))}
                   </div>
@@ -315,184 +335,202 @@ export default function BrandFormModal({
             </div>
           )}
 
-          {/* Company Selector (For SuperAdmin / Admin without assigned company) */}
-          {canSelectCompany && (
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-base-content/70 mb-1.5">
-                Company <span className="text-rose-500">*</span>
-              </label>
-              <CompanySelect
-                value={form.company_id}
-                onChange={(val) => handleChange("company_id", val)}
-                error={errors.company_id}
-              />
-              {errors.company_id && (
-                <p className="mt-1 text-xs text-rose-500 font-medium">{errors.company_id}</p>
+          {/* 2-Column Responsive Layout (Left: Form Inputs | Right: Visual Assets & Status) */}
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+            {/* Left Column (md:col-span-3) */}
+            <div className="md:col-span-3 space-y-4">
+              {/* Target Company Select (SuperAdmin / Admin only) */}
+              {canSelectCompany && (
+                <div>
+                  <CompanySelect
+                    value={form.company_id}
+                    onChange={(val) => handleChange("company_id", val)}
+                    required={true}
+                    error={errors.company_id}
+                    label="Target Company"
+                    placeholder="-- Select Target Company --"
+                  />
+                </div>
               )}
-            </div>
-          )}
 
-          {/* Grid: Brand Name & Brand Code */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Brand Name */}
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-base-content/70 mb-1.5">
-                Brand Name <span className="text-rose-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={form.brand_name}
-                onChange={(e) => handleChange("brand_name", e.target.value)}
-                placeholder="e.g. Manyavar, Fabindia, Biba"
-                maxLength={150}
-                className={`w-full px-3.5 py-2.5 rounded-xl bg-base-100 border text-xs sm:text-sm text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 ${
-                  errors.brand_name ? "border-rose-500" : "border-base-300 focus:border-primary"
-                }`}
-              />
-              {errors.brand_name && (
-                <p className="mt-1 text-xs text-rose-500 font-medium">{errors.brand_name}</p>
-              )}
-            </div>
+              {/* Brand Name & Brand Code (Single Row) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Brand Name */}
+                <div>
+                  <label className="text-xs sm:text-sm font-bold text-base-content block mb-1.5">
+                    Brand Name <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={form.brand_name}
+                    onChange={(e) => handleChange("brand_name", e.target.value)}
+                    placeholder="e.g. Manyavar, Fabindia, Biba"
+                    maxLength={150}
+                    className={`w-full px-3.5 py-2.5 rounded-xl bg-base-200/60 border text-xs sm:text-sm text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                      errors.brand_name
+                        ? "border-rose-500 focus:border-rose-500"
+                        : "border-base-300 focus:border-primary"
+                    }`}
+                  />
+                  {errors.brand_name && (
+                    <p className="mt-1 text-xs text-rose-500 font-medium">{errors.brand_name}</p>
+                  )}
+                </div>
 
-            {/* Brand Code */}
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-base-content/70">
-                  Brand Code
-                </label>
-                {!isEdit && form.brand_name && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const generated = generateBrandCodeFromName(form.brand_name);
-                      handleChange("brand_code", generated);
-                      setCodeManuallyEdited(false);
+                {/* Brand Code */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs sm:text-sm font-bold text-base-content">
+                      Brand Code <span className="text-base-content/40 font-normal">(Optional)</span>
+                    </label>
+                    {!isEdit && form.brand_name && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const generated = generateBrandCodeFromName(form.brand_name);
+                          handleChange("brand_code", generated);
+                          setCodeManuallyEdited(false);
+                        }}
+                        className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                      >
+                        <Zap className="w-3 h-3" />
+                        <span>Auto</span>
+                      </button>
+                    )}
+                  </div>
+                  <input
+                    type="text"
+                    value={form.brand_code}
+                    onChange={(e) => {
+                      setCodeManuallyEdited(true);
+                      handleChange("brand_code", e.target.value.toUpperCase());
                     }}
-                    className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
-                  >
-                    Auto-generate
-                  </button>
-                )}
+                    placeholder="e.g. MANYAVAR"
+                    maxLength={50}
+                    className={`w-full px-3.5 py-2.5 rounded-xl bg-base-200/60 border font-mono text-xs sm:text-sm text-base-content uppercase placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                      errors.brand_code
+                        ? "border-rose-500 focus:border-rose-500"
+                        : "border-base-300 focus:border-primary"
+                    }`}
+                  />
+                  {errors.brand_code && (
+                    <p className="mt-1 text-xs text-rose-500 font-medium">{errors.brand_code}</p>
+                  )}
+                </div>
               </div>
-              <input
-                type="text"
-                value={form.brand_code}
-                onChange={(e) => {
-                  setCodeManuallyEdited(true);
-                  handleChange("brand_code", e.target.value.toUpperCase());
-                }}
-                placeholder="e.g. MANYAVAR"
-                maxLength={50}
-                className={`w-full px-3.5 py-2.5 rounded-xl bg-base-100 border font-mono text-xs sm:text-sm text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 ${
-                  errors.brand_code ? "border-rose-500" : "border-base-300 focus:border-primary"
-                }`}
-              />
-              {errors.brand_code && (
-                <p className="mt-1 text-xs text-rose-500 font-medium">{errors.brand_code}</p>
-              )}
-            </div>
-          </div>
 
-          {/* Grid: Website URL & Display Order */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-bold uppercase tracking-wider text-base-content/70 mb-1.5">
-                Website URL
-              </label>
-              <div className="relative">
-                <Globe className="w-4 h-4 text-base-content/40 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <input
-                  type="url"
-                  value={form.website_url}
-                  onChange={(e) => handleChange("website_url", e.target.value)}
-                  placeholder="https://www.brand.com"
-                  className={`w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-base-100 border text-xs sm:text-sm text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 ${
-                    errors.website_url ? "border-rose-500" : "border-base-300 focus:border-primary"
+              {/* Website URL & Display Order (Single Row) */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="text-xs sm:text-sm font-bold text-base-content block mb-1.5">
+                    Website URL <span className="text-base-content/40 font-normal">(Optional)</span>
+                  </label>
+                  <div className="relative">
+                    <Globe className="w-4 h-4 text-base-content/40 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <input
+                      type="url"
+                      value={form.website_url}
+                      onChange={(e) => handleChange("website_url", e.target.value)}
+                      placeholder="https://www.brand.com"
+                      className={`w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-base-200/60 border text-xs sm:text-sm text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                        errors.website_url
+                          ? "border-rose-500 focus:border-rose-500"
+                          : "border-base-300 focus:border-primary"
+                      }`}
+                    />
+                  </div>
+                  {errors.website_url && (
+                    <p className="mt-1 text-xs text-rose-500 font-medium">{errors.website_url}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="text-xs sm:text-sm font-bold text-base-content block mb-1.5">
+                    Display Order <span className="text-base-content/40 font-normal">(Seq)</span>
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={form.display_order}
+                    onChange={(e) => handleChange("display_order", e.target.value)}
+                    placeholder="0"
+                    className={`w-full px-3.5 py-2.5 rounded-xl bg-base-200/60 border text-xs sm:text-sm text-base-content font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                      errors.display_order
+                        ? "border-rose-500 focus:border-rose-500"
+                        : "border-base-300 focus:border-primary"
+                    }`}
+                  />
+                  {errors.display_order && (
+                    <p className="mt-1 text-xs text-rose-500 font-medium">{errors.display_order}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Description */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs sm:text-sm font-bold text-base-content">
+                    Description <span className="text-base-content/40 font-normal">(Optional)</span>
+                  </label>
+                  <span className="text-[11px] text-base-content/40 font-mono">
+                    {(form.description || "").length} / {DESC_MAX}
+                  </span>
+                </div>
+                <textarea
+                  rows={3}
+                  value={form.description}
+                  onChange={(e) => handleChange("description", e.target.value)}
+                  placeholder="Brief description of the brand identity, heritage, or product focus..."
+                  maxLength={DESC_MAX}
+                  className={`w-full px-3.5 py-2.5 rounded-xl bg-base-200/60 border text-xs sm:text-sm text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                    errors.description
+                      ? "border-rose-500 focus:border-rose-500"
+                      : "border-base-300 focus:border-primary"
                   }`}
                 />
+                {errors.description && (
+                  <p className="mt-1 text-xs text-rose-500 font-medium">{errors.description}</p>
+                )}
               </div>
-              {errors.website_url && (
-                <p className="mt-1 text-xs text-rose-500 font-medium">{errors.website_url}</p>
-              )}
             </div>
 
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-base-content/70 mb-1.5">
-                Display Order
-              </label>
-              <input
-                type="number"
-                min={0}
-                value={form.display_order}
-                onChange={(e) => handleChange("display_order", e.target.value)}
-                className={`w-full px-3.5 py-2.5 rounded-xl bg-base-100 border text-xs sm:text-sm text-base-content font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 ${
-                  errors.display_order ? "border-rose-500" : "border-base-300 focus:border-primary"
-                }`}
-              />
-              {errors.display_order && (
-                <p className="mt-1 text-xs text-rose-500 font-medium">{errors.display_order}</p>
-              )}
-            </div>
-          </div>
+            {/* Right Column (md:col-span-2) */}
+            <div className="md:col-span-2 space-y-4 flex flex-col justify-between">
+              {/* Brand Logo Upload */}
+              <div>
+                <label className="text-xs sm:text-sm font-bold text-base-content block mb-1.5">
+                  Brand Logo <span className="text-base-content/40 font-normal">(Visual Asset)</span>
+                </label>
+                <BrandLogoUploader
+                  previewUrl={previewUrl}
+                  onSelect={handleLogoSelect}
+                  onRemove={handleLogoRemove}
+                  disabled={saving}
+                />
+              </div>
 
-          {/* Brand Logo Upload */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-base-content/70 mb-1.5">
-              Brand Logo
-            </label>
-            <BrandLogoUploader
-              previewUrl={previewUrl}
-              onSelect={handleLogoSelect}
-              onRemove={handleLogoRemove}
-              disabled={saving}
-            />
-          </div>
-
-          {/* Description */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-base-content/70">
-                Description
-              </label>
-              <span className="text-[11px] text-base-content/40 font-mono">
-                {(form.description || "").length} / {DESC_MAX}
-              </span>
+              {/* Catalog Status Toggle */}
+              <div className="p-4 rounded-2xl bg-base-200/50 border border-base-300 flex items-center justify-between">
+                <div>
+                  <span className="text-xs sm:text-sm font-bold text-base-content block">
+                    Active in Catalog
+                  </span>
+                  <span className="text-[11px] text-base-content/60">
+                    When active, this brand is visible in billing, filters, and product creation.
+                  </span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={form.is_active}
+                  onChange={(e) => handleChange("is_active", e.target.checked)}
+                  className="toggle toggle-success toggle-sm cursor-pointer shrink-0 ml-2"
+                />
+              </div>
             </div>
-            <textarea
-              rows={3}
-              value={form.description}
-              onChange={(e) => handleChange("description", e.target.value)}
-              placeholder="Brief description of the brand identity, heritage, or product focus..."
-              maxLength={DESC_MAX}
-              className={`w-full px-3.5 py-2 rounded-xl bg-base-100 border text-xs sm:text-sm text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 ${
-                errors.description ? "border-rose-500" : "border-base-300 focus:border-primary"
-              }`}
-            />
-            {errors.description && (
-              <p className="mt-1 text-xs text-rose-500 font-medium">{errors.description}</p>
-            )}
-          </div>
-
-          {/* Catalog Status Toggle */}
-          <div className="p-4 rounded-2xl bg-base-200/50 border border-base-300 flex items-center justify-between">
-            <div>
-              <span className="text-xs sm:text-sm font-bold text-base-content block">
-                Active in Catalog
-              </span>
-              <span className="text-[11px] text-base-content/60">
-                When active, this brand is visible in billing, filters, and product creation.
-              </span>
-            </div>
-            <input
-              type="checkbox"
-              checked={form.is_active}
-              onChange={(e) => handleChange("is_active", e.target.checked)}
-              className="toggle toggle-success toggle-sm cursor-pointer"
-            />
           </div>
 
           {/* Modal Footer Actions */}
-          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-base-200">
+          <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-base-200">
             <Button
               type="button"
               variant="outline"
@@ -516,4 +554,3 @@ export default function BrandFormModal({
     </div>
   );
 }
-
