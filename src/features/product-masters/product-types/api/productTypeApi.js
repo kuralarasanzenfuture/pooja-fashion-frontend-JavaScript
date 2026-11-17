@@ -6,3 +6,4 @@ import * as productTypeService from "../services/productTypeService.js";
 
 export * from "../services/productTypeService.js";
 export default productTypeService;
+

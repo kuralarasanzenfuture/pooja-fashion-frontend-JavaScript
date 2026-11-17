@@ -18,3 +18,4 @@ export * from "./components/index.js";
 // Pages
 export { default as ProductTypesPage } from "./pages/ProductTypesPage.jsx";
 export { default as ProductTypeViewPage } from "./pages/ProductTypeViewPage.jsx";
+

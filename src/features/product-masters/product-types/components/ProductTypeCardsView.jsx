@@ -127,53 +127,58 @@ export default function ProductTypeCardsView({
                 </div>
               </div>
 
-              {/* Description */}
-              {description ? (
-                <p className="text-xs text-base-content/60 line-clamp-2 mt-2">
-                  {description}
-                </p>
-              ) : (
-                <p className="text-xs text-base-content/40 italic mt-2">
-                  No description provided
-                </p>
-              )}
+              {/* Usage / Description */}
+              <div className="mt-2.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-base-content/50 block">
+                  Usage:
+                </span>
+                {description ? (
+                  <p className="text-xs text-base-content/75 line-clamp-2 mt-0.5">
+                    {description}
+                  </p>
+                ) : (
+                  <p className="text-xs text-base-content/40 italic mt-0.5">
+                    No description provided
+                  </p>
+                )}
+              </div>
 
-              {/* Operational Flags Badges */}
+              {/* Operational Flags Badges (TRUE / FALSE) */}
               <div className="flex items-center gap-1.5 flex-wrap mt-3 pt-3 border-t border-base-200/80">
                 <span
                   className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border ${
                     isStockItem
-                      ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20"
-                      : "bg-base-200 text-base-content/40 border-base-300 line-through"
+                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25"
+                      : "bg-base-200 text-base-content/50 border-base-300"
                   }`}
                   title={isStockItem ? "Tracked in stock inventory" : "Not stock tracked"}
                 >
                   <Package className="w-2.5 h-2.5" />
-                  <span>Stock Item</span>
+                  <span>Stock: {isStockItem ? "TRUE" : "FALSE"}</span>
                 </span>
 
                 <span
                   className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border ${
                     isSaleable
-                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-                      : "bg-base-200 text-base-content/40 border-base-300 line-through"
+                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25"
+                      : "bg-base-200 text-base-content/50 border-base-300"
                   }`}
                   title={isSaleable ? "Available for POS & Sales billing" : "Not saleable"}
                 >
                   <ShoppingBag className="w-2.5 h-2.5" />
-                  <span>Saleable</span>
+                  <span>Sale: {isSaleable ? "TRUE" : "FALSE"}</span>
                 </span>
 
                 <span
                   className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border ${
                     isPurchasable
-                      ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
-                      : "bg-base-200 text-base-content/40 border-base-300 line-through"
+                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25"
+                      : "bg-base-200 text-base-content/50 border-base-300"
                   }`}
                   title={isPurchasable ? "Available for supplier orders" : "Not purchasable"}
                 >
                   <Truck className="w-2.5 h-2.5" />
-                  <span>Purchasable</span>
+                  <span>Purchase: {isPurchasable ? "TRUE" : "FALSE"}</span>
                 </span>
               </div>
             </div>
@@ -208,3 +213,4 @@ export default function ProductTypeCardsView({
     </div>
   );
 }
+

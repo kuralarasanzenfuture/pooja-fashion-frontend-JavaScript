@@ -327,17 +327,38 @@ export default function ProductTypeViewPage() {
           </div>
         </div>
 
-        {/* Description section */}
+        {/* Description / Usage section */}
         {description && (
           <div className="p-5 rounded-2xl bg-base-200/30 border border-base-300 space-y-1">
             <span className="text-[11px] font-bold uppercase text-base-content/50 block">
-              Product Classification Description
+              Usage & Description
             </span>
             <p className="text-xs sm:text-sm text-base-content/80 leading-relaxed whitespace-pre-wrap">
               {description}
             </p>
           </div>
         )}
+
+        {/* "Why these settings?" Guidance Card */}
+        <div className="p-5 rounded-2xl bg-primary/5 border border-primary/20 space-y-2.5">
+          <span className="text-xs font-black text-base-content uppercase tracking-wider block">
+            Why these settings?
+          </span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-base-content/80">
+            <div className="p-3 rounded-xl bg-base-100 border border-base-200">
+              <strong className="text-base-content font-mono font-bold">is_stock_item:</strong> Whether the product needs inventory tracking.
+            </div>
+            <div className="p-3 rounded-xl bg-base-100 border border-base-200">
+              <strong className="text-base-content font-mono font-bold">is_saleable:</strong> Whether you can sell it to customers.
+            </div>
+            <div className="p-3 rounded-xl bg-base-100 border border-base-200">
+              <strong className="text-base-content font-mono font-bold">is_purchasable:</strong> Whether you can purchase it from suppliers.
+            </div>
+            <div className="p-3 rounded-xl bg-base-100 border border-base-200">
+              <strong className="text-base-content font-mono font-bold text-primary">SERVICE:</strong> No physical stock, but it can be sold to customers. For example, stitching or alteration charges.
+            </div>
+          </div>
+        </div>
 
         {/* Company & Audit History */}
         <div className="p-5 rounded-2xl bg-base-200/40 border border-base-300 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
@@ -394,3 +415,4 @@ export default function ProductTypeViewPage() {
     </div>
   );
 }
+

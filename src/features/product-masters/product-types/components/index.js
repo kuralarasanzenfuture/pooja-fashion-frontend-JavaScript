@@ -9,3 +9,4 @@ export { default as ProductTypeDetailsModal } from "./ProductTypeDetailsModal.js
 export { default as ProductTypeDeleteModal } from "./ProductTypeDeleteModal.jsx";
 export { default as ProductTypeSeedDefaultsModal } from "./ProductTypeSeedDefaultsModal.jsx";
 export { default as ProductTypeSelect } from "./ProductTypeSelect.jsx";
+

@@ -1,19 +1,18 @@
 import React from "react";
-import { Sparkles, X, ShieldCheck, Tag } from "lucide-react";
+import { Sparkles, X, ShieldCheck, Tag, Check, HelpCircle, Scissors } from "lucide-react";
 import { Button } from "../../../../common/components/ui/buttons/index.js";
 import { useModalAnimation } from "../../../../common/hooks/useModalAnimation.js";
-import ProductTypeThumb from "./ProductTypeThumb.jsx";
 import { POPULAR_PRODUCT_TYPES } from "../data/index.js";
 
 /**
  * Seed Default Standard Product Types Modal
+ * Shows the exact standard table data preview and operational settings guidance.
  */
 export default function ProductTypeSeedDefaultsModal({
   isOpen = false,
   onClose,
   onSeed,
   isSeeding = false,
-  totalPresets = 5,
 }) {
   const { isRendered, handleClose, backdropClasses, cardClasses } = useModalAnimation(
     isOpen,
@@ -21,6 +20,8 @@ export default function ProductTypeSeedDefaultsModal({
   );
 
   if (!isRendered) return null;
+
+  const defaultTypes = POPULAR_PRODUCT_TYPES.slice(0, 5);
 
   return (
     <div
@@ -30,7 +31,7 @@ export default function ProductTypeSeedDefaultsModal({
       aria-modal="true"
     >
       <div
-        className={`relative w-full max-w-md bg-base-100 rounded-3xl shadow-2xl border border-base-300 overflow-hidden ${cardClasses}`}
+        className={`relative w-full max-w-2xl bg-base-100 rounded-3xl shadow-2xl border border-base-300 overflow-hidden ${cardClasses}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -44,7 +45,7 @@ export default function ProductTypeSeedDefaultsModal({
                 Seed Standard Product Types
               </h3>
               <p className="text-xs text-base-content/60">
-                Populate standard ERP product classifications into your catalog.
+                Populate standard ERP product classifications into your company catalog.
               </p>
             </div>
           </div>
@@ -60,31 +61,92 @@ export default function ProductTypeSeedDefaultsModal({
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-4">
+        <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+          {/* Sample Table Data Preview */}
           <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-wider text-base-content/70">
-              Standard Types Included
+            <label className="text-xs font-bold uppercase tracking-wider text-base-content/70 block">
+              Standard Types Table Data
             </label>
-            <div className="p-3 bg-base-200/50 rounded-2xl border border-base-300/70">
-              <div className="flex flex-wrap gap-2 justify-center">
-                {POPULAR_PRODUCT_TYPES.slice(0, 5).map((preset) => (
-                  <div
-                    key={preset.code}
-                    className="tooltip tooltip-top"
-                    data-tip={`${preset.name} (${preset.code})`}
-                  >
-                    <ProductTypeThumb
-                      code={preset.code}
-                      name={preset.name}
-                      size="sm"
-                    />
-                  </div>
-                ))}
+            <div className="rounded-2xl border border-base-300 overflow-hidden bg-base-100 shadow-xs">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-base-200/60 border-b border-base-300 text-[10px] font-bold uppercase text-base-content/60 select-none">
+                      <th className="py-2.5 px-3 text-center">ID</th>
+                      <th className="py-2.5 px-3">Type Code</th>
+                      <th className="py-2.5 px-3">Type Name</th>
+                      <th className="py-2.5 px-2 text-center">Stock</th>
+                      <th className="py-2.5 px-2 text-center">Saleable</th>
+                      <th className="py-2.5 px-2 text-center">Purchase</th>
+                      <th className="py-2.5 px-3">Usage</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-base-200">
+                    {defaultTypes.map((row) => (
+                      <tr key={row.code} className="hover:bg-base-200/40">
+                        <td className="py-2 px-3 text-center font-mono font-bold text-base-content/60">
+                          {row.id}
+                        </td>
+                        <td className="py-2 px-3 font-mono font-bold text-primary">
+                          {row.code}
+                        </td>
+                        <td className="py-2 px-3 font-semibold text-base-content">
+                          {row.name}
+                        </td>
+                        <td className="py-2 px-2 text-center">
+                          {row.is_stock_item ? (
+                            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.2 rounded">TRUE</span>
+                          ) : (
+                            <span className="text-[10px] font-bold text-base-content/40 bg-base-200 px-1.5 py-0.2 rounded">FALSE</span>
+                          )}
+                        </td>
+                        <td className="py-2 px-2 text-center">
+                          {row.is_saleable ? (
+                            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.2 rounded">TRUE</span>
+                          ) : (
+                            <span className="text-[10px] font-bold text-base-content/40 bg-base-200 px-1.5 py-0.2 rounded">FALSE</span>
+                          )}
+                        </td>
+                        <td className="py-2 px-2 text-center">
+                          {row.is_purchasable ? (
+                            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.2 rounded">TRUE</span>
+                          ) : (
+                            <span className="text-[10px] font-bold text-base-content/40 bg-base-200 px-1.5 py-0.2 rounded">FALSE</span>
+                          )}
+                        </td>
+                        <td className="py-2 px-3 text-[11px] text-base-content/70">
+                          {row.description}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-              <p className="text-[11px] text-center text-base-content/50 mt-2 font-medium">
-                Includes Ready Made Garments, Fabric & Textiles, Fashion Accessories, Footwear, and Tailoring Services.
-              </p>
             </div>
+          </div>
+
+          {/* "Why these settings?" Guidance Card */}
+          <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20 space-y-2 text-xs">
+            <div className="flex items-center gap-1.5 text-primary font-bold">
+              <HelpCircle className="w-4 h-4" />
+              <span className="text-xs uppercase tracking-wider font-black">
+                Why these settings?
+              </span>
+            </div>
+            <ul className="space-y-1.5 text-xs text-base-content/80 list-disc pl-4 leading-relaxed">
+              <li>
+                <strong className="text-base-content font-mono font-bold">is_stock_item:</strong> Whether the product needs inventory tracking.
+              </li>
+              <li>
+                <strong className="text-base-content font-mono font-bold">is_saleable:</strong> Whether you can sell it to customers.
+              </li>
+              <li>
+                <strong className="text-base-content font-mono font-bold">is_purchasable:</strong> Whether you can purchase it from suppliers.
+              </li>
+              <li>
+                <strong className="text-base-content font-mono font-bold text-primary">SERVICE:</strong> No physical stock, but it can be sold to customers. For example, stitching or alteration charges.
+              </li>
+            </ul>
           </div>
 
           <div className="p-3.5 rounded-2xl bg-base-200/40 border border-base-300/80 text-xs text-base-content/70 flex items-start gap-2.5">

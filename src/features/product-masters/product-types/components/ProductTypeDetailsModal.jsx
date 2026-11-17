@@ -13,6 +13,8 @@ import {
   Truck,
   CheckCircle2,
   AlertCircle,
+  HelpCircle,
+  Scissors,
 } from "lucide-react";
 import { Button } from "../../../../common/components/ui/buttons/index.js";
 import { useModalAnimation } from "../../../../common/hooks/useModalAnimation.js";
@@ -61,7 +63,7 @@ export default function ProductTypeDetailsModal({
       aria-modal="true"
     >
       <div
-        className={`relative w-full max-w-lg bg-base-100 rounded-3xl shadow-2xl border border-base-300 overflow-hidden ${cardClasses}`}
+        className={`relative w-full max-w-2xl bg-base-100 rounded-3xl shadow-2xl border border-base-300 overflow-hidden ${cardClasses}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -135,64 +137,94 @@ export default function ProductTypeDetailsModal({
             </div>
           </div>
 
-          {/* Description */}
+          {/* Usage / Description */}
           {description && (
             <div className="p-3.5 rounded-2xl bg-base-200/40 border border-base-300/70">
               <span className="text-base-content/50 block text-[11px] font-bold uppercase mb-1">
-                DESCRIPTION
+                USAGE & ITEMS
               </span>
-              <p className="text-xs text-base-content/80 leading-relaxed whitespace-pre-wrap">
+              <p className="text-xs text-base-content/80 leading-relaxed whitespace-pre-wrap font-medium">
                 {description}
               </p>
             </div>
           )}
 
-          {/* Operational Flags */}
+          {/* Operational Capabilities Table */}
           <div className="p-4 rounded-2xl bg-base-200/40 border border-base-300 space-y-2.5">
             <span className="text-[11px] font-bold uppercase tracking-wider text-base-content/60 block">
-              OPERATIONAL CAPABILITIES
+              OPERATIONAL SETTINGS
             </span>
 
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-2.5">
               <div
-                className={`p-2.5 rounded-xl border flex flex-col items-center justify-center text-center ${
+                className={`p-3 rounded-2xl border flex flex-col items-center justify-center text-center ${
                   isStockItem
                     ? "bg-indigo-500/10 border-indigo-500/25 text-indigo-700 dark:text-indigo-300"
                     : "bg-base-200/60 border-base-300 text-base-content/40"
                 }`}
               >
-                <Package className="w-4 h-4 mb-1" />
-                <span className="text-[11px] font-bold">Stock Item</span>
-                <span className="text-[9px] mt-0.5">{isStockItem ? "Tracked" : "No Stock"}</span>
+                <Package className="w-5 h-5 mb-1" />
+                <span className="text-xs font-bold">Stock Item</span>
+                <span className="text-[10px] mt-0.5 font-bold uppercase font-mono">
+                  {isStockItem ? "TRUE" : "FALSE"}
+                </span>
               </div>
 
               <div
-                className={`p-2.5 rounded-xl border flex flex-col items-center justify-center text-center ${
+                className={`p-3 rounded-2xl border flex flex-col items-center justify-center text-center ${
                   isSaleable
                     ? "bg-emerald-500/10 border-emerald-500/25 text-emerald-700 dark:text-emerald-300"
                     : "bg-base-200/60 border-base-300 text-base-content/40"
                 }`}
               >
-                <ShoppingBag className="w-4 h-4 mb-1" />
-                <span className="text-[11px] font-bold">Saleable</span>
-                <span className="text-[9px] mt-0.5">{isSaleable ? "POS Active" : "No Sale"}</span>
+                <ShoppingBag className="w-5 h-5 mb-1" />
+                <span className="text-xs font-bold">Saleable</span>
+                <span className="text-[10px] mt-0.5 font-bold uppercase font-mono">
+                  {isSaleable ? "TRUE" : "FALSE"}
+                </span>
               </div>
 
               <div
-                className={`p-2.5 rounded-xl border flex flex-col items-center justify-center text-center ${
+                className={`p-3 rounded-2xl border flex flex-col items-center justify-center text-center ${
                   isPurchasable
                     ? "bg-amber-500/10 border-amber-500/25 text-amber-700 dark:text-amber-300"
                     : "bg-base-200/60 border-base-300 text-base-content/40"
                 }`}
               >
-                <Truck className="w-4 h-4 mb-1" />
-                <span className="text-[11px] font-bold">Purchasable</span>
-                <span className="text-[9px] mt-0.5">{isPurchasable ? "Inward PO" : "No Inward"}</span>
+                <Truck className="w-5 h-5 mb-1" />
+                <span className="text-xs font-bold">Purchasable</span>
+                <span className="text-[10px] mt-0.5 font-bold uppercase font-mono">
+                  {isPurchasable ? "TRUE" : "FALSE"}
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Company & Meta */}
+          {/* "Why these settings?" Guidance Callout */}
+          <div className="p-3.5 rounded-2xl bg-primary/5 border border-primary/20 space-y-2 text-xs">
+            <div className="flex items-center gap-1.5 text-primary font-bold">
+              <HelpCircle className="w-4 h-4" />
+              <span className="text-[11px] uppercase tracking-wider font-black">
+                Why these settings?
+              </span>
+            </div>
+            <ul className="space-y-1 text-[11px] text-base-content/75 list-disc pl-4">
+              <li>
+                <strong>is_stock_item:</strong> Whether the product needs inventory tracking.
+              </li>
+              <li>
+                <strong>is_saleable:</strong> Whether you can sell it to customers.
+              </li>
+              <li>
+                <strong>is_purchasable:</strong> Whether you can purchase it from suppliers.
+              </li>
+              <li>
+                <strong>SERVICE:</strong> No physical stock, but it can be sold to customers (e.g. stitching or alteration charges).
+              </li>
+            </ul>
+          </div>
+
+          {/* Company & Audit History */}
           <div className="p-3.5 rounded-2xl bg-base-200/40 border border-base-300/70 space-y-2 text-xs">
             <div className="flex items-center justify-between py-0.5">
               <span className="text-base-content/60 flex items-center gap-1.5">

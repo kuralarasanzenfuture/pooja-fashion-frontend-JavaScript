@@ -1,11 +1,11 @@
 import React from "react";
-import { Eye, Edit2, Trash2, Copy, Check, Building, Tag, Package, ShoppingBag, Truck } from "lucide-react";
+import { Eye, Edit2, Trash2, Copy, Check, X, Tag, Package, ShoppingBag, Truck } from "lucide-react";
 import ProductTypeThumb from "./ProductTypeThumb.jsx";
 
 /**
  * ProductTypeTableView
- * Premium table view for Product Types master with operational flag badges,
- * copyable codes, catalog status toggle, and action buttons.
+ * Matches exact specification:
+ * ID | Type Code | Type Name | Stock Item | Saleable | Purchasable | Usage | Catalog Status | Actions
  */
 export default function ProductTypeTableView({
   productTypes = [],
@@ -23,19 +23,21 @@ export default function ProductTypeTableView({
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-base-200 bg-base-200/50 text-[11px] font-bold uppercase tracking-wider text-base-content/60 select-none">
-              <th className="py-3.5 px-4 text-center w-16">ID</th>
-              <th className="py-3.5 px-4">Type Details</th>
-              <th className="py-3.5 px-4">Type Code</th>
-              <th className="py-3.5 px-4">Operational Flags</th>
-              <th className="py-3.5 px-4 hidden lg:table-cell">Company</th>
-              <th className="py-3.5 px-4 w-32 whitespace-nowrap">Catalog Status</th>
-              <th className="py-3.5 px-4 text-right w-28 whitespace-nowrap">Actions</th>
+              <th className="py-3.5 px-3 text-center w-14">ID</th>
+              <th className="py-3.5 px-3">Type Code</th>
+              <th className="py-3.5 px-3">Type Name</th>
+              <th className="py-3.5 px-3 text-center">Stock Item</th>
+              <th className="py-3.5 px-3 text-center">Saleable</th>
+              <th className="py-3.5 px-3 text-center">Purchasable</th>
+              <th className="py-3.5 px-4 min-w-[200px]">Usage</th>
+              <th className="py-3.5 px-3 text-center w-28 whitespace-nowrap">Status</th>
+              <th className="py-3.5 px-3 text-right w-24 whitespace-nowrap">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-base-200/80 text-xs sm:text-sm">
             {productTypes.length === 0 ? (
               <tr>
-                <td colSpan={7} className="py-12 text-center text-base-content/50">
+                <td colSpan={9} className="py-12 text-center text-base-content/50">
                   <div className="flex flex-col items-center justify-center gap-2">
                     <Tag className="w-8 h-8 text-base-content/30" />
                     <p className="font-medium text-sm">No product types found</p>
@@ -51,7 +53,6 @@ export default function ProductTypeTableView({
                 const name = pt.typeName || pt.type_name || "Unnamed Type";
                 const code = pt.typeCode || pt.type_code;
                 const description = pt.description;
-                const companyName = pt.companyName || pt.company_name;
                 const isStockItem = pt.isStockItem !== undefined ? Boolean(pt.isStockItem) : Boolean(pt.is_stock_item);
                 const isSaleable = pt.isSaleable !== undefined ? Boolean(pt.isSaleable) : Boolean(pt.is_saleable);
                 const isPurchasable = pt.isPurchasable !== undefined ? Boolean(pt.isPurchasable) : Boolean(pt.is_purchasable);
@@ -64,46 +65,15 @@ export default function ProductTypeTableView({
                     className="hover:bg-base-200/50 transition-colors group animate-in fade-in-50 duration-200"
                     style={{ animationDelay: `${Math.min(index * 20, 150)}ms` }}
                   >
-                    {/* ID */}
-                    <td className="py-4 px-4 text-center">
+                    {/* 1. ID */}
+                    <td className="py-3.5 px-3 text-center">
                       <span className="font-mono text-xs font-semibold text-base-content/60 bg-base-200/80 px-2 py-0.5 rounded-md">
-                        #{id}
+                        {id}
                       </span>
                     </td>
 
-                    {/* Type Details (Avatar + Name + Description) */}
-                    <td className="py-4 px-4">
-                      <div className="flex items-center gap-3">
-                        <ProductTypeThumb
-                          name={name}
-                          code={code}
-                          size="md"
-                          onClick={() => onViewDetails?.(pt)}
-                        />
-                        <div className="min-w-0 max-w-xs">
-                          <button
-                            type="button"
-                            onClick={() => onViewDetails?.(pt)}
-                            className="font-bold text-base-content hover:text-primary transition-colors cursor-pointer text-left truncate block text-xs sm:text-sm"
-                            title={name}
-                          >
-                            {name}
-                          </button>
-                          {description ? (
-                            <span className="text-[11px] text-base-content/50 truncate block mt-0.5">
-                              {description}
-                            </span>
-                          ) : (
-                            <span className="text-[11px] text-base-content/40 italic block mt-0.5">
-                              No description
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* Type Code */}
-                    <td className="py-4 px-4 whitespace-nowrap">
+                    {/* 2. Type Code */}
+                    <td className="py-3.5 px-3 whitespace-nowrap">
                       {code ? (
                         <div className="flex items-center gap-1.5">
                           <span className="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-primary/10 text-primary border border-primary/20">
@@ -135,65 +105,81 @@ export default function ProductTypeTableView({
                       )}
                     </td>
 
-                    {/* Operational Flags */}
-                    <td className="py-4 px-4 whitespace-nowrap">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        {/* Stock Item Flag */}
-                        <span
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border ${
-                            isStockItem
-                              ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20"
-                              : "bg-base-200 text-base-content/50 border-base-300 line-through"
-                          }`}
-                          title={isStockItem ? "Tracked in stock inventory" : "Not stock tracked"}
+                    {/* 3. Type Name */}
+                    <td className="py-3.5 px-3">
+                      <div className="flex items-center gap-2.5">
+                        <ProductTypeThumb
+                          name={name}
+                          code={code}
+                          size="sm"
+                          onClick={() => onViewDetails?.(pt)}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => onViewDetails?.(pt)}
+                          className="font-bold text-base-content hover:text-primary transition-colors cursor-pointer text-left truncate block text-xs sm:text-sm"
+                          title={name}
                         >
-                          <Package className="w-2.5 h-2.5" />
-                          <span>Stock</span>
-                        </span>
-
-                        {/* Saleable Flag */}
-                        <span
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border ${
-                            isSaleable
-                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-                              : "bg-base-200 text-base-content/50 border-base-300 line-through"
-                          }`}
-                          title={isSaleable ? "Available for POS & Sales billing" : "Not saleable"}
-                        >
-                          <ShoppingBag className="w-2.5 h-2.5" />
-                          <span>Sale</span>
-                        </span>
-
-                        {/* Purchasable Flag */}
-                        <span
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border ${
-                            isPurchasable
-                              ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
-                              : "bg-base-200 text-base-content/50 border-base-300 line-through"
-                          }`}
-                          title={isPurchasable ? "Available for purchase orders & inward" : "Not purchasable"}
-                        >
-                          <Truck className="w-2.5 h-2.5" />
-                          <span>Purchase</span>
-                        </span>
+                          {name}
+                        </button>
                       </div>
                     </td>
 
-                    {/* Company */}
-                    <td className="py-4 px-4 hidden lg:table-cell">
-                      {companyName ? (
-                        <div className="flex items-center gap-1.5 text-xs text-base-content/80 font-medium">
-                          <Building className="w-3.5 h-3.5 text-base-content/40 shrink-0" />
-                          <span className="truncate max-w-[150px]">{companyName}</span>
-                        </div>
+                    {/* 4. Stock Item (TRUE / FALSE) */}
+                    <td className="py-3.5 px-3 text-center whitespace-nowrap">
+                      {isStockItem ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">
+                          <Check className="w-3 h-3 stroke-[3]" /> TRUE
+                        </span>
                       ) : (
-                        <span className="text-xs text-base-content/40">—</span>
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-base-200 text-base-content/50 border border-base-300">
+                          <X className="w-3 h-3 stroke-[2.5]" /> FALSE
+                        </span>
                       )}
                     </td>
 
-                    {/* Catalog Status Toggle */}
-                    <td className="py-4 px-4 whitespace-nowrap">
-                      <label className="inline-flex cursor-pointer items-center gap-2 select-none">
+                    {/* 5. Saleable (TRUE / FALSE) */}
+                    <td className="py-3.5 px-3 text-center whitespace-nowrap">
+                      {isSaleable ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">
+                          <Check className="w-3 h-3 stroke-[3]" /> TRUE
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-base-200 text-base-content/50 border border-base-300">
+                          <X className="w-3 h-3 stroke-[2.5]" /> FALSE
+                        </span>
+                      )}
+                    </td>
+
+                    {/* 6. Purchasable (TRUE / FALSE) */}
+                    <td className="py-3.5 px-3 text-center whitespace-nowrap">
+                      {isPurchasable ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">
+                          <Check className="w-3 h-3 stroke-[3]" /> TRUE
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-base-200 text-base-content/50 border border-base-300">
+                          <X className="w-3 h-3 stroke-[2.5]" /> FALSE
+                        </span>
+                      )}
+                    </td>
+
+                    {/* 7. Usage / Description */}
+                    <td className="py-3.5 px-4">
+                      {description ? (
+                        <span className="text-xs text-base-content/75 block line-clamp-2" title={description}>
+                          {description}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-base-content/40 italic block">
+                          No description
+                        </span>
+                      )}
+                    </td>
+
+                    {/* 8. Catalog Status Toggle */}
+                    <td className="py-3.5 px-3 text-center whitespace-nowrap">
+                      <label className="inline-flex cursor-pointer items-center gap-1.5 select-none">
                         <input
                           type="checkbox"
                           checked={isActive}
@@ -203,19 +189,19 @@ export default function ProductTypeTableView({
                           aria-label={`Toggle active status for ${name}`}
                         />
                         <span
-                          className={`text-xs font-semibold transition-colors ${
+                          className={`text-[11px] font-bold transition-colors ${
                             isActive
                               ? "text-emerald-600 dark:text-emerald-400"
-                              : "text-base-content/50"
+                              : "text-base-content/40"
                           }`}
                         >
-                          {isStatusPending ? "Saving..." : isActive ? "Active" : "Inactive"}
+                          {isStatusPending ? "..." : isActive ? "Active" : "Off"}
                         </span>
                       </label>
                     </td>
 
-                    {/* Actions */}
-                    <td className="py-4 px-4 text-right whitespace-nowrap">
+                    {/* 9. Actions */}
+                    <td className="py-3.5 px-3 text-right whitespace-nowrap">
                       <div className="flex items-center justify-end gap-1">
                         <button
                           type="button"
