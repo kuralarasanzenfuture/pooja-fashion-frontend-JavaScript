@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1,
+    "code": "READY_MADE",
+    "name": "Ready Made Garments",
+    "description": "Shirts, T-shirts, jeans, sarees, readymade salwar suits, and dresses",
+    "is_stock_item": true,
+    "is_saleable": true,
+    "is_purchasable": true,
+    "popular": true
+  },
+  {
+    "id": 2,
+    "code": "FABRIC",
+    "name": "Fabric & Textiles",
+    "description": "Cotton, pure silk, linen, georgette, and unstitched textile rolls",
+    "is_stock_item": true,
+    "is_saleable": true,
+    "is_purchasable": true,
+    "popular": true
+  },
+  {
+    "id": 3,
+    "code": "ACCESSORY",
+    "name": "Fashion Accessories",
+    "description": "Dupattas, shawls, belts, clutches, jewellery, and potli bags",
+    "is_stock_item": true,
+    "is_saleable": true,
+    "is_purchasable": true,
+    "popular": true
+  },
+  {
+    "id": 4,
+    "code": "FOOTWEAR",
+    "name": "Footwear",
+    "description": "Ethnic mojris, juttis, sandals, slippers, and bridal heels",
+    "is_stock_item": true,
+    "is_saleable": true,
+    "is_purchasable": true,
+    "popular": true
+  },
+  {
+    "id": 5,
+    "code": "SERVICE",
+    "name": "Services & Tailoring",
+    "description": "Blouse stitching, fall-pico, embroidery, alteration, and dry cleaning",
+    "is_stock_item": false,
+    "is_saleable": true,
+    "is_purchasable": false,
+    "popular": true
+  },
+  {
+    "id": 6,
+    "code": "SAREE",
+    "name": "Traditional Sarees",
+    "description": "Kanchipuram, Banarasi Katan, Mysore Crepe, and Chanderi Silk Sarees",
+    "is_stock_item": true,
+    "is_saleable": true,
+    "is_purchasable": true,
+    "popular": true
+  },
+  {
+    "id": 7,
+    "code": "LEHENGA",
+    "name": "Designer Bridal & Lehengas",
+    "description": "Bridal lehengas, semi-stitched ghagras, and crop-top skirt sets",
+    "is_stock_item": true,
+    "is_saleable": true,
+    "is_purchasable": true,
+    "popular": false
+  },
+  {
+    "id": 8,
+    "code": "UNSTITCHED_SUIT",
+    "name": "Unstitched Suit Materials",
+    "description": "Chanderi, cotton, and silk 3-piece unstitched salwar suit fabrics",
+    "is_stock_item": true,
+    "is_saleable": true,
+    "is_purchasable": true,
+    "popular": false
+  },
+  {
+    "id": 9,
+    "code": "PACKAGING",
+    "name": "Packaging Materials",
+    "description": "Store branded carry bags, saree gift boxes, garment plastic covers",
+    "is_stock_item": true,
+    "is_saleable": false,
+    "is_purchasable": true,
+    "popular": false
+  },
+  {
+    "id": 10,
+    "code": "RAW_MATERIAL",
+    "name": "Raw Materials & Yarns",
+    "description": "Zari threads, sewing threads, lace borders, latkans, and buttons",
+    "is_stock_item": true,
+    "is_saleable": false,
+    "is_purchasable": true,
+    "popular": false
+  },
+  {
+    "id": 11,
+    "code": "MENS_ETHNIC",
+    "name": "Men's Ethnic Wear",
+    "description": "Kurta pyjama sets, sherwanis, bandhgalas, waistcoats, and dhotis",
+    "is_stock_item": true,
+    "is_saleable": true,
+    "is_purchasable": true,
+    "popular": false
+  },
+  {
+    "id": 12,
+    "code": "KIDS_WEAR",
+    "name": "Kids & Girls Wear",
+    "description": "Pattu pavada, kids lehenga choli, frocks, and ethnic festive wear",
+    "is_stock_item": true,
+    "is_saleable": true,
+    "is_purchasable": true,
+    "popular": false
+  }
+]
