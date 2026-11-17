@@ -145,6 +145,7 @@ function SubCategoryFormContent({
   const [imageFile, setImageFile] = useState(null);
   const [removeImage, setRemoveImage] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [forceShowPresets, setForceShowPresets] = useState(false);
   const [codeManuallyEdited, setCodeManuallyEdited] = useState(
     Boolean(
       initialData?.subcategoryCode ||
@@ -211,13 +212,34 @@ function SubCategoryFormContent({
     };
   }, [showSuggestions]);
 
-  const filteredPresets = useMemo(() => {
-    return searchSubcategoryPresets(form.subcategory_name);
-  }, [form.subcategory_name]);
+  const trimmedName = (form.subcategory_name || "").trim();
+  const hasTyped = trimmedName.length > 0;
+
+  // Matching presets when user types in Subcategory Name
+  const matchingPresets = useMemo(() => {
+    if (!hasTyped) return [];
+    return searchSubcategoryPresets(trimmedName);
+  }, [hasTyped, trimmedName]);
 
   const popularPresets = useMemo(() => {
     return getPopularSubcategoryPresets();
   }, []);
+
+  // Dropdown is visible ONLY when:
+  // - User hasn't typed yet and suggestions are open, OR
+  // - User has typed and matching presets exist (matchingPresets.length > 0), OR
+  // - User explicitly clicked "⚡ Textile Presets" button to view presets (forceShowPresets)
+  // When user types a name that DOES NOT MATCH: isDropdownVisible is FALSE (not show down!)
+  const isDropdownVisible =
+    showSuggestions &&
+    (forceShowPresets || !hasTyped || matchingPresets.length > 0);
+
+  const displayPresets =
+    forceShowPresets && matchingPresets.length === 0
+      ? popularPresets
+      : hasTyped
+      ? matchingPresets
+      : popularPresets;
 
   const currentImageUrl =
     initialData?.imageUrl || initialData?.image_url || null;
@@ -277,11 +299,28 @@ function SubCategoryFormContent({
       return next;
     });
 
+    // Reset forceShowPresets so non-matching typing automatically closes dropdown ("not show down")
+    setForceShowPresets(false);
+    setShowSuggestions(true);
+
     if (errors.subcategory_name) {
       setErrors((er) => ({ ...er, subcategory_name: undefined }));
     }
     if (!codeManuallyEdited && errors.subcategory_code) {
       setErrors((er) => ({ ...er, subcategory_code: undefined }));
+    }
+  };
+
+  // Explicit button toggle for Textile Presets
+  const toggleSuggestions = () => {
+    if (isDropdownVisible) {
+      setShowSuggestions(false);
+      setForceShowPresets(false);
+    } else {
+      setShowSuggestions(true);
+      if (hasTyped && matchingPresets.length === 0) {
+        setForceShowPresets(true);
+      }
     }
   };
 
@@ -340,6 +379,7 @@ function SubCategoryFormContent({
     if (errors.subcategory_name) setErrors((er) => ({ ...er, subcategory_name: undefined }));
     if (errors.subcategory_code) setErrors((er) => ({ ...er, subcategory_code: undefined }));
     setShowSuggestions(false);
+    setForceShowPresets(false);
   };
 
   const handleSubmit = async (e) => {
@@ -485,12 +525,12 @@ function SubCategoryFormContent({
               </label>
               <button
                 type="button"
-                onClick={() => setShowSuggestions((prev) => !prev)}
+                onClick={toggleSuggestions}
                 className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer bg-primary/10 hover:bg-primary/20 px-2 py-0.5 rounded-lg border border-primary/20 transition-colors whitespace-nowrap"
               >
                 <Sparkles className="size-3 text-amber-500" />
-                <span>{showSuggestions ? "Close Presets" : "⚡ Textile Presets"}</span>
-                <ChevronDown className={`size-3 transition-transform ${showSuggestions ? "rotate-180" : ""}`} />
+                <span>{isDropdownVisible ? "Close Presets" : "⚡ Textile Presets"}</span>
+                <ChevronDown className={`size-3 transition-transform ${isDropdownVisible ? "rotate-180" : ""}`} />
               </button>
             </div>
 
@@ -506,7 +546,9 @@ function SubCategoryFormContent({
                   }));
                 }
               }}
-              onFocus={() => setShowSuggestions(true)}
+              onFocus={() => {
+                if (!hasTyped) setShowSuggestions(true);
+              }}
               placeholder="e.g. Kanchipuram Pure Silk, Anarkali Kurtis, Banarasi Katan..."
               maxLength={150}
               disabled={saving}
@@ -522,59 +564,63 @@ function SubCategoryFormContent({
               </p>
             )}
 
-            {/* Quick Preset Chips row right under input */}
-            <div className="mt-2 flex items-center gap-1.5 flex-wrap">
-              <span className="text-[11px] text-base-content/50 font-medium flex items-center gap-1">
-                <Sparkles className="size-3 text-amber-500" /> Quick:
-              </span>
-              {popularPresets.slice(0, 5).map((preset) => {
-                const active = form.subcategory_name.trim().toLowerCase() === preset.name.toLowerCase();
-                return (
-                  <button
-                    key={preset.id}
-                    type="button"
-                    onClick={() => handleSelectPreset(preset)}
-                    className={`text-[11px] px-2 py-0.5 rounded-lg border font-medium transition-all cursor-pointer ${
-                      active
-                        ? "bg-primary text-primary-content border-primary"
-                        : "bg-base-200/60 hover:bg-base-200 text-base-content/75 border-base-300 hover:border-primary/40"
-                    }`}
-                  >
-                    {preset.name}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Presets Dropdown */}
-            {showSuggestions && (
-              <div className="absolute top-full left-0 right-0 mt-1 z-50 rounded-2xl bg-base-100 border border-base-300 shadow-2xl p-2 max-h-60 overflow-y-auto space-y-1">
-                <div className="px-2 py-1 text-[11px] font-bold uppercase tracking-wider text-base-content/50 flex items-center justify-between border-b border-base-200 pb-1 mb-1">
-                  <span>Fashion & Textile Presets ({(filteredPresets.length > 0 ? filteredPresets : popularPresets).length})</span>
-                  <span className="text-[10px] lowercase text-primary font-medium">click to autofill</span>
-                </div>
-                {(filteredPresets.length > 0 ? filteredPresets : popularPresets).map(
-                  (preset) => (
+            {/* Quick Preset Chips row right under input - shown only before typing to keep input space clean */}
+            {!hasTyped && (
+              <div className="mt-2 flex items-center gap-1.5 flex-wrap">
+                <span className="text-[11px] text-base-content/50 font-medium flex items-center gap-1">
+                  <Sparkles className="size-3 text-amber-500" /> Quick:
+                </span>
+                {popularPresets.slice(0, 5).map((preset) => {
+                  const active = form.subcategory_name.trim().toLowerCase() === preset.name.toLowerCase();
+                  return (
                     <button
                       key={preset.id}
                       type="button"
                       onClick={() => handleSelectPreset(preset)}
-                      className="w-full text-left px-3 py-2 rounded-xl hover:bg-primary/10 transition-colors flex items-center justify-between group cursor-pointer"
+                      className={`text-[11px] px-2 py-0.5 rounded-lg border font-medium transition-all cursor-pointer ${
+                        active
+                          ? "bg-primary text-primary-content border-primary"
+                          : "bg-base-200/60 hover:bg-base-200 text-base-content/75 border-base-300 hover:border-primary/40"
+                      }`}
                     >
-                      <div className="min-w-0 pr-3">
-                        <span className="text-xs sm:text-sm font-semibold text-base-content group-hover:text-primary block">
-                          {preset.name}
-                        </span>
-                        <span className="text-[11px] text-base-content/60 block line-clamp-1">
-                          Category: {preset.category} {preset.description ? `• ${preset.description}` : ""}
-                        </span>
-                      </div>
-                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 shrink-0">
-                        {preset.code}
-                      </span>
+                      {preset.name}
                     </button>
-                  )
-                )}
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Presets Dropdown - only shown when matching or explicitly toggled, never when non-matching name is typed */}
+            {isDropdownVisible && (
+              <div className="absolute top-full left-0 right-0 mt-1 z-50 rounded-2xl bg-base-100 border border-base-300 shadow-2xl p-2 max-h-60 overflow-y-auto space-y-1 animate-in fade-in-50 duration-150">
+                <div className="px-2 py-1 text-[11px] font-bold uppercase tracking-wider text-base-content/50 flex items-center justify-between border-b border-base-200 pb-1 mb-1">
+                  <span>
+                    {hasTyped && matchingPresets.length > 0
+                      ? `Matching Presets (${matchingPresets.length})`
+                      : `Fashion & Textile Presets (${displayPresets.length})`}
+                  </span>
+                  <span className="text-[10px] lowercase text-primary font-medium">click to autofill</span>
+                </div>
+                {displayPresets.map((preset) => (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => handleSelectPreset(preset)}
+                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-primary/10 transition-colors flex items-center justify-between group cursor-pointer"
+                  >
+                    <div className="min-w-0 pr-3">
+                      <span className="text-xs sm:text-sm font-semibold text-base-content group-hover:text-primary block">
+                        {preset.name}
+                      </span>
+                      <span className="text-[11px] text-base-content/60 block line-clamp-1">
+                        Category: {preset.category} {preset.description ? `• ${preset.description}` : ""}
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 shrink-0">
+                      {preset.code}
+                    </span>
+                  </button>
+                ))}
               </div>
             )}
           </div>
