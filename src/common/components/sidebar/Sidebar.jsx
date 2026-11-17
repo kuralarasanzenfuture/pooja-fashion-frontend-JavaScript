@@ -13,7 +13,6 @@ import { ROUTES } from "../../../constants/routes.js";
 import { SIDEBAR_MENU_DATA } from "./menuData.js";
 import SidebarItem from "./SidebarItem.jsx";
 import SidebarSearch from "./SidebarSearch.jsx";
-import SidebarNavPill from "./SidebarNavPill.jsx";
 import "./sidebar.css";
 
 export default function Sidebar({
@@ -137,12 +136,6 @@ export default function Sidebar({
             ref={isMobile ? mobileNavRef : desktopNavRef}
             className="sidebar-nav-track relative"
           >
-            {/* Code & Chill Tend / Ignara Signature Fluid Sliding Pill */}
-            <SidebarNavPill
-              navRef={isMobile ? mobileNavRef : desktopNavRef}
-              collapsed={isCollapsed}
-            />
-
             {filteredMenu.map((item) => (
               <SidebarItem
                 key={item.id}

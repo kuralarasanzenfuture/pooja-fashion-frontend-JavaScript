@@ -17,7 +17,6 @@ import {
   StoreSettings,
   SecuritySettings,
 } from "./components/index.js";
-import SidebarNavPill from "../../components/sidebar/SidebarNavPill.jsx";
 import { AnimatedTabContent } from "../../components/tabs/index.js";
 
 const TABS = [
@@ -96,9 +95,6 @@ export default function SettingsPage() {
             </div>
 
             <nav ref={navRef} className="space-y-1.5 relative">
-              {/* Code & Chill Fluid Sliding Pill for Settings Tabs */}
-              <SidebarNavPill navRef={navRef} />
-
               {TABS.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -107,11 +103,10 @@ export default function SettingsPage() {
                   <button
                     key={tab.id}
                     type="button"
-                    data-nav-active={isActive ? "true" : undefined}
                     onClick={() => handleTabChange(tab.id)}
-                    className={`relative z-10 w-full flex items-start gap-3 p-3 rounded-2xl text-left transition-colors duration-200 cursor-pointer ${
+                    className={`relative w-full flex items-start gap-3 p-3 rounded-2xl text-left transition-all duration-150 cursor-pointer ${
                       isActive
-                        ? "text-primary-content font-bold"
+                        ? "bg-primary text-primary-content font-bold shadow-xs shadow-primary/30"
                         : "text-base-content/70 hover:text-base-content hover:bg-base-200/50 font-semibold"
                     }`}
                   >
