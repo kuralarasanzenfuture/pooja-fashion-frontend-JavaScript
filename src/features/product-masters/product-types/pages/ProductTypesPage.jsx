@@ -450,14 +450,16 @@ export default function ProductTypesPage() {
                 loading={isFetching && !isLoading}
               />
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              icon={Sparkles}
-              onClick={() => setSeedModalOpen(true)}
-            >
-              Seed Presets
-            </Button>
+            <div className="tooltip tooltip-bottom" data-tip="Load standard retail classifications">
+              <Button
+                variant="outline"
+                size="sm"
+                icon={Sparkles}
+                onClick={() => setSeedModalOpen(true)}
+              >
+                Seed Presets
+              </Button>
+            </div>
             <Button
               variant="clip-six"
               size="sm"
@@ -588,16 +590,19 @@ export default function ProductTypesPage() {
                 className="w-full pl-10 pr-9 py-2 text-xs sm:text-sm rounded-xl border border-base-300 bg-base-200/50 hover:bg-base-200 text-base-content focus:outline-none focus:border-primary focus:bg-base-100 transition-all font-medium"
               />
               {search && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearch("");
-                    setPage(1);
-                  }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/40 hover:text-base-content p-0.5 rounded-full hover:bg-base-300/50 transition-colors"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
+                <div className="tooltip tooltip-bottom" data-tip="Clear search">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearch("");
+                      setPage(1);
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/40 hover:text-base-content p-0.5 rounded-full hover:bg-base-300/50 transition-colors cursor-pointer"
+                    aria-label="Clear search"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               )}
 
               {/* Recent Searches Popover */}
@@ -687,47 +692,53 @@ export default function ProductTypesPage() {
               minWidth="min-w-[140px]"
             />
 
-            {/* Asc / Desc Sort Order Toggle */}
-            <button
-              type="button"
-              onClick={() => {
-                setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
-                setPage(1);
-              }}
-              className="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold border border-base-300 bg-base-100 hover:bg-base-200 text-base-content transition-all cursor-pointer"
-              title={`Sort: ${sortOrder === "asc" ? "Ascending" : "Descending"}`}
+            {/* Asc / Desc Sort Order Toggle with Tooltip */}
+            <div
+              className="tooltip tooltip-bottom"
+              data-tip={`Switch to ${sortOrder === "asc" ? "Descending (Z-A)" : "Ascending (A-Z)"}`}
             >
-              <span>{sortOrder === "asc" ? "↑ ASC" : "↓ DESC"}</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+                  setPage(1);
+                }}
+                className="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold border border-base-300 bg-base-100 hover:bg-base-200 text-base-content transition-all cursor-pointer"
+              >
+                <span>{sortOrder === "asc" ? "↑ ASC" : "↓ DESC"}</span>
+              </button>
+            </div>
 
-            {/* View Mode Toggle (Table / Grid Cards) */}
+            {/* View Mode Toggle (Table / Grid Cards) with Tooltips */}
             <div className="flex items-center rounded-xl border border-base-300 p-0.5 bg-base-200/50">
-              <button
-                type="button"
-                onClick={() => setViewMode("table")}
-                className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                  viewMode === "table"
-                    ? "bg-base-100 text-primary shadow-xs"
-                    : "text-base-content/50 hover:text-base-content"
-                }`}
-                title="Table View"
-                aria-label="Table View"
-              >
-                <TableIcon className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode("cards")}
-                className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                  viewMode === "cards"
-                    ? "bg-base-100 text-primary shadow-xs"
-                    : "text-base-content/50 hover:text-base-content"
-                }`}
-                title="Cards View"
-                aria-label="Cards View"
-              >
-                <LayoutGrid className="w-4 h-4" />
-              </button>
+              <div className="tooltip tooltip-bottom" data-tip="Table View">
+                <button
+                  type="button"
+                  onClick={() => setViewMode("table")}
+                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                    viewMode === "table"
+                      ? "bg-base-100 text-primary shadow-xs"
+                      : "text-base-content/50 hover:text-base-content"
+                  }`}
+                  aria-label="Table View"
+                >
+                  <TableIcon className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="tooltip tooltip-bottom" data-tip="Cards View">
+                <button
+                  type="button"
+                  onClick={() => setViewMode("cards")}
+                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                    viewMode === "cards"
+                      ? "bg-base-100 text-primary shadow-xs"
+                      : "text-base-content/50 hover:text-base-content"
+                  }`}
+                  aria-label="Cards View"
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
         </div>

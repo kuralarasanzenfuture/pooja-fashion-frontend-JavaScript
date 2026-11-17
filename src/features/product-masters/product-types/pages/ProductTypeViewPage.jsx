@@ -271,18 +271,23 @@ export default function ProductTypeViewPage() {
                 {code || "—"}
               </span>
               {code && (
-                <button
-                  type="button"
-                  onClick={() => handleCopyText(code, "view-code")}
-                  className="p-1 hover:bg-base-300 rounded text-base-content/40 hover:text-primary transition-colors cursor-pointer"
-                  title="Copy code"
+                <div
+                  className="tooltip tooltip-top"
+                  data-tip={copiedKey === "view-code" ? "Copied code!" : "Copy code"}
                 >
-                  {copiedKey === "view-code" ? (
-                    <Check className="w-3.5 h-3.5 text-emerald-600" />
-                  ) : (
-                    <Copy className="w-3.5 h-3.5" />
-                  )}
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => handleCopyText(code, "view-code")}
+                    className="p-1 hover:bg-base-300 rounded text-base-content/40 hover:text-primary transition-colors cursor-pointer"
+                    aria-label="Copy code"
+                  >
+                    {copiedKey === "view-code" ? (
+                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                </div>
               )}
             </div>
           </div>

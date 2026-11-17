@@ -1,10 +1,10 @@
 import React from "react";
-import { Eye, Edit2, Trash2, Copy, Check, Building, Tag, Package, ShoppingBag, Truck } from "lucide-react";
+import { Eye, Edit2, Trash2, Copy, Check, Tag, Package, ShoppingBag, Truck, Building } from "lucide-react";
 import ProductTypeThumb from "./ProductTypeThumb.jsx";
 
 /**
  * ProductTypeCardsView
- * Responsive card grid layout for product types catalog.
+ * Responsive card grid presentation with DaisyUI Agency Tooltips.
  */
 export default function ProductTypeCardsView({
   productTypes = [],
@@ -18,14 +18,16 @@ export default function ProductTypeCardsView({
 }) {
   if (productTypes.length === 0) {
     return (
-      <div className="bg-base-100 rounded-2xl border border-base-200 p-12 text-center text-base-content/50 shadow-xs">
-        <div className="flex flex-col items-center justify-center gap-2">
-          <Tag className="w-10 h-10 text-base-content/30" />
-          <p className="font-bold text-base">No product types found</p>
-          <p className="text-xs text-base-content/40">
-            Try adjusting your search query or filters.
-          </p>
+      <div className="bg-base-100 rounded-3xl border border-base-200 p-12 text-center shadow-xs">
+        <div className="w-16 h-16 rounded-3xl bg-primary/10 text-primary mx-auto flex items-center justify-center mb-4">
+          <Tag className="w-8 h-8" />
         </div>
+        <h3 className="text-base sm:text-lg font-bold text-base-content">
+          No product types found
+        </h3>
+        <p className="text-xs sm:text-sm text-base-content/60 mt-1 max-w-sm mx-auto">
+          No records match your search or filter criteria. Try adjusting filters or create a new product type.
+        </p>
       </div>
     );
   }
@@ -37,11 +39,14 @@ export default function ProductTypeCardsView({
         const name = pt.typeName || pt.type_name || "Unnamed Type";
         const code = pt.typeCode || pt.type_code;
         const description = pt.description;
-        const companyName = pt.companyName || pt.company_name;
-        const isStockItem = pt.isStockItem !== undefined ? Boolean(pt.isStockItem) : Boolean(pt.is_stock_item);
-        const isSaleable = pt.isSaleable !== undefined ? Boolean(pt.isSaleable) : Boolean(pt.is_saleable);
-        const isPurchasable = pt.isPurchasable !== undefined ? Boolean(pt.isPurchasable) : Boolean(pt.is_purchasable);
+        const isStockItem =
+          pt.isStockItem !== undefined ? Boolean(pt.isStockItem) : Boolean(pt.is_stock_item);
+        const isSaleable =
+          pt.isSaleable !== undefined ? Boolean(pt.isSaleable) : Boolean(pt.is_saleable);
+        const isPurchasable =
+          pt.isPurchasable !== undefined ? Boolean(pt.isPurchasable) : Boolean(pt.is_purchasable);
         const isActive = Boolean(pt.isActive !== undefined ? pt.isActive : pt.is_active);
+        const companyName = pt.companyName || pt.company_name;
         const isStatusPending = statusUpdatingId === id;
 
         return (
@@ -58,34 +63,41 @@ export default function ProductTypeCardsView({
                     #{id}
                   </span>
                   {companyName && (
-                    <span
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-base-200 text-base-content/70 border border-base-300 truncate max-w-[110px]"
-                      title={companyName}
+                    <div
+                      className="tooltip tooltip-top max-w-[150px]"
+                      data-tip={`Company: ${companyName}`}
                     >
-                      <Building className="w-2.5 h-2.5 text-primary shrink-0" />
-                      <span className="truncate">{companyName}</span>
-                    </span>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-base-200 text-base-content/70 border border-base-300 truncate max-w-[120px] cursor-default">
+                        <Building className="w-2.5 h-2.5 text-primary shrink-0" />
+                        <span className="truncate">{companyName}</span>
+                      </span>
+                    </div>
                   )}
                 </div>
 
-                {/* Status Toggle Switch */}
-                <label className="inline-flex cursor-pointer items-center gap-1.5 select-none shrink-0">
-                  <input
-                    type="checkbox"
-                    checked={isActive}
-                    onChange={() => onToggleStatus?.(pt)}
-                    disabled={isStatusPending}
-                    className="toggle toggle-success toggle-xs"
-                    aria-label={`Toggle active status for ${name}`}
-                  />
-                  <span
-                    className={`text-[11px] font-bold ${
-                      isActive ? "text-emerald-600 dark:text-emerald-400" : "text-base-content/40"
-                    }`}
-                  >
-                    {isActive ? "Active" : "Off"}
-                  </span>
-                </label>
+                {/* Status Toggle Switch with Tooltip */}
+                <div
+                  className="tooltip tooltip-left"
+                  data-tip={isActive ? "Active in catalog" : "Hidden from catalog"}
+                >
+                  <label className="inline-flex cursor-pointer items-center gap-1.5 select-none shrink-0">
+                    <input
+                      type="checkbox"
+                      checked={isActive}
+                      onChange={() => onToggleStatus?.(pt)}
+                      disabled={isStatusPending}
+                      className="toggle toggle-success toggle-xs"
+                      aria-label={`Toggle active status for ${name}`}
+                    />
+                    <span
+                      className={`text-[11px] font-bold ${
+                        isActive ? "text-emerald-600 dark:text-emerald-400" : "text-base-content/40"
+                      }`}
+                    >
+                      {isActive ? "Active" : "Off"}
+                    </span>
+                  </label>
+                </div>
               </div>
 
               {/* Icon & Title */}
@@ -96,12 +108,12 @@ export default function ProductTypeCardsView({
                   size="md"
                   onClick={() => onViewDetails?.(pt)}
                 />
-                <div className="min-w-0 flex-1">
+
+                <div className="flex-1 min-w-0">
                   <button
                     type="button"
                     onClick={() => onViewDetails?.(pt)}
                     className="font-bold text-sm text-base-content group-hover:text-primary transition-colors text-left line-clamp-1 block cursor-pointer"
-                    title={name}
                   >
                     {name}
                   </button>
@@ -110,18 +122,23 @@ export default function ProductTypeCardsView({
                       <span className="font-mono text-[11px] font-bold text-primary px-1.5 py-0.2 rounded bg-primary/10 border border-primary/20">
                         {code}
                       </span>
-                      <button
-                        type="button"
-                        onClick={() => onCopyText?.(code, `card-code-${id}`, "Type Code")}
-                        className="text-base-content/40 hover:text-primary p-0.5 rounded transition-colors cursor-pointer"
-                        title="Copy Code"
+                      <div
+                        className="tooltip tooltip-top"
+                        data-tip={copiedKey === `card-code-${id}` ? "Copied code!" : "Copy code"}
                       >
-                        {copiedKey === `card-code-${id}` ? (
-                          <Check className="w-3 h-3 text-emerald-600" />
-                        ) : (
-                          <Copy className="w-3 h-3" />
-                        )}
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => onCopyText?.(code, `card-code-${id}`, "Type Code")}
+                          className="text-base-content/40 hover:text-primary p-0.5 rounded transition-colors cursor-pointer"
+                          aria-label="Copy Code"
+                        >
+                          {copiedKey === `card-code-${id}` ? (
+                            <Check className="w-3 h-3 text-emerald-600" />
+                          ) : (
+                            <Copy className="w-3 h-3" />
+                          )}
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -143,69 +160,90 @@ export default function ProductTypeCardsView({
                 )}
               </div>
 
-              {/* Operational Flags Badges (TRUE / FALSE) */}
+              {/* Operational Flags Badges (TRUE / FALSE) with Tooltips */}
               <div className="flex items-center gap-1.5 flex-wrap mt-3 pt-3 border-t border-base-200/80">
-                <span
-                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border ${
-                    isStockItem
-                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25"
-                      : "bg-base-200 text-base-content/50 border-base-300"
-                  }`}
-                  title={isStockItem ? "Tracked in stock inventory" : "Not stock tracked"}
+                <div
+                  className="tooltip tooltip-top"
+                  data-tip={isStockItem ? "Physical stock tracked" : "No stock tracking"}
                 >
-                  <Package className="w-2.5 h-2.5" />
-                  <span>Stock: {isStockItem ? "TRUE" : "FALSE"}</span>
-                </span>
+                  <span
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border cursor-default ${
+                      isStockItem
+                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25"
+                        : "bg-base-200 text-base-content/50 border-base-300"
+                    }`}
+                  >
+                    <Package className="w-2.5 h-2.5" />
+                    <span>Stock: {isStockItem ? "TRUE" : "FALSE"}</span>
+                  </span>
+                </div>
 
-                <span
-                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border ${
-                    isSaleable
-                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25"
-                      : "bg-base-200 text-base-content/50 border-base-300"
-                  }`}
-                  title={isSaleable ? "Available for POS & Sales billing" : "Not saleable"}
+                <div
+                  className="tooltip tooltip-top"
+                  data-tip={isSaleable ? "POS saleable & billable" : "Not saleable"}
                 >
-                  <ShoppingBag className="w-2.5 h-2.5" />
-                  <span>Sale: {isSaleable ? "TRUE" : "FALSE"}</span>
-                </span>
+                  <span
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border cursor-default ${
+                      isSaleable
+                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25"
+                        : "bg-base-200 text-base-content/50 border-base-300"
+                    }`}
+                  >
+                    <ShoppingBag className="w-2.5 h-2.5" />
+                    <span>Sale: {isSaleable ? "TRUE" : "FALSE"}</span>
+                  </span>
+                </div>
 
-                <span
-                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border ${
-                    isPurchasable
-                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25"
-                      : "bg-base-200 text-base-content/50 border-base-300"
-                  }`}
-                  title={isPurchasable ? "Available for supplier orders" : "Not purchasable"}
+                <div
+                  className="tooltip tooltip-top"
+                  data-tip={isPurchasable ? "Procured from suppliers" : "Not purchasable"}
                 >
-                  <Truck className="w-2.5 h-2.5" />
-                  <span>Purchase: {isPurchasable ? "TRUE" : "FALSE"}</span>
-                </span>
+                  <span
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border cursor-default ${
+                      isPurchasable
+                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25"
+                        : "bg-base-200 text-base-content/50 border-base-300"
+                    }`}
+                  >
+                    <Truck className="w-2.5 h-2.5" />
+                    <span>Purchase: {isPurchasable ? "TRUE" : "FALSE"}</span>
+                  </span>
+                </div>
               </div>
             </div>
 
-            {/* Card Footer: Action Buttons */}
-            <div className="flex items-center justify-end gap-1.5 pt-3 mt-3 border-t border-base-200">
-              <button
-                type="button"
-                onClick={() => onViewDetails?.(pt)}
-                className="btn btn-ghost btn-xs text-base-content/60 hover:text-primary gap-1"
-              >
-                <Eye className="w-3.5 h-3.5" /> View
-              </button>
-              <button
-                type="button"
-                onClick={() => onEdit?.(pt)}
-                className="btn btn-ghost btn-xs text-base-content/60 hover:text-amber-600 gap-1"
-              >
-                <Edit2 className="w-3.5 h-3.5" /> Edit
-              </button>
-              <button
-                type="button"
-                onClick={() => onDelete?.(pt)}
-                className="btn btn-ghost btn-xs text-base-content/60 hover:text-rose-600 gap-1"
-              >
-                <Trash2 className="w-3.5 h-3.5" /> Delete
-              </button>
+            {/* Card Footer: Action Buttons with DaisyUI Tooltips */}
+            <div className="flex items-center justify-end gap-1 pt-3 mt-3 border-t border-base-200">
+              <div className="tooltip tooltip-top" data-tip="View Details">
+                <button
+                  type="button"
+                  onClick={() => onViewDetails?.(pt)}
+                  className="p-1.5 rounded-lg text-base-content/60 hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer"
+                  aria-label="View Details"
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="tooltip tooltip-top" data-tip="Edit Product Type">
+                <button
+                  type="button"
+                  onClick={() => onEdit?.(pt)}
+                  className="p-1.5 rounded-lg text-base-content/60 hover:text-amber-600 hover:bg-amber-500/10 transition-colors cursor-pointer"
+                  aria-label="Edit Product Type"
+                >
+                  <Edit2 className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="tooltip tooltip-top tooltip-error" data-tip="Delete Product Type">
+                <button
+                  type="button"
+                  onClick={() => onDelete?.(pt)}
+                  className="p-1.5 rounded-lg text-base-content/60 hover:text-rose-600 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                  aria-label="Delete Product Type"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
         );
@@ -213,4 +251,3 @@ export default function ProductTypeCardsView({
     </div>
   );
 }
-

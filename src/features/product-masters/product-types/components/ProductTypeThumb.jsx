@@ -50,7 +50,7 @@ export default function ProductTypeThumb({
       type={onClick ? "button" : undefined}
       onClick={onClick}
       className={`relative flex items-center justify-center font-mono font-black tracking-tight border select-none shrink-0 transition-transform active:scale-95 ${sizeClasses} ${theme.bg} ${theme.border} ${theme.text} ${className}`}
-      title={name || code}
+      aria-label={name || code}
     >
       {renderIcon()}
     </Component>

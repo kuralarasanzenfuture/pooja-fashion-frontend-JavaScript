@@ -103,18 +103,23 @@ export default function ProductTypeDetailsModal({
                   {code || "—"}
                 </span>
                 {code && (
-                  <button
-                    type="button"
-                    onClick={handleCopyCode}
-                    className="p-1 hover:bg-base-300/60 rounded text-base-content/50 hover:text-primary transition-colors cursor-pointer shrink-0"
-                    title="Copy code"
+                  <div
+                    className="tooltip tooltip-top"
+                    data-tip={copied ? "Copied code!" : "Copy code"}
                   >
-                    {copied ? (
-                      <Check className="w-3.5 h-3.5 text-emerald-600" />
-                    ) : (
-                      <Copy className="w-3.5 h-3.5" />
-                    )}
-                  </button>
+                    <button
+                      type="button"
+                      onClick={handleCopyCode}
+                      className="p-1 hover:bg-base-300/60 rounded text-base-content/50 hover:text-primary transition-colors cursor-pointer shrink-0"
+                      aria-label="Copy code"
+                    >
+                      {copied ? (
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                      ) : (
+                        <Copy className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
