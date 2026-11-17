@@ -17,6 +17,9 @@ import {
   Package,
   ShoppingBag,
   Truck,
+  Filter,
+  Layers,
+  Calendar,
 } from "lucide-react";
 import PageHeader from "../../../../common/components/PageHeader.jsx";
 import { Button } from "../../../../common/components/ui/buttons/index.js";
@@ -252,11 +255,12 @@ export default function ProductTypesPage() {
     productTypes.forEach((pt) => {
       const cId = pt.companyId || pt.company_id;
       const cName = pt.companyName || pt.company_name;
-      if (cId && cName && !map.has(cId)) {
-        map.set(cId, { value: String(cId), label: cName });
+      if (cId && cName && !map.has(String(cId))) {
+        map.set(String(cId), { value: String(cId), label: cName, icon: Building });
       }
     });
-    return Array.from(map.values());
+    const list = Array.from(map.values());
+    return list.length > 0 ? [{ value: "", label: "All Companies", icon: Building }, ...list] : [];
   }, [productTypes]);
 
   // Filter options
@@ -271,7 +275,7 @@ export default function ProductTypesPage() {
 
   const stockOptions = useMemo(
     () => [
-      { value: "", label: "All Inventory" },
+      { value: "", label: "All Inventory", icon: Package },
       { value: "true", label: "Stock Items", dotColor: "bg-indigo-500" },
       { value: "false", label: "Non-Stock Items", dotColor: "bg-base-content/40" },
     ],
@@ -280,7 +284,7 @@ export default function ProductTypesPage() {
 
   const saleableOptions = useMemo(
     () => [
-      { value: "", label: "All Saleable" },
+      { value: "", label: "All Saleable", icon: ShoppingBag },
       { value: "true", label: "Saleable on POS", dotColor: "bg-emerald-500" },
       { value: "false", label: "Non-Saleable", dotColor: "bg-base-content/40" },
     ],
@@ -289,13 +293,34 @@ export default function ProductTypesPage() {
 
   const sortOptions = useMemo(
     () => [
-      { value: "type_name", label: "Sort: Type Name" },
-      { value: "type_code", label: "Sort: Type Code" },
-      { value: "created_at", label: "Sort: Date Created" },
-      { value: "is_active", label: "Sort: Catalog Status" },
+      { value: "type_name", label: "Type Name", icon: Layers },
+      { value: "type_code", label: "Type Code", icon: Tag },
+      { value: "created_at", label: "Date Created", icon: Calendar },
+      { value: "is_active", label: "Catalog Status", icon: CheckCircle2 },
     ],
     []
   );
+
+  const hasActiveFilters = Boolean(
+    (search || "").trim() ||
+      statusFilter !== "" ||
+      stockFilter !== "" ||
+      saleableFilter !== "" ||
+      companyFilter !== "" ||
+      sortBy !== "type_name" ||
+      sortOrder !== "asc"
+  );
+
+  const handleResetFilters = () => {
+    setSearch("");
+    setStatusFilter("");
+    setStockFilter("");
+    setSaleableFilter("");
+    setCompanyFilter("");
+    setSortBy("type_name");
+    setSortOrder("asc");
+    setPage(1);
+  };
 
   const handleCopyText = (text, key) => {
     navigator.clipboard.writeText(text);
@@ -604,7 +629,7 @@ export default function ProductTypesPage() {
                 setStatusFilter(val);
                 setPage(1);
               }}
-              minWidth="min-w-[130px]"
+              minWidth="min-w-[135px]"
             />
 
             {/* Stock Item Filter */}
@@ -617,7 +642,7 @@ export default function ProductTypesPage() {
                 setPage(1);
               }}
               icon={Package}
-              minWidth="min-w-[130px]"
+              minWidth="min-w-[135px]"
             />
 
             {/* Saleable Filter */}
@@ -630,7 +655,7 @@ export default function ProductTypesPage() {
                 setPage(1);
               }}
               icon={ShoppingBag}
-              minWidth="min-w-[130px]"
+              minWidth="min-w-[135px]"
             />
 
             {/* Target Company Filter (SuperAdmin / Admin only) */}
@@ -645,31 +670,34 @@ export default function ProductTypesPage() {
                 }}
                 icon={Building}
                 minWidth="min-w-[150px]"
-                showAll={true}
-                allLabel="All Companies"
-                searchable={true}
                 searchPlaceholder="Search company..."
               />
             )}
 
             {/* Sort Dropdown */}
             <ProductTypeFilterDropdown
-              label="Sort by"
+              label="Sort By"
               value={sortBy}
               options={sortOptions}
-              onChange={(val) => setSortBy(val)}
+              onChange={(val) => {
+                setSortBy(val);
+                setPage(1);
+              }}
               icon={ArrowUpDown}
-              minWidth="min-w-[150px]"
+              minWidth="min-w-[140px]"
             />
 
             {/* Asc / Desc Sort Order Toggle */}
             <button
               type="button"
-              onClick={() => setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))}
-              className="h-9 px-2.5 rounded-xl border border-base-300 bg-base-100 hover:bg-base-200 text-xs font-mono font-bold text-base-content/70 flex items-center gap-1 transition-colors cursor-pointer"
-              title={`Switch to ${sortOrder === "asc" ? "Descending" : "Ascending"}`}
+              onClick={() => {
+                setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+                setPage(1);
+              }}
+              className="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold border border-base-300 bg-base-100 hover:bg-base-200 text-base-content transition-all cursor-pointer"
+              title={`Sort: ${sortOrder === "asc" ? "Ascending" : "Descending"}`}
             >
-              <span>{sortOrder.toUpperCase()}</span>
+              <span>{sortOrder === "asc" ? "↑ ASC" : "↓ DESC"}</span>
             </button>
 
             {/* View Mode Toggle (Table / Grid Cards) */}
@@ -703,6 +731,126 @@ export default function ProductTypesPage() {
             </div>
           </div>
         </div>
+
+        {/* Active filter chips */}
+        {hasActiveFilters && (
+          <div className="flex items-center justify-between flex-wrap gap-2 pt-2.5 border-t border-base-200 text-xs">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[11px] font-semibold text-base-content/50 uppercase tracking-wider flex items-center gap-1">
+                <Filter className="w-3 h-3" /> Active Filters:
+              </span>
+
+              {(search || "").trim() && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20 font-medium">
+                  <span>Search: &ldquo;{search}&rdquo;</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearch("");
+                      setPage(1);
+                    }}
+                    className="p-0.5 hover:bg-primary/20 rounded cursor-pointer"
+                    title="Remove Search"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+
+              {statusFilter && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20 font-medium">
+                  <span>Status: {statusFilter === "active" ? "Active" : "Inactive"}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatusFilter("");
+                      setPage(1);
+                    }}
+                    className="p-0.5 hover:bg-primary/20 rounded cursor-pointer"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+
+              {stockFilter && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20 font-medium">
+                  <span>Inventory: {stockFilter === "true" ? "Stock Items" : "Non-Stock Items"}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStockFilter("");
+                      setPage(1);
+                    }}
+                    className="p-0.5 hover:bg-primary/20 rounded cursor-pointer"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+
+              {saleableFilter && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20 font-medium">
+                  <span>POS Saleable: {saleableFilter === "true" ? "Saleable" : "Non-Saleable"}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSaleableFilter("");
+                      setPage(1);
+                    }}
+                    className="p-0.5 hover:bg-primary/20 rounded cursor-pointer"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+
+              {companyFilter && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20 font-medium">
+                  <span>Company: #{companyFilter}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCompanyFilter("");
+                      setPage(1);
+                    }}
+                    className="p-0.5 hover:bg-primary/20 rounded cursor-pointer"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+
+              {(sortBy !== "type_name" || sortOrder !== "asc") && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20 font-medium">
+                  <span>
+                    Sort: {sortOptions.find((s) => s.value === sortBy)?.label || sortBy} (
+                    {sortOrder.toUpperCase()})
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSortBy("type_name");
+                      setSortOrder("asc");
+                      setPage(1);
+                    }}
+                    className="p-0.5 hover:bg-primary/20 rounded cursor-pointer"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="text-[11px] font-semibold text-rose-500 hover:text-rose-600 hover:underline cursor-pointer flex items-center gap-1"
+            >
+              <X className="w-3 h-3" /> Reset all filters
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Main Content: Table or Cards view with Loading Skeletons */}
