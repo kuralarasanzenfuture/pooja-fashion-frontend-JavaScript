@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useSelector } from "react-redux";
-import { X, Ruler, Sparkles, Building, ChevronDown, Check, Zap } from "lucide-react";
+import { X, Ruler, Sparkles, ChevronDown, Zap } from "lucide-react";
 import { Button } from "../../../../common/components/ui/buttons/index.js";
 import { useModalAnimation } from "../../../../common/hooks/useModalAnimation.js";
 import { CompanySelect } from "../../../company/components/index.js";
@@ -51,6 +51,7 @@ function validate(values, canSelectCompany) {
 
 /**
  * Add / Edit Size Group Form Modal
+ * Enhanced with spacious max-w-2xl width, 2-column Name & Code layout, and clean description below.
  */
 export default function SizeGroupFormModal({
   open,
@@ -63,6 +64,7 @@ export default function SizeGroupFormModal({
   onSubmit,
 }) {
   const isModalOpen = open ?? isOpen ?? false;
+  const isEdit = mode === "edit";
   const { isRendered, handleClose, backdropClasses, cardClasses } = useModalAnimation(
     isModalOpen,
     onClose
@@ -155,15 +157,13 @@ export default function SizeGroupFormModal({
 
     const result = await onSubmit?.({
       values: form,
-      isEdit: mode === "edit",
+      isEdit,
     });
 
     if (result?.errors) {
       setErrors(result.errors);
     }
   };
-
-  const isEdit = mode === "edit";
 
   return (
     <div
@@ -173,23 +173,23 @@ export default function SizeGroupFormModal({
       aria-modal="true"
     >
       <div
-        className={`relative w-full max-w-xl bg-base-100 rounded-3xl shadow-2xl border border-base-300 overflow-hidden ${cardClasses}`}
+        className={`relative w-full max-w-2xl bg-base-100 rounded-3xl shadow-2xl border border-base-200 overflow-hidden ${cardClasses}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="flex items-start justify-between px-6 pt-5 pb-4 border-b border-base-200">
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-base-200">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
               <Ruler className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-extrabold text-base-content tracking-tight">
+              <h2 className="text-lg font-black text-base-content tracking-tight">
                 {isEdit ? "Edit Size Group" : "Create Size Group"}
               </h2>
               <p className="text-xs text-base-content/60 mt-0.5">
                 {isEdit
-                  ? "Update size group configuration and catalog status"
-                  : "Define a product sizing bracket (e.g. Men, Women, Blouse, Footwear)"}
+                  ? "Update size group configuration and catalog status."
+                  : "Define a product sizing bracket (e.g. Men, Women, Blouse, Footwear)."}
               </p>
             </div>
           </div>
@@ -197,20 +197,20 @@ export default function SizeGroupFormModal({
           <button
             type="button"
             onClick={handleClose}
-            className="p-1.5 rounded-xl text-base-content/40 hover:text-base-content hover:bg-base-200 transition-colors cursor-pointer"
-            title="Close modal"
+            className="p-1.5 rounded-xl hover:bg-base-200 text-base-content/60 hover:text-base-content transition-colors cursor-pointer"
+            aria-label="Close modal"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Modal Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5 max-h-[80vh] overflow-y-auto scrollbar-thin">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
           {/* Quick Presets Picker */}
           {!isEdit && (
-            <div className="relative">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-semibold text-base-content/70 flex items-center gap-1.5">
+            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-3.5 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-primary flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-primary" />
                   <span>Standard Sizing Presets</span>
                 </span>
@@ -224,25 +224,52 @@ export default function SizeGroupFormModal({
                 </button>
               </div>
 
+              {/* Quick Pick Chips */}
+              <div className="flex flex-wrap items-center gap-1.5">
+                {presets.slice(0, 5).map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => handleSelectPreset(p)}
+                    className="px-2.5 py-1 rounded-xl bg-base-100 hover:bg-primary hover:text-white border border-primary/20 text-xs font-medium text-base-content/80 transition-all flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Zap className="w-3 h-3 text-amber-500 shrink-0" />
+                    <span className="truncate">{p.name}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Collapsible Presets Panel */}
               {isPresetsOpen && (
-                <div className="p-3 rounded-2xl bg-base-200/60 border border-base-300 space-y-2 mb-3">
+                <div className="pt-2 space-y-2 border-t border-primary/15 animate-in fade-in-50 duration-150">
                   <input
                     type="text"
                     value={presetSearch}
                     onChange={(e) => setPresetSearch(e.target.value)}
                     placeholder="Search preset (Men, Women, Blouse, Waist, Kids...)"
-                    className="w-full px-3 py-1.5 text-xs rounded-xl bg-base-100 border border-base-300 focus:outline-none focus:border-primary"
+                    className="w-full px-3 py-1.5 text-xs rounded-xl bg-base-100 border border-base-300 text-base-content placeholder:text-base-content/40 focus:outline-none focus:border-primary"
                   />
-                  <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pt-1">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-40 overflow-y-auto pt-1">
                     {presets.map((p) => (
                       <button
                         key={p.id}
                         type="button"
                         onClick={() => handleSelectPreset(p)}
-                        className="px-2.5 py-1 rounded-xl bg-base-100 hover:bg-primary hover:text-white border border-base-300 text-xs font-medium text-base-content/80 transition-colors flex items-center gap-1.5 cursor-pointer"
+                        className="p-2 rounded-xl bg-base-100 hover:bg-primary/10 border border-base-300 hover:border-primary text-left transition-all flex flex-col gap-0.5 cursor-pointer group"
                       >
-                        <Zap className="w-3 h-3 text-amber-500" />
-                        <span>{p.name}</span>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-base-content group-hover:text-primary">
+                            {p.name}
+                          </span>
+                          <span className="font-mono text-[10px] text-primary bg-primary/10 px-1.5 py-0.2 rounded-md">
+                            {p.code}
+                          </span>
+                        </div>
+                        {p.description && (
+                          <span className="text-[11px] text-base-content/60 line-clamp-1">
+                            {p.description}
+                          </span>
+                        )}
                       </button>
                     ))}
                   </div>
@@ -254,83 +281,92 @@ export default function SizeGroupFormModal({
           {/* Company Selector (For SuperAdmin / Admin without fixed company) */}
           {canSelectCompany && (
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-base-content/70 mb-1.5">
-                Company <span className="text-rose-500">*</span>
-              </label>
               <CompanySelect
                 value={form.company_id}
                 onChange={(val) => handleChange("company_id", val)}
+                required={true}
                 error={errors.company_id}
+                label="Target Company"
+                placeholder="-- Select Target Company --"
               />
-              {errors.company_id && (
-                <p className="mt-1 text-xs text-rose-500 font-medium">{errors.company_id}</p>
-              )}
             </div>
           )}
 
-          {/* Size Group Name */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-base-content/70 mb-1.5">
-              Size Group Name <span className="text-rose-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={form.size_group_name}
-              onChange={(e) => handleChange("size_group_name", e.target.value)}
-              placeholder="e.g. Men Apparel, Women Ethnic, Saree Blouse"
-              maxLength={100}
-              className={`w-full px-3.5 py-2.5 rounded-xl bg-base-100 border text-xs sm:text-sm text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 ${
-                errors.size_group_name ? "border-rose-500" : "border-base-300 focus:border-primary"
-              }`}
-            />
-            {errors.size_group_name && (
-              <p className="mt-1 text-xs text-rose-500 font-medium">{errors.size_group_name}</p>
-            )}
-          </div>
-
-          {/* Size Group Code */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-base-content/70">
-                Size Group Code
+          {/* Size Group Name & Code (Single Row) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Size Group Name */}
+            <div>
+              <label className="text-xs sm:text-sm font-bold text-base-content block mb-1.5">
+                Size Group Name <span className="text-rose-500">*</span>
               </label>
-              {!isEdit && form.size_group_name && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    const generated = generateSizeGroupCodeFromName(form.size_group_name);
-                    handleChange("size_group_code", generated);
-                    setCodeManuallyEdited(false);
-                  }}
-                  className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
-                >
-                  Auto-generate
-                </button>
+              <input
+                type="text"
+                value={form.size_group_name}
+                onChange={(e) => handleChange("size_group_name", e.target.value)}
+                placeholder="e.g. Men Apparel, Women Ethnic, Saree Blouse"
+                maxLength={100}
+                className={`w-full px-3.5 py-2.5 rounded-xl bg-base-200/60 border text-xs sm:text-sm text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                  errors.size_group_name
+                    ? "border-rose-500 focus:border-rose-500"
+                    : "border-base-300 focus:border-primary"
+                }`}
+              />
+              {errors.size_group_name && (
+                <p className="mt-1 text-xs text-rose-500 font-medium">
+                  {errors.size_group_name}
+                </p>
               )}
             </div>
-            <input
-              type="text"
-              value={form.size_group_code}
-              onChange={(e) => {
-                setCodeManuallyEdited(true);
-                handleChange("size_group_code", e.target.value.toUpperCase());
-              }}
-              placeholder="e.g. MEN_APPAREL"
-              maxLength={50}
-              className={`w-full px-3.5 py-2.5 rounded-xl bg-base-100 border font-mono text-xs sm:text-sm text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 ${
-                errors.size_group_code ? "border-rose-500" : "border-base-300 focus:border-primary"
-              }`}
-            />
-            {errors.size_group_code && (
-              <p className="mt-1 text-xs text-rose-500 font-medium">{errors.size_group_code}</p>
-            )}
+
+            {/* Size Group Code */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs sm:text-sm font-bold text-base-content">
+                  Size Group Code <span className="text-base-content/40 font-normal">(Optional)</span>
+                </label>
+                {!isEdit && form.size_group_name && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const generated = generateSizeGroupCodeFromName(form.size_group_name);
+                      handleChange("size_group_code", generated);
+                      setCodeManuallyEdited(false);
+                    }}
+                    className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <Zap className="w-3 h-3" />
+                    <span>Auto</span>
+                  </button>
+                )}
+              </div>
+              <input
+                type="text"
+                value={form.size_group_code}
+                onChange={(e) => {
+                  setCodeManuallyEdited(true);
+                  handleChange("size_group_code", e.target.value.toUpperCase());
+                }}
+                placeholder="e.g. MEN_APPAREL"
+                maxLength={50}
+                className={`w-full px-3.5 py-2.5 rounded-xl bg-base-200/60 border font-mono text-xs sm:text-sm text-base-content uppercase placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                  errors.size_group_code
+                    ? "border-rose-500 focus:border-rose-500"
+                    : "border-base-300 focus:border-primary"
+                }`}
+              />
+              {errors.size_group_code && (
+                <p className="mt-1 text-xs text-rose-500 font-medium">
+                  {errors.size_group_code}
+                </p>
+              )}
+            </div>
           </div>
 
-          {/* Description */}
+          {/* Description (Down Below) */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-base-content/70">
-                Description
+              <label className="text-xs sm:text-sm font-bold text-base-content">
+                Description <span className="text-base-content/40 font-normal">(Optional)</span>
               </label>
               <span className="text-[11px] text-base-content/40 font-mono">
                 {(form.description || "").length} / {DESC_MAX}
@@ -342,12 +378,16 @@ export default function SizeGroupFormModal({
               onChange={(e) => handleChange("description", e.target.value)}
               placeholder="Brief details about which apparel lines or size charts use this group..."
               maxLength={DESC_MAX}
-              className={`w-full px-3.5 py-2 rounded-xl bg-base-100 border text-xs sm:text-sm text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 ${
-                errors.description ? "border-rose-500" : "border-base-300 focus:border-primary"
+              className={`w-full px-3.5 py-2.5 rounded-xl bg-base-200/60 border text-xs sm:text-sm text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                errors.description
+                  ? "border-rose-500 focus:border-rose-500"
+                  : "border-base-300 focus:border-primary"
               }`}
             />
             {errors.description && (
-              <p className="mt-1 text-xs text-rose-500 font-medium">{errors.description}</p>
+              <p className="mt-1 text-xs text-rose-500 font-medium">
+                {errors.description}
+              </p>
             )}
           </div>
 
@@ -394,4 +434,3 @@ export default function SizeGroupFormModal({
     </div>
   );
 }
-

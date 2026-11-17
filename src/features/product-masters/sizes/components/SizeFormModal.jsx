@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useSelector } from "react-redux";
-import { X, Ruler, Sparkles, Building, ChevronDown, Check, Zap, Layers } from "lucide-react";
+import { X, Ruler, Sparkles, ChevronDown, Zap } from "lucide-react";
 import { Button } from "../../../../common/components/ui/buttons/index.js";
 import { useModalAnimation } from "../../../../common/hooks/useModalAnimation.js";
 import { CompanySelect } from "../../../company/components/index.js";
@@ -56,6 +56,7 @@ function validate(values, canSelectCompany) {
 
 /**
  * Add / Edit Size Form Modal
+ * Enhanced with spacious max-w-2xl width, 2-column Name & Code layout, and clean sequence ordering.
  */
 export default function SizeFormModal({
   open,
@@ -69,6 +70,7 @@ export default function SizeFormModal({
   onSubmit,
 }) {
   const isModalOpen = open ?? isOpen ?? false;
+  const isEdit = mode === "edit";
   const { isRendered, handleClose, backdropClasses, cardClasses } = useModalAnimation(
     isModalOpen,
     onClose
@@ -179,7 +181,7 @@ export default function SizeFormModal({
 
     const result = await onSubmit?.({
       values: form,
-      isEdit: mode === "edit",
+      isEdit,
     });
 
     if (result?.errors) {
@@ -195,21 +197,21 @@ export default function SizeFormModal({
       aria-modal="true"
     >
       <div
-        className={`relative w-full max-w-xl bg-base-100 rounded-3xl shadow-2xl border border-base-300 overflow-hidden ${cardClasses}`}
+        className={`relative w-full max-w-2xl bg-base-100 rounded-3xl shadow-2xl border border-base-200 overflow-hidden ${cardClasses}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-base-200">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+            <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
               <Ruler className="w-5 h-5" />
             </div>
             <div>
               <h2 className="text-lg font-black text-base-content tracking-tight">
-                {mode === "edit" ? "Edit Size" : "Add New Size"}
+                {isEdit ? "Edit Size" : "Add New Size"}
               </h2>
-              <p className="text-xs text-base-content/60">
-                {mode === "edit"
+              <p className="text-xs text-base-content/60 mt-0.5">
+                {isEdit
                   ? "Update size measurements, code, or active status."
                   : "Configure an individual size variant under a parent size group."}
               </p>
@@ -227,10 +229,10 @@ export default function SizeFormModal({
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
           {/* Quick Presets Picker (only in add mode) */}
-          {mode === "add" && (
-            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-3.5 space-y-2">
+          {!isEdit && (
+            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-3.5 space-y-2.5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-primary">
                   <Sparkles className="w-3.5 h-3.5" />
@@ -250,8 +252,23 @@ export default function SizeFormModal({
                 </button>
               </div>
 
+              {/* Quick Pick Chips */}
+              <div className="flex flex-wrap items-center gap-1.5">
+                {presets.slice(0, 8).map((preset) => (
+                  <button
+                    key={`${preset.code}-${preset.name}`}
+                    type="button"
+                    onClick={() => handleSelectPreset(preset)}
+                    className="px-2.5 py-1 rounded-xl bg-base-100 hover:bg-primary hover:text-white border border-primary/20 text-xs font-medium text-base-content/80 transition-all cursor-pointer flex items-center gap-1"
+                  >
+                    <span className="font-mono font-bold text-primary">{preset.code}</span>
+                    <span className="text-[11px] opacity-75">{preset.name}</span>
+                  </button>
+                ))}
+              </div>
+
               {/* Collapsible Presets Panel */}
-              {isPresetsOpen ? (
+              {isPresetsOpen && (
                 <div className="pt-2 space-y-2 border-t border-primary/15 animate-in fade-in-50 duration-150">
                   <input
                     type="text"
@@ -278,72 +295,74 @@ export default function SizeFormModal({
                     ))}
                   </div>
                 </div>
-              ) : (
-                <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                  {presets.slice(0, 6).map((preset) => (
-                    <button
-                      key={preset.code}
-                      type="button"
-                      onClick={() => handleSelectPreset(preset)}
-                      className="px-2.5 py-1 rounded-xl bg-base-100 hover:bg-primary hover:text-white border border-primary/20 text-xs font-medium text-base-content/80 transition-all cursor-pointer"
-                    >
-                      <span className="font-mono font-bold">{preset.code}</span>
-                      <span className="ml-1 text-[11px] opacity-75">{preset.name}</span>
-                    </button>
-                  ))}
-                </div>
               )}
             </div>
           )}
 
-          {/* Company Selector (SuperAdmin / Admin only) */}
-          {canSelectCompany && (
-            <CompanySelect
-              value={form.company_id}
-              onChange={(val) => handleChange("company_id", val)}
-              error={errors.company_id}
+          {/* Company & Parent Size Group Selector */}
+          {canSelectCompany ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <CompanySelect
+                value={form.company_id}
+                onChange={(val) => handleChange("company_id", val)}
+                error={errors.company_id}
+                required={true}
+                label="Target Company"
+                placeholder="-- Select Target Company --"
+                className="w-full"
+              />
+              <SizeGroupSelect
+                value={form.size_group_id}
+                onChange={(val) => handleChange("size_group_id", val)}
+                sizeGroups={sizeGroups}
+                isLoading={isLoadingGroups}
+                error={errors.size_group_id}
+                required={true}
+                className="w-full"
+              />
+            </div>
+          ) : (
+            <SizeGroupSelect
+              value={form.size_group_id}
+              onChange={(val) => handleChange("size_group_id", val)}
+              sizeGroups={sizeGroups}
+              isLoading={isLoadingGroups}
+              error={errors.size_group_id}
               required={true}
               className="w-full"
             />
           )}
 
-          {/* Parent Size Group Selector */}
-          <SizeGroupSelect
-            value={form.size_group_id}
-            onChange={(val) => handleChange("size_group_id", val)}
-            sizeGroups={sizeGroups}
-            isLoading={isLoadingGroups}
-            error={errors.size_group_id}
-            required={true}
-            className="w-full"
-          />
-
-          {/* Size Name */}
-          <div>
-            <label className="text-xs sm:text-sm font-bold text-base-content block mb-1.5">
-              Size Name <span className="text-rose-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={form.size_name}
-              onChange={(e) => handleChange("size_name", e.target.value)}
-              placeholder="e.g. Extra Large, 32 Regular, UK 8"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-base-200/60 border border-base-300 text-xs sm:text-sm text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-            />
-            {errors.size_name && (
-              <p className="text-xs text-rose-500 mt-1">{errors.size_name}</p>
-            )}
-          </div>
-
-          {/* Size Code & Display Order (2-column layout) */}
+          {/* Size Name & Size Code (Single Row) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Size Name */}
+            <div>
+              <label className="text-xs sm:text-sm font-bold text-base-content block mb-1.5">
+                Size Name <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={form.size_name}
+                onChange={(e) => handleChange("size_name", e.target.value)}
+                placeholder="e.g. Extra Large, 32 Regular, UK 8"
+                className={`w-full px-3.5 py-2.5 rounded-xl bg-base-200/60 border text-xs sm:text-sm text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                  errors.size_name
+                    ? "border-rose-500 focus:border-rose-500"
+                    : "border-base-300 focus:border-primary"
+                }`}
+              />
+              {errors.size_name && (
+                <p className="text-xs text-rose-500 mt-1 font-medium">{errors.size_name}</p>
+              )}
+            </div>
+
             {/* Size Code */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="text-xs sm:text-sm font-bold text-base-content">
                   Size Code <span className="text-base-content/40 font-normal">(Optional)</span>
                 </label>
-                {mode === "add" && form.size_name && (
+                {!isEdit && form.size_name && (
                   <button
                     type="button"
                     onClick={() => {
@@ -366,13 +385,20 @@ export default function SizeFormModal({
                   handleChange("size_code", e.target.value.toUpperCase());
                 }}
                 placeholder="e.g. XL, 32, UK-8"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-base-200/60 border border-base-300 font-mono text-xs sm:text-sm text-base-content uppercase placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                className={`w-full px-3.5 py-2.5 rounded-xl bg-base-200/60 border font-mono text-xs sm:text-sm text-base-content uppercase placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                  errors.size_code
+                    ? "border-rose-500 focus:border-rose-500"
+                    : "border-base-300 focus:border-primary"
+                }`}
               />
               {errors.size_code && (
-                <p className="text-xs text-rose-500 mt-1">{errors.size_code}</p>
+                <p className="text-xs text-rose-500 mt-1 font-medium">{errors.size_code}</p>
               )}
             </div>
+          </div>
 
+          {/* Display Order & Helper Info (Single Row) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
             {/* Display Order */}
             <div>
               <label className="text-xs sm:text-sm font-bold text-base-content block mb-1.5">
@@ -384,11 +410,19 @@ export default function SizeFormModal({
                 value={form.display_order}
                 onChange={(e) => handleChange("display_order", e.target.value)}
                 placeholder="0"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-base-200/60 border border-base-300 font-mono text-xs sm:text-sm text-base-content focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                className={`w-full px-3.5 py-2.5 rounded-xl bg-base-200/60 border font-mono text-xs sm:text-sm text-base-content focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                  errors.display_order
+                    ? "border-rose-500 focus:border-rose-500"
+                    : "border-base-300 focus:border-primary"
+                }`}
               />
               {errors.display_order && (
-                <p className="text-xs text-rose-500 mt-1">{errors.display_order}</p>
+                <p className="text-xs text-rose-500 mt-1 font-medium">{errors.display_order}</p>
               )}
+            </div>
+
+            <div className="pt-2 sm:pt-4 text-xs text-base-content/60 leading-relaxed">
+              <span>Determines sorting sequence in POS bill item selectors, size badges, and inventory catalogs.</span>
             </div>
           </div>
 
@@ -411,7 +445,7 @@ export default function SizeFormModal({
           </div>
 
           {/* Form Actions */}
-          <div className="flex items-center justify-end gap-2 pt-4 border-t border-base-200">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-base-200">
             <Button
               type="button"
               variant="outline"
@@ -427,7 +461,7 @@ export default function SizeFormModal({
               size="sm"
               loading={saving}
             >
-              {mode === "edit" ? "Save Changes" : "Create Size"}
+              {isEdit ? "Save Changes" : "Create Size"}
             </Button>
           </div>
         </form>
@@ -435,4 +469,3 @@ export default function SizeFormModal({
     </div>
   );
 }
-
