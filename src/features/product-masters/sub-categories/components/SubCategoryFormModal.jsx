@@ -8,12 +8,16 @@ import {
   FolderTree,
   Zap,
   Lock,
-  Tags,
+  Building,
 } from "lucide-react";
 import { Button } from "../../../../common/components/ui/buttons/index.js";
 import { useModalAnimation } from "../../../../common/hooks/useModalAnimation.js";
+import { CompanySelect } from "../../../company/components/index.js";
 import { useCategories } from "../../categories/hooks/useCategories.js";
-import { normalizeCategoryImageUrl, formatCategoryName } from "../../categories/utils/categoryImageHelper.js";
+import {
+  normalizeCategoryImageUrl,
+  formatCategoryName,
+} from "../../categories/utils/categoryImageHelper.js";
 import ImageUploader from "./ImageUploader.jsx";
 import ParentCategorySelect from "./ParentCategorySelect.jsx";
 import {
@@ -23,8 +27,27 @@ import {
 
 const DESC_MAX = 2000;
 
-function validate(v) {
+/**
+ * Automatically derives a clean uppercase subcategory code from the name.
+ * e.g. "Kanchipuram Pure Silk" -> "KANCHIPURAM_PURE_SILK"
+ */
+export function generateSubcategoryCodeFromName(name = "") {
+  return name
+    .trim()
+    .replace(/['’]/g, "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 50);
+}
+
+function validate(v, canSelectCompany = false) {
   const e = {};
+
+  if (canSelectCompany && !v.company_id) {
+    e.company_id = "Target company is required.";
+  }
+
   if (!v.category_id) {
     e.category_id = "Parent category is required.";
   }
@@ -64,6 +87,7 @@ function SubCategoryFormContent({
   parentCategory,
   fixedCategory = false,
   userCompanyId,
+  canSelectCompany = false,
   mode,
   saving,
   onClose,
@@ -121,19 +145,33 @@ function SubCategoryFormContent({
   const [imageFile, setImageFile] = useState(null);
   const [removeImage, setRemoveImage] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [codeManuallyEdited, setCodeManuallyEdited] = useState(
+    Boolean(
+      initialData?.subcategoryCode ||
+        initialData?.subcategory_code ||
+        mode === "edit"
+    )
+  );
   const suggestionContainerRef = useRef(null);
 
-  // Fetch parent categories for dropdown
+  // Effective company ID (form selected company for SuperAdmin, or assigned company for others)
+  const effectiveCompanyId =
+    form.company_id || userCompanyId || initialCompanyId || "";
+
+  // Fetch parent categories scoped to company
   const categoryQueryParams = useMemo(() => {
     const p = { limit: 100, is_active: true };
-    if (userCompanyId) {
-      p.company_id = Number(userCompanyId);
+    if (effectiveCompanyId) {
+      p.company_id = Number(effectiveCompanyId);
     }
     return p;
-  }, [userCompanyId]);
+  }, [effectiveCompanyId]);
 
   const { data: categoriesResponse, isLoading: categoriesLoading } = useCategories(
-    categoryQueryParams
+    categoryQueryParams,
+    {
+      enabled: Boolean(!canSelectCompany || effectiveCompanyId),
+    }
   );
 
   const categories = useMemo(() => {
@@ -192,6 +230,21 @@ function SubCategoryFormContent({
     if (errors[key]) setErrors((er) => ({ ...er, [key]: undefined }));
   };
 
+  // Company selection change (for SuperAdmin/Admin)
+  const handleCompanyChange = (companyId) => {
+    setForm((prev) => ({
+      ...prev,
+      company_id: companyId ? String(companyId) : "",
+      category_id: "", // Reset parent category whenever company changes
+    }));
+    if (errors.company_id) {
+      setErrors((er) => ({ ...er, company_id: undefined }));
+    }
+    if (errors.category_id) {
+      setErrors((er) => ({ ...er, category_id: undefined }));
+    }
+  };
+
   const handleCategoryChange = (valOrEvent, selectedCat) => {
     const catId =
       typeof valOrEvent === "object" && valOrEvent?.target
@@ -213,15 +266,44 @@ function SubCategoryFormContent({
     }
   };
 
+  // Typing Subcategory Name: auto-writes Subcategory Code in add mode if not manually modified
+  const handleNameChange = (e) => {
+    const val = e.target.value;
+    setForm((f) => {
+      const next = { ...f, subcategory_name: val };
+      if (mode === "add" && !codeManuallyEdited) {
+        next.subcategory_code = generateSubcategoryCodeFromName(val);
+      }
+      return next;
+    });
+
+    if (errors.subcategory_name) {
+      setErrors((er) => ({ ...er, subcategory_name: undefined }));
+    }
+    if (!codeManuallyEdited && errors.subcategory_code) {
+      setErrors((er) => ({ ...er, subcategory_code: undefined }));
+    }
+  };
+
+  // Typing directly in Subcategory Code: locks user's custom input
+  const handleCodeChange = (e) => {
+    const val = e.target.value.toUpperCase();
+    setForm((f) => ({
+      ...f,
+      subcategory_code: val,
+    }));
+    setCodeManuallyEdited(true);
+    if (errors.subcategory_code) {
+      setErrors((er) => ({ ...er, subcategory_code: undefined }));
+    }
+  };
+
+  // Clicking "Auto" button: recomputes code from name and re-enables auto-writing
   const handleAutoGenerateCode = () => {
     if (!form.subcategory_name.trim()) return;
-    const autoCode = form.subcategory_name
-      .trim()
-      .toUpperCase()
-      .replace(/[^A-Z0-9]/g, "_")
-      .replace(/_+/g, "_")
-      .slice(0, 50);
+    const autoCode = generateSubcategoryCodeFromName(form.subcategory_name);
     setForm((f) => ({ ...f, subcategory_code: autoCode }));
+    setCodeManuallyEdited(false);
     if (errors.subcategory_code) {
       setErrors((er) => ({ ...er, subcategory_code: undefined }));
     }
@@ -229,16 +311,6 @@ function SubCategoryFormContent({
 
   const handleSelectPreset = (preset) => {
     setForm((f) => {
-      const isAutoCode =
-        !f.subcategory_code ||
-        f.subcategory_code ===
-          f.subcategory_name
-            .trim()
-            .toUpperCase()
-            .replace(/[^A-Z0-9]/g, "_")
-            .replace(/_+/g, "_")
-            .slice(0, 50);
-
       let matchedCatId = f.category_id;
       if (!matchedCatId && preset.category) {
         const found = categories.find(
@@ -252,8 +324,7 @@ function SubCategoryFormContent({
       return {
         ...f,
         subcategory_name: preset.name,
-        subcategory_code:
-          isAutoCode || mode === "add" ? preset.code : f.subcategory_code,
+        subcategory_code: preset.code,
         category_id: matchedCatId,
         description:
           !f.description || mode === "add" ? preset.description : f.description,
@@ -265,6 +336,7 @@ function SubCategoryFormContent({
       };
     });
 
+    setCodeManuallyEdited(true);
     if (errors.subcategory_name) setErrors((er) => ({ ...er, subcategory_name: undefined }));
     if (errors.subcategory_code) setErrors((er) => ({ ...er, subcategory_code: undefined }));
     setShowSuggestions(false);
@@ -272,7 +344,7 @@ function SubCategoryFormContent({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const found = validate(form);
+    const found = validate(form, canSelectCompany);
     if (Object.keys(found).length) {
       setErrors(found);
       return;
@@ -287,8 +359,9 @@ function SubCategoryFormContent({
       is_active: form.is_active,
     };
 
-    if (form.company_id) {
-      payload.company_id = Number(form.company_id);
+    const finalCompanyId = form.company_id || userCompanyId || initialCompanyId;
+    if (finalCompanyId) {
+      payload.company_id = Number(finalCompanyId);
     }
 
     await onSubmit?.({
@@ -304,6 +377,21 @@ function SubCategoryFormContent({
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         {/* Left Column (md:col-span-3) */}
         <div className="md:col-span-3 space-y-4">
+          {/* Target Company Select (SuperAdmin / Admin without assigned company only) */}
+          {canSelectCompany && (
+            <div className="space-y-1.5">
+              <CompanySelect
+                value={form.company_id}
+                onChange={handleCompanyChange}
+                required={true}
+                error={errors.company_id}
+                label="Target Company"
+                placeholder="-- Select Target Company --"
+                disabled={saving}
+              />
+            </div>
+          )}
+
           {/* Parent Category Selector */}
           <div className="space-y-1.5">
             <label className="text-xs sm:text-sm font-bold text-base-content block flex items-center justify-between">
@@ -363,12 +451,28 @@ function SubCategoryFormContent({
                 categories={categories}
                 value={form.category_id}
                 onChange={handleCategoryChange}
-                disabled={saving || categoriesLoading}
+                disabled={saving || (canSelectCompany && !effectiveCompanyId) || categoriesLoading}
                 error={errors.category_id}
+                placeholder={
+                  canSelectCompany && !effectiveCompanyId
+                    ? "-- Select a target company first --"
+                    : "Select a parent category..."
+                }
               />
             )}
             {errors.category_id && (
               <p className="text-xs text-rose-500 font-medium">{errors.category_id}</p>
+            )}
+            {canSelectCompany && !effectiveCompanyId && !errors.category_id && (
+              <p className="text-[11px] text-base-content/50 flex items-center gap-1">
+                <Building className="size-3 text-primary" />
+                <span>Select a target company above to display its parent categories</span>
+              </p>
+            )}
+            {effectiveCompanyId && !categoriesLoading && categories.length === 0 && !errors.category_id && (
+              <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">
+                No parent categories found for this company. Please create a category first.
+              </p>
             )}
           </div>
 
@@ -393,7 +497,7 @@ function SubCategoryFormContent({
             <input
               type="text"
               value={form.subcategory_name}
-              onChange={set("subcategory_name")}
+              onChange={handleNameChange}
               onBlur={() => {
                 if (form.subcategory_name) {
                   setForm((f) => ({
@@ -497,12 +601,7 @@ function SubCategoryFormContent({
               <input
                 type="text"
                 value={form.subcategory_code}
-                onChange={(e) =>
-                  setForm((f) => ({
-                    ...f,
-                    subcategory_code: e.target.value.toUpperCase(),
-                  }))
-                }
+                onChange={handleCodeChange}
                 placeholder="e.g. KANCHI_SILK"
                 maxLength={50}
                 disabled={saving}
@@ -673,7 +772,10 @@ export default function SubCategoryFormModal({
   );
 
   const currentUser = useSelector((state) => state.auth?.user);
+  const roleCode = String(currentUser?.roleCode || currentUser?.role || "").toUpperCase();
   const userCompanyId = currentUser?.companyId || currentUser?.company_id;
+  const isSuperAdminOrAdmin = roleCode === "SUPERADMIN" || roleCode === "ADMIN";
+  const canSelectCompany = isSuperAdminOrAdmin && !userCompanyId;
 
   // Escape key handler
   useEffect(() => {
@@ -733,6 +835,7 @@ export default function SubCategoryFormModal({
           parentCategory={parentCategory}
           fixedCategory={fixedCategory}
           userCompanyId={userCompanyId}
+          canSelectCompany={canSelectCompany}
           mode={mode}
           saving={saving}
           onClose={handleClose}

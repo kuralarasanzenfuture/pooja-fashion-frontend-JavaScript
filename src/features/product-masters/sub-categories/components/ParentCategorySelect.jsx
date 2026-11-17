@@ -298,22 +298,26 @@ export default function ParentCategorySelect({
                   <SearchX className="size-4" />
                 </div>
                 <p className="text-xs font-semibold text-base-content/70">
-                  No categories found
+                  {categories.length === 0 ? "No categories available" : "No categories found"}
                 </p>
                 <p className="text-[11px] text-base-content/40 mt-0.5">
-                  No match for "{searchQuery}"
+                  {categories.length === 0
+                    ? "No parent categories exist for this company yet."
+                    : `No match for "${searchQuery}"`}
                 </p>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSearchQuery("");
-                    searchInputRef.current?.focus();
-                  }}
-                  className="mt-2 text-[11px] font-semibold text-primary hover:underline cursor-pointer"
-                >
-                  Clear search
-                </button>
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSearchQuery("");
+                      searchInputRef.current?.focus();
+                    }}
+                    className="mt-2 text-[11px] font-semibold text-primary hover:underline cursor-pointer"
+                  >
+                    Clear search
+                  </button>
+                )}
               </div>
             ) : (
               filteredCategories.map((cat, idx) => {
