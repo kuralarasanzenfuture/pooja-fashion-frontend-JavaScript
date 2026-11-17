@@ -19,6 +19,20 @@ const EMPTY = {
 
 const DESC_MAX = 2000;
 
+/**
+ * Automatically derives a clean uppercase category code from name.
+ * e.g. "Pure Silk Sarees" -> "PURE_SILK_SAREES"
+ */
+export function generateCategoryCodeFromName(name = "") {
+  return name
+    .trim()
+    .replace(/['’]/g, "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 50);
+}
+
 function validate(v, canSelectCompany) {
   const e = {};
   if (canSelectCompany && !v.company_id) {
@@ -81,6 +95,10 @@ export default function CategoryFormModal({
   const [objectUrl, setObjectUrl] = useState(null);
   const [removeImage, setRemoveImage] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [forceShowPresets, setForceShowPresets] = useState(false);
+  const [codeManuallyEdited, setCodeManuallyEdited] = useState(
+    Boolean(initialData?.categoryCode || initialData?.category_code || mode === "edit")
+  );
   const suggestionContainerRef = useRef(null);
 
   // Close suggestions dropdown on outside click
@@ -101,13 +119,45 @@ export default function CategoryFormModal({
     };
   }, [showSuggestions]);
 
-  const filteredPresets = useMemo(() => {
-    return searchCategoryPresets(form.category_name);
-  }, [form.category_name]);
+  const trimmedName = (form.category_name || "").trim();
+  const hasTyped = trimmedName.length > 0;
+
+  const matchingPresets = useMemo(() => {
+    if (!hasTyped) return [];
+    return searchCategoryPresets(trimmedName);
+  }, [hasTyped, trimmedName]);
 
   const popularPresets = useMemo(() => {
     return getPopularCategoryPresets();
   }, []);
+
+  // Dropdown is visible ONLY when:
+  // - User hasn't typed yet and suggestions are open, OR
+  // - User has typed and matching presets exist (matchingPresets.length > 0), OR
+  // - User explicitly clicked "⚡ Real-time Presets" button (forceShowPresets)
+  // When user types a name that DOES NOT MATCH: isDropdownVisible is FALSE (not show down!)
+  const isDropdownVisible =
+    showSuggestions &&
+    (forceShowPresets || !hasTyped || matchingPresets.length > 0);
+
+  const displayPresets =
+    forceShowPresets && matchingPresets.length === 0
+      ? popularPresets
+      : hasTyped
+      ? matchingPresets
+      : popularPresets;
+
+  const toggleSuggestions = () => {
+    if (isDropdownVisible) {
+      setShowSuggestions(false);
+      setForceShowPresets(false);
+    } else {
+      setShowSuggestions(true);
+      if (hasTyped && matchingPresets.length === 0) {
+        setForceShowPresets(true);
+      }
+    }
+  };
 
   // Reset whenever modal opens or initialData changes
   useEffect(() => {
@@ -142,7 +192,10 @@ export default function CategoryFormModal({
     setErrors({});
     setImageFile(null);
     setRemoveImage(false);
-  }, [open, isOpen, initialData, initialCompanyId, currentUser, canSelectCompany, userCompanyId]);
+    setCodeManuallyEdited(Boolean(initialData?.categoryCode || initialData?.category_code || mode === "edit"));
+    setForceShowPresets(false);
+    setShowSuggestions(false);
+  }, [open, isOpen, initialData, initialCompanyId, currentUser, canSelectCompany, userCompanyId, mode]);
 
   // Local preview for newly picked file
   useEffect(() => {
@@ -174,42 +227,63 @@ export default function CategoryFormModal({
     if (errors[key]) setErrors((er) => ({ ...er, [key]: undefined }));
   };
 
+  // Real-time auto-write: As user types Category Name, auto-generate Category Code
+  const handleNameChange = (e) => {
+    const val = e.target.value;
+    setForm((f) => {
+      const next = { ...f, category_name: val };
+      if (mode === "add" && !codeManuallyEdited) {
+        next.category_code = generateCategoryCodeFromName(val);
+      }
+      return next;
+    });
+
+    setForceShowPresets(false);
+    setShowSuggestions(true);
+
+    if (errors.category_name) {
+      setErrors((er) => ({ ...er, category_name: undefined }));
+    }
+    if (!codeManuallyEdited && errors.category_code) {
+      setErrors((er) => ({ ...er, category_code: undefined }));
+    }
+  };
+
+  // Manual code typing locks code from being overwritten by name changes
+  const handleCodeChange = (e) => {
+    const val = e.target.value.toUpperCase();
+    setForm((f) => ({
+      ...f,
+      category_code: val,
+    }));
+    setCodeManuallyEdited(true);
+    if (errors.category_code) {
+      setErrors((er) => ({ ...er, category_code: undefined }));
+    }
+  };
+
+  // Auto button resets custom override and recalculates from current name
   const handleAutoGenerateCode = () => {
     if (!form.category_name.trim()) return;
-    const autoCode = form.category_name
-      .trim()
-      .toUpperCase()
-      .replace(/[^A-Z0-9]/g, "_")
-      .replace(/_+/g, "_")
-      .slice(0, 50);
+    const autoCode = generateCategoryCodeFromName(form.category_name);
     setForm((f) => ({ ...f, category_code: autoCode }));
+    setCodeManuallyEdited(false);
     if (errors.category_code) setErrors((er) => ({ ...er, category_code: undefined }));
   };
 
   const handleSelectPreset = (preset) => {
-    setForm((f) => {
-      const isAutoCode =
-        !f.category_code ||
-        f.category_code ===
-          f.category_name
-            .trim()
-            .toUpperCase()
-            .replace(/[^A-Z0-9]/g, "_")
-            .replace(/_+/g, "_")
-            .slice(0, 50);
+    setForm((f) => ({
+      ...f,
+      category_name: preset.name,
+      category_code: preset.code,
+      description: !f.description || mode === "add" ? preset.description : f.description,
+      display_order:
+        (!f.display_order || Number(f.display_order) === 0) && preset.display_order
+          ? preset.display_order
+          : f.display_order,
+    }));
 
-      return {
-        ...f,
-        category_name: preset.name,
-        category_code: isAutoCode || mode === "add" ? preset.code : f.category_code,
-        description: !f.description || mode === "add" ? preset.description : f.description,
-        display_order:
-          (!f.display_order || Number(f.display_order) === 0) && preset.display_order
-            ? preset.display_order
-            : f.display_order,
-      };
-    });
-
+    setCodeManuallyEdited(true);
     if (errors.category_name) {
       setErrors((er) => ({ ...er, category_name: undefined }));
     }
@@ -217,6 +291,7 @@ export default function CategoryFormModal({
       setErrors((er) => ({ ...er, category_code: undefined }));
     }
     setShowSuggestions(false);
+    setForceShowPresets(false);
   };
 
   const handleSubmit = async (e) => {
@@ -340,13 +415,13 @@ export default function CategoryFormModal({
                   </label>
                   <button
                     type="button"
-                    onClick={() => setShowSuggestions((prev) => !prev)}
+                    onClick={toggleSuggestions}
                     className="text-[11px] text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer bg-primary/10 hover:bg-primary/20 px-2 py-0.5 rounded-lg border border-primary/20 transition-colors"
                     title="Browse real-time fashion apparel presets"
                   >
                     <Zap className="size-3 text-amber-500 fill-amber-500" />
-                    <span>{showSuggestions ? "Hide Suggestions" : "⚡ Real-time Presets"}</span>
-                    <ChevronDown className={`size-3 transition-transform ${showSuggestions ? "rotate-180" : ""}`} />
+                    <span>{isDropdownVisible ? "Close Presets" : "⚡ Real-time Presets"}</span>
+                    <ChevronDown className={`size-3 transition-transform ${isDropdownVisible ? "rotate-180" : ""}`} />
                   </button>
                 </div>
 
@@ -358,10 +433,7 @@ export default function CategoryFormModal({
                       errors.category_name ? "border-rose-500 focus:border-rose-500" : "border-base-300"
                     }`}
                     value={form.category_name}
-                    onChange={(e) => {
-                      set("category_name")(e);
-                      if (!showSuggestions) setShowSuggestions(true);
-                    }}
+                    onChange={handleNameChange}
                     onBlur={() => {
                       if (form.category_name) {
                         setForm((f) => ({
@@ -370,67 +442,71 @@ export default function CategoryFormModal({
                         }));
                       }
                     }}
-                    onFocus={() => setShowSuggestions(true)}
+                    onFocus={() => {
+                      if (!hasTyped) setShowSuggestions(true);
+                    }}
                     disabled={saving}
                     maxLength={150}
                     autoFocus
                   />
                 </div>
 
-                {/* Real-time suggestions dropdown */}
-                {showSuggestions && (
-                  <div className="absolute z-30 left-0 right-0 mt-1 max-h-60 overflow-y-auto rounded-2xl bg-base-100 border border-base-300 shadow-xl p-1.5 space-y-1">
+                {/* Real-time suggestions dropdown - only shown when matching or explicitly toggled, never when non-matching name is typed */}
+                {isDropdownVisible && (
+                  <div className="absolute z-30 left-0 right-0 mt-1 max-h-60 overflow-y-auto rounded-2xl bg-base-100 border border-base-300 shadow-xl p-1.5 space-y-1 animate-in fade-in-50 duration-150">
                     <div className="px-2.5 py-1 text-[11px] font-semibold text-base-content/50 uppercase tracking-wider flex items-center justify-between border-b border-base-200 pb-1 mb-1">
-                      <span>Suggested Fashion Categories ({filteredPresets.length})</span>
+                      <span>
+                        {hasTyped && matchingPresets.length > 0
+                          ? `Matching Presets (${matchingPresets.length})`
+                          : `Suggested Fashion Categories (${displayPresets.length})`}
+                      </span>
                       <span className="text-[10px] text-primary font-normal">click to auto-fill</span>
                     </div>
-                    {filteredPresets.length === 0 ? (
-                      <div className="px-3 py-3 text-xs text-base-content/60 text-center">
-                        No matching presets found. You can still use &quot;{form.category_name}&quot; as a custom category!
-                      </div>
-                    ) : (
-                      filteredPresets.map((preset) => {
-                        const isSelected = form.category_name.trim().toLowerCase() === preset.name.toLowerCase();
-                        return (
-                          <button
-                            key={preset.id}
-                            type="button"
-                            onClick={() => handleSelectPreset(preset)}
-                            className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-start justify-between gap-3 group cursor-pointer ${
-                              isSelected
-                                ? "bg-primary/15 border border-primary/30 text-primary"
-                                : "hover:bg-base-200 text-base-content"
-                            }`}
-                          >
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className="font-semibold text-xs leading-snug group-hover:text-primary transition-colors">
-                                  {preset.name}
-                                </span>
-                                <span className="text-[10px] px-1.5 py-0.2 rounded bg-base-200 text-base-content/70 border border-base-300 font-mono">
-                                  {preset.code}
-                                </span>
+                    {displayPresets.map((preset) => {
+                      const isSelected = form.category_name.trim().toLowerCase() === preset.name.toLowerCase();
+                      return (
+                        <button
+                          key={preset.id || preset.code}
+                          type="button"
+                          onClick={() => handleSelectPreset(preset)}
+                          className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-start justify-between gap-3 group cursor-pointer ${
+                            isSelected
+                              ? "bg-primary/15 border border-primary/30 text-primary"
+                              : "hover:bg-base-200 text-base-content"
+                          }`}
+                        >
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-semibold text-xs leading-snug group-hover:text-primary transition-colors">
+                                {preset.name}
+                              </span>
+                              <span className="text-[10px] px-1.5 py-0.2 rounded bg-base-200 text-base-content/70 border border-base-300 font-mono">
+                                {preset.code}
+                              </span>
+                              {preset.department && (
                                 <span className="text-[10px] px-1.5 py-0.2 rounded bg-primary/10 text-primary font-medium">
                                   {preset.department}
                                 </span>
-                              </div>
+                              )}
+                            </div>
+                            {preset.description && (
                               <p className="text-[11px] text-base-content/60 truncate mt-0.5 max-w-md">
                                 {preset.description}
                               </p>
-                            </div>
-                            {isSelected ? (
-                              <span className="shrink-0 p-1 rounded-full bg-primary text-white">
-                                <Check className="size-3" />
-                              </span>
-                            ) : (
-                              <span className="shrink-0 text-[10px] font-semibold opacity-0 group-hover:opacity-100 text-primary transition-opacity">
-                                Apply ↵
-                              </span>
                             )}
-                          </button>
-                        );
-                      })
-                    )}
+                          </div>
+                          {isSelected ? (
+                            <span className="shrink-0 p-1 rounded-full bg-primary text-white">
+                              <Check className="size-3" />
+                            </span>
+                          ) : (
+                            <span className="shrink-0 text-[10px] font-semibold opacity-0 group-hover:opacity-100 text-primary transition-opacity">
+                              Apply ↵
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
 
@@ -440,29 +516,31 @@ export default function CategoryFormModal({
                   </span>
                 )}
 
-                {/* Quick chips below */}
-                <div className="mt-2 flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[11px] text-base-content/50 font-medium flex items-center gap-1">
-                    <Sparkles className="size-3 text-amber-500" /> Quick:
-                  </span>
-                  {popularPresets.slice(0, 5).map((preset) => {
-                    const active = form.category_name.trim().toLowerCase() === preset.name.toLowerCase();
-                    return (
-                      <button
-                        key={preset.id}
-                        type="button"
-                        onClick={() => handleSelectPreset(preset)}
-                        className={`text-[11px] px-2 py-0.5 rounded-lg border font-medium transition-all cursor-pointer ${
-                          active
-                            ? "bg-primary text-primary-content border-primary"
-                            : "bg-base-200/60 hover:bg-base-200 text-base-content/75 border-base-300 hover:border-primary/40"
-                        }`}
-                      >
-                        {preset.name}
-                      </button>
-                    );
-                  })}
-                </div>
+                {/* Quick chips below - only show when user hasn't typed */}
+                {!hasTyped && (
+                  <div className="mt-2 flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[11px] text-base-content/50 font-medium flex items-center gap-1">
+                      <Sparkles className="size-3 text-amber-500" /> Quick:
+                    </span>
+                    {popularPresets.slice(0, 5).map((preset) => {
+                      const active = form.category_name.trim().toLowerCase() === preset.name.toLowerCase();
+                      return (
+                        <button
+                          key={preset.id || preset.code}
+                          type="button"
+                          onClick={() => handleSelectPreset(preset)}
+                          className={`text-[11px] px-2 py-0.5 rounded-lg border font-medium transition-all cursor-pointer ${
+                            active
+                              ? "bg-primary text-primary-content border-primary"
+                              : "bg-base-200/60 hover:bg-base-200 text-base-content/75 border-base-300 hover:border-primary/40"
+                          }`}
+                        >
+                          {preset.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               {/* Code & Display Order */}
@@ -475,8 +553,9 @@ export default function CategoryFormModal({
                     <button
                       type="button"
                       onClick={handleAutoGenerateCode}
-                      className="text-[11px] text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer"
-                      title="Generate from name"
+                      disabled={!form.category_name.trim() || saving}
+                      className="text-[11px] text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer disabled:opacity-40"
+                      title="Generate uppercase code from category name"
                     >
                       <Sparkles className="size-3" /> Auto
                     </button>
@@ -488,7 +567,7 @@ export default function CategoryFormModal({
                       errors.category_code ? "border-rose-500 focus:border-rose-500" : "border-base-300"
                     }`}
                     value={form.category_code}
-                    onChange={set("category_code")}
+                    onChange={handleCodeChange}
                     disabled={saving}
                     maxLength={50}
                   />
@@ -496,9 +575,13 @@ export default function CategoryFormModal({
                     <span className="mt-1 block text-xs text-rose-500 font-medium">
                       {errors.category_code}
                     </span>
+                  ) : codeManuallyEdited ? (
+                    <span className="mt-1 block text-[11px] text-primary font-medium">
+                      Custom code active · Click Auto to sync with name
+                    </span>
                   ) : (
                     <span className="mt-1 block text-[11px] text-base-content/50">
-                      Auto-generated if left empty
+                      Auto-generated from name in real-time
                     </span>
                   )}
                 </div>
