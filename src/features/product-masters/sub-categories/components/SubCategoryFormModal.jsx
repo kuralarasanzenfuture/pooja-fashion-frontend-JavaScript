@@ -372,86 +372,111 @@ function SubCategoryFormContent({
             )}
           </div>
 
-          {/* Subcategory Name & Code (Single Row) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Subcategory Name & Suggestions */}
-            <div className="space-y-1.5 relative" ref={suggestionContainerRef}>
-              <div className="flex items-center justify-between">
-                <label className="text-xs sm:text-sm font-bold text-base-content block flex items-center gap-1">
-                  <span>Subcategory Name</span>
-                  <span className="text-rose-500">*</span>
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setShowSuggestions((prev) => !prev)}
-                  className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
-                >
-                  <Sparkles className="size-3" />
-                  <span>Textile Presets</span>
-                </button>
-              </div>
-
-              <input
-                type="text"
-                value={form.subcategory_name}
-                onChange={set("subcategory_name")}
-                onBlur={() => {
-                  if (form.subcategory_name) {
-                    setForm((f) => ({
-                      ...f,
-                      subcategory_name: formatCategoryName(f.subcategory_name),
-                    }));
-                  }
-                }}
-                onFocus={() => setShowSuggestions(true)}
-                placeholder="e.g. Kanchipuram Silk, Anarkali..."
-                maxLength={150}
-                disabled={saving}
-                className={`w-full px-3.5 py-2.5 rounded-xl border bg-base-200/60 text-xs sm:text-sm text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
-                  errors.subcategory_name
-                    ? "border-rose-500 ring-2 ring-rose-500/20"
-                    : "border-base-300 hover:border-primary/40 focus:border-primary"
-                }`}
-              />
-              {errors.subcategory_name && (
-                <p className="text-xs text-rose-500 font-medium">
-                  {errors.subcategory_name}
-                </p>
-              )}
-
-              {/* Presets Dropdown */}
-              {showSuggestions && (
-                <div className="absolute top-full left-0 right-0 mt-1 z-50 rounded-2xl bg-base-100 border border-base-300 shadow-2xl p-2 max-h-56 overflow-y-auto space-y-1">
-                  <div className="px-2 py-1 text-[11px] font-bold uppercase tracking-wider text-base-content/50 flex items-center justify-between">
-                    <span>Fast Presets</span>
-                    <span className="text-[10px] lowercase text-primary">click to autofill</span>
-                  </div>
-                  {(filteredPresets.length > 0 ? filteredPresets : popularPresets).map(
-                    (preset) => (
-                      <button
-                        key={preset.id}
-                        type="button"
-                        onClick={() => handleSelectPreset(preset)}
-                        className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-primary/10 transition-colors flex items-center justify-between group cursor-pointer"
-                      >
-                        <div className="min-w-0">
-                          <span className="text-xs font-semibold text-base-content group-hover:text-primary block truncate">
-                            {preset.name}
-                          </span>
-                          <span className="text-[10px] text-base-content/50 block truncate">
-                            Category: {preset.category}
-                          </span>
-                        </div>
-                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-base-200 text-base-content/60 shrink-0 ml-2">
-                          {preset.code}
-                        </span>
-                      </button>
-                    )
-                  )}
-                </div>
-              )}
+          {/* Subcategory Name & Suggestions (Full Width Row) */}
+          <div className="space-y-1.5 relative" ref={suggestionContainerRef}>
+            <div className="flex items-center justify-between">
+              <label className="text-xs sm:text-sm font-bold text-base-content flex items-center gap-1 whitespace-nowrap">
+                <span>Subcategory Name</span>
+                <span className="text-rose-500">*</span>
+              </label>
+              <button
+                type="button"
+                onClick={() => setShowSuggestions((prev) => !prev)}
+                className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer bg-primary/10 hover:bg-primary/20 px-2 py-0.5 rounded-lg border border-primary/20 transition-colors whitespace-nowrap"
+              >
+                <Sparkles className="size-3 text-amber-500" />
+                <span>{showSuggestions ? "Close Presets" : "⚡ Textile Presets"}</span>
+                <ChevronDown className={`size-3 transition-transform ${showSuggestions ? "rotate-180" : ""}`} />
+              </button>
             </div>
 
+            <input
+              type="text"
+              value={form.subcategory_name}
+              onChange={set("subcategory_name")}
+              onBlur={() => {
+                if (form.subcategory_name) {
+                  setForm((f) => ({
+                    ...f,
+                    subcategory_name: formatCategoryName(f.subcategory_name),
+                  }));
+                }
+              }}
+              onFocus={() => setShowSuggestions(true)}
+              placeholder="e.g. Kanchipuram Pure Silk, Anarkali Kurtis, Banarasi Katan..."
+              maxLength={150}
+              disabled={saving}
+              className={`w-full px-3.5 py-2.5 rounded-xl border bg-base-200/60 text-xs sm:text-sm text-base-content placeholder:text-base-content/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                errors.subcategory_name
+                  ? "border-rose-500 ring-2 ring-rose-500/20"
+                  : "border-base-300 hover:border-primary/40 focus:border-primary"
+              }`}
+            />
+            {errors.subcategory_name && (
+              <p className="text-xs text-rose-500 font-medium">
+                {errors.subcategory_name}
+              </p>
+            )}
+
+            {/* Quick Preset Chips row right under input */}
+            <div className="mt-2 flex items-center gap-1.5 flex-wrap">
+              <span className="text-[11px] text-base-content/50 font-medium flex items-center gap-1">
+                <Sparkles className="size-3 text-amber-500" /> Quick:
+              </span>
+              {popularPresets.slice(0, 5).map((preset) => {
+                const active = form.subcategory_name.trim().toLowerCase() === preset.name.toLowerCase();
+                return (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => handleSelectPreset(preset)}
+                    className={`text-[11px] px-2 py-0.5 rounded-lg border font-medium transition-all cursor-pointer ${
+                      active
+                        ? "bg-primary text-primary-content border-primary"
+                        : "bg-base-200/60 hover:bg-base-200 text-base-content/75 border-base-300 hover:border-primary/40"
+                    }`}
+                  >
+                    {preset.name}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Presets Dropdown */}
+            {showSuggestions && (
+              <div className="absolute top-full left-0 right-0 mt-1 z-50 rounded-2xl bg-base-100 border border-base-300 shadow-2xl p-2 max-h-60 overflow-y-auto space-y-1">
+                <div className="px-2 py-1 text-[11px] font-bold uppercase tracking-wider text-base-content/50 flex items-center justify-between border-b border-base-200 pb-1 mb-1">
+                  <span>Fashion & Textile Presets ({(filteredPresets.length > 0 ? filteredPresets : popularPresets).length})</span>
+                  <span className="text-[10px] lowercase text-primary font-medium">click to autofill</span>
+                </div>
+                {(filteredPresets.length > 0 ? filteredPresets : popularPresets).map(
+                  (preset) => (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      onClick={() => handleSelectPreset(preset)}
+                      className="w-full text-left px-3 py-2 rounded-xl hover:bg-primary/10 transition-colors flex items-center justify-between group cursor-pointer"
+                    >
+                      <div className="min-w-0 pr-3">
+                        <span className="text-xs sm:text-sm font-semibold text-base-content group-hover:text-primary block">
+                          {preset.name}
+                        </span>
+                        <span className="text-[11px] text-base-content/60 block line-clamp-1">
+                          Category: {preset.category} {preset.description ? `• ${preset.description}` : ""}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 shrink-0">
+                        {preset.code}
+                      </span>
+                    </button>
+                  )
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Subcategory Code & Display Order (Single Row) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Subcategory Code */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
@@ -466,7 +491,7 @@ function SubCategoryFormContent({
                   title="Generate uppercase code from subcategory name"
                 >
                   <Zap className="size-3" />
-                  <span>Generate</span>
+                  <span>Auto</span>
                 </button>
               </div>
               <input
@@ -493,10 +518,8 @@ function SubCategoryFormContent({
                 </p>
               )}
             </div>
-          </div>
 
-          {/* Display Order Sequence */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+            {/* Display Order Sequence */}
             <div className="space-y-1.5">
               <label className="text-xs sm:text-sm font-bold text-base-content block">
                 Display Order <span className="text-base-content/40 font-normal">(Sequence)</span>
@@ -508,6 +531,7 @@ function SubCategoryFormContent({
                 value={form.display_order}
                 onChange={set("display_order")}
                 disabled={saving}
+                placeholder="0"
                 className={`w-full px-3.5 py-2.5 rounded-xl border bg-base-200/60 text-xs sm:text-sm text-base-content font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
                   errors.display_order
                     ? "border-rose-500 ring-2 ring-rose-500/20"
@@ -519,9 +543,6 @@ function SubCategoryFormContent({
                   {errors.display_order}
                 </p>
               )}
-            </div>
-            <div className="pt-2 sm:pt-6 text-xs text-base-content/60 leading-relaxed">
-              <span>Controls sequence order in category navigation, filter chips, and billing POS.</span>
             </div>
           </div>
 
@@ -672,7 +693,7 @@ export default function SubCategoryFormModal({
       aria-modal="true"
     >
       <div
-        className={`relative w-full max-w-4xl bg-base-100 rounded-3xl shadow-2xl border border-base-200 overflow-hidden ${cardClasses}`}
+        className={`relative w-full max-w-5xl bg-base-100 rounded-3xl shadow-2xl border border-base-200 overflow-hidden ${cardClasses}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
