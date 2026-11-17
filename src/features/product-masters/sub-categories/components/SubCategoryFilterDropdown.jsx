@@ -1,9 +1,49 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { ChevronDown, Check, Search, X, SearchX } from "lucide-react";
+import { ChevronDown, Check, Search, X, SearchX, FolderTree } from "lucide-react";
+
+/**
+ * Image thumbnail component for filter dropdown options
+ */
+function FilterOptionThumb({ imageUrl, label, isSelected, size = "md" }) {
+  const [imgError, setImgError] = useState(false);
+
+  const sizeClass = size === "sm" ? "size-5 rounded-md" : "size-8 rounded-lg";
+
+  if (imageUrl && !imgError) {
+    return (
+      <div
+        className={`${sizeClass} overflow-hidden border ${
+          isSelected ? "border-white/40 shadow-xs" : "border-base-300/80 shadow-2xs"
+        } bg-base-200 shrink-0 relative`}
+      >
+        <img
+          src={imageUrl}
+          alt={label || "Category"}
+          className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+          onError={() => setImgError(true)}
+          loading="lazy"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={`${sizeClass} border ${
+        isSelected
+          ? "border-white/30 bg-white/20 text-white"
+          : "border-primary/20 bg-primary/10 text-primary"
+      } flex items-center justify-center shrink-0 font-bold text-[11px] shadow-2xs`}
+    >
+      {(label || "C").charAt(0).toUpperCase()}
+    </div>
+  );
+}
 
 /**
  * Custom Subcategory Filter Dropdown matching Pooja Fashion's Brand Theme (#2A0081 Royal Purple)
  * Features:
+ * - High-resolution category image thumbnails with graceful fallback avatars
  * - Searchable with instant keyboard filtering (label, badge, code)
  * - Auto-focus on search input when open
  * - Keyboard navigation (Up/Down arrows, Enter to select, Escape to clear/close)
@@ -145,7 +185,14 @@ export default function SubCategoryFilterDropdown({
         }`}
       >
         <div className="flex items-center gap-2 truncate">
-          {selectedOption?.dotColor ? (
+          {selectedOption?.imageUrl ? (
+            <FilterOptionThumb
+              imageUrl={selectedOption.imageUrl}
+              label={selectedOption.label}
+              isSelected={isFiltered}
+              size="sm"
+            />
+          ) : selectedOption?.dotColor ? (
             <span className={`w-2 h-2 rounded-full shrink-0 ${selectedOption.dotColor}`} />
           ) : Icon ? (
             <Icon
@@ -167,7 +214,7 @@ export default function SubCategoryFilterDropdown({
       {/* Floating Menu Popup */}
       {isOpen && (
         <div
-          className={`absolute top-full mt-1.5 z-50 min-w-[220px] max-w-xs rounded-2xl bg-base-100 text-base-content border border-base-300 shadow-2xl shadow-slate-900/15 overflow-hidden animate-in fade-in zoom-in-95 duration-150 ${
+          className={`absolute top-full mt-1.5 z-50 min-w-[270px] max-w-sm rounded-2xl bg-base-100 text-base-content border border-base-300 shadow-2xl shadow-slate-900/15 overflow-hidden animate-in fade-in zoom-in-95 duration-150 ${
             align === "right" ? "right-0 origin-top-right" : "left-0 origin-top-left"
           }`}
           role="listbox"
@@ -250,7 +297,7 @@ export default function SubCategoryFilterDropdown({
                       onChange(option.value);
                       setIsOpen(false);
                     }}
-                    className={`w-full text-left px-2.5 py-2 rounded-xl text-xs flex items-center justify-between gap-2 transition-all cursor-pointer ${
+                    className={`w-full text-left p-2 rounded-xl text-xs flex items-center justify-between gap-2.5 transition-all cursor-pointer ${
                       isSelected
                         ? "bg-primary text-primary-content font-bold shadow-xs"
                         : isHighlighted
@@ -258,24 +305,54 @@ export default function SubCategoryFilterDropdown({
                         : "text-base-content hover:bg-primary/10 hover:text-primary font-medium"
                     }`}
                   >
-                    <div className="flex items-center gap-2 min-w-0 truncate">
-                      {option.icon && (
-                        <option.icon
-                          className={`w-3.5 h-3.5 shrink-0 ${
-                            isSelected ? "text-primary-content" : "text-base-content/40"
-                          }`}
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1 truncate">
+                      {option.imageUrl ? (
+                        <FilterOptionThumb
+                          imageUrl={option.imageUrl}
+                          label={option.label}
+                          isSelected={isSelected}
+                          size="md"
                         />
-                      )}
+                      ) : option.isAll || option.value === "" ? (
+                        <div
+                          className={`size-8 rounded-lg flex items-center justify-center shrink-0 border transition-colors ${
+                            isSelected
+                              ? "bg-white/20 border-white/30 text-white"
+                              : "bg-primary/10 border-primary/20 text-primary"
+                          }`}
+                        >
+                          {option.icon ? (
+                            <option.icon className="size-4" />
+                          ) : (
+                            <FolderTree className="size-4" />
+                          )}
+                        </div>
+                      ) : option.icon ? (
+                        <div
+                          className={`size-8 rounded-lg flex items-center justify-center shrink-0 border ${
+                            isSelected
+                              ? "bg-white/20 border-white/30 text-white"
+                              : "bg-base-200 border-base-300 text-base-content/60"
+                          }`}
+                        >
+                          <option.icon className="size-4" />
+                        </div>
+                      ) : null}
+
                       {option.dotColor && (
                         <span className={`w-2 h-2 rounded-full shrink-0 ${option.dotColor}`} />
                       )}
-                      <span className="truncate">{option.label}</span>
+
+                      <span className="truncate flex-1 font-semibold text-xs sm:text-sm">
+                        {option.label}
+                      </span>
+
                       {option.badge && (
                         <span
-                          className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
+                          className={`text-[10px] px-1.5 py-0.5 rounded font-mono shrink-0 ${
                             isSelected
-                              ? "bg-white/20 text-primary-content"
-                              : "bg-base-200 text-base-content/60"
+                              ? "bg-white/20 text-white font-semibold"
+                              : "bg-base-200 text-base-content/60 font-medium"
                           }`}
                         >
                           {option.badge}

@@ -105,6 +105,42 @@ const FASHION_KEYWORD_IMAGES = [
     url: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&auto=format&fit=crop&q=80",
   },
   {
+    keywords: ["girls", "girl", "girls wear", "girls-wear", "kids", "kid"],
+    url: "https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?w=400&auto=format&fit=crop&q=80",
+  },
+  {
+    keywords: ["ethnic", "ethnic wear", "ethnic-wear", "traditional", "indian"],
+    url: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=400&auto=format&fit=crop&q=80",
+  },
+  {
+    keywords: ["western", "western wear", "western-wear", "casual", "modern"],
+    url: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&auto=format&fit=crop&q=80",
+  },
+  {
+    keywords: ["innerwear", "inner wear", "inner-wear", "lingerie", "briefs", "undergarments"],
+    url: "https://images.unsplash.com/photo-1583846783214-7229a91b20ed?w=400&auto=format&fit=crop&q=80",
+  },
+  {
+    keywords: ["nightwear", "night wear", "night-wear", "sleepwear", "pajamas", "pyjamas"],
+    url: "https://images.unsplash.com/photo-1516762689617-e1cffcef479d?w=400&auto=format&fit=crop&q=80",
+  },
+  {
+    keywords: ["sportswear", "sports wear", "sports-wear", "activewear", "gym", "athletic"],
+    url: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&auto=format&fit=crop&q=80",
+  },
+  {
+    keywords: ["winter", "winter wear", "winter-wear", "sweater", "jacket", "coat", "hoodie"],
+    url: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&auto=format&fit=crop&q=80",
+  },
+  {
+    keywords: ["men", "mens", "men's", "mens wear", "mens-wear", "blazer", "formal"],
+    url: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=400&auto=format&fit=crop&q=80",
+  },
+  {
+    keywords: ["women", "womens", "women's", "womens wear", "womens-wear"],
+    url: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400&auto=format&fit=crop&q=80",
+  },
+  {
     keywords: ["jewel", "jewellery", "jewelry", "necklace", "bangles"],
     url: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&auto=format&fit=crop&q=80",
   },

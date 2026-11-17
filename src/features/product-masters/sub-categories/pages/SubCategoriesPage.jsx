@@ -45,7 +45,11 @@ import SubCategoryDetailsModal from "../components/SubCategoryDetailsModal.jsx";
 import SubCategoryDeleteModal from "../components/SubCategoryDeleteModal.jsx";
 import SubCategoryFilterDropdown from "../components/SubCategoryFilterDropdown.jsx";
 import SubCategoryRecentSearches from "../components/SubCategoryRecentSearches.jsx";
-import { formatCategoryName } from "../../categories/utils/categoryImageHelper.js";
+import {
+  formatCategoryName,
+  normalizeCategoryImageUrl,
+  getCategoryFallbackImage,
+} from "../../categories/utils/categoryImageHelper.js";
 import { SlidingTabs, AnimatedTabContent } from "../../../../common/components/tabs/index.js";
 
 /**
@@ -311,13 +315,21 @@ export default function SubCategoriesPage() {
   }, [companiesList]);
 
   const categoryOptions = useMemo(() => {
-    const base = categoriesList.map((c) => ({
-      value: String(c.id),
-      label: formatCategoryName(c.categoryName || c.category_name),
-      badge: c.categoryCode || c.category_code || null,
-      icon: FolderTree,
-    }));
-    return [{ value: "", label: "All Categories", icon: FolderTree }, ...base];
+    const base = categoriesList.map((c) => {
+      const rawImage = c.imageUrl || c.image_url;
+      const resolvedImage = rawImage
+        ? normalizeCategoryImageUrl(rawImage)
+        : getCategoryFallbackImage(c.categoryName || c.category_name, c.categoryCode || c.category_code);
+
+      return {
+        value: String(c.id),
+        label: formatCategoryName(c.categoryName || c.category_name),
+        badge: c.categoryCode || c.category_code || null,
+        imageUrl: resolvedImage,
+        icon: FolderTree,
+      };
+    });
+    return [{ value: "", label: "All Categories", icon: FolderTree, isAll: true }, ...base];
   }, [categoriesList]);
 
   const statusOptions = [
