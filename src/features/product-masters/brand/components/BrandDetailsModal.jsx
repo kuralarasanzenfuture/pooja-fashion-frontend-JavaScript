@@ -262,13 +262,12 @@ export default function BrandDetailsModal({
         {/* Modal Footer Toolbar */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-base-200 bg-base-200/30">
           <Button
-            variant="outline"
+            variant="clip-four"
             size="sm"
             onClick={() => {
               handleClose();
               onDelete?.(brand);
             }}
-            className="text-rose-600 hover:bg-rose-50 border-rose-200"
             icon={Trash2}
           >
             Delete

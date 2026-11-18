@@ -6,14 +6,18 @@ import "./Button.css";
  * 
  * Supports both modern boutique luxury variants (primary, gold, secondary, outline, danger, success, ghost)
  * and dynamic animated variants (gradient-one, gradient-two, gradient-three, clip-four, clip-five, clip-six).
+ * 'destructive' automatically maps to 'clip-four' (luxury destructive swipe).
  *
  * @param {React.ReactNode} children - Button text or content
- * @param {string} variant - Visual variant: 'primary' | 'gold' | 'secondary' | 'outline' | 'danger' | 'success' | 'ghost' | 'gradient-one' | 'gradient-two' | 'gradient-three' | 'clip-four' | 'clip-five' | 'clip-six'
+ * @param {string} variant - Visual variant: 'primary' | 'gold' | 'secondary' | 'outline' | 'danger' | 'destructive' | 'success' | 'ghost' | 'gradient-one' | 'gradient-two' | 'gradient-three' | 'clip-four' | 'clip-five' | 'clip-six'
  * @param {string} size - Size: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
  * @param {string} type - 'button' | 'submit' | 'reset'
  * @param {boolean} disabled - Disable button
  * @param {boolean} loading - Display loading spinner
- * @param {React.ComponentType} icon - Optional Lucide or SVG icon component
+ * @param {boolean} isLoading - Alias for loading
+ * @param {React.ComponentType | React.ReactNode} icon - Optional Lucide or SVG icon component / element
+ * @param {React.ComponentType | React.ReactNode} leftIcon - Left icon alias
+ * @param {React.ComponentType | React.ReactNode} rightIcon - Right icon alias
  * @param {'left' | 'right'} iconPosition - Icon alignment
  * @param {boolean} fullWidth - Make button 100% width
  * @param {string} className - Additional CSS classes
@@ -27,7 +31,10 @@ const Button = ({
   className = "",
   disabled = false,
   loading = false,
+  isLoading = false,
   icon: Icon,
+  leftIcon: LeftIcon,
+  rightIcon: RightIcon,
   iconPosition = "left",
   fullWidth = false,
   onClick,
@@ -46,10 +53,24 @@ const Button = ({
   };
   const sizeClass = sizeMap[size] || "btn-md";
 
-  // Normalize variant class
-  const variantClass = variant || "primary";
+  // Normalize variant class - ensure destructive maps to clip-four
+  const variantClass = variant === "destructive" ? "clip-four" : (variant || "primary");
 
-  const isDisabled = disabled || loading;
+  const isBtnLoading = loading || isLoading;
+  const isDisabled = disabled || isBtnLoading;
+
+  // Resolve left and right icons
+  const resolvedLeftIcon = (iconPosition === "left" && Icon) || LeftIcon;
+  const resolvedRightIcon = (iconPosition === "right" && Icon) || RightIcon;
+
+  const renderIcon = (iconItem) => {
+    if (!iconItem) return null;
+    if (React.isValidElement(iconItem)) {
+      return iconItem;
+    }
+    const Comp = iconItem;
+    return <Comp className="w-4 h-4 shrink-0" />;
+  };
 
   return (
     <button
@@ -60,7 +81,7 @@ const Button = ({
       {...props}
     >
       {/* Loading Spinner */}
-      {loading && (
+      {isBtnLoading && (
         <span className="button-spinner" aria-hidden="true">
           <svg
             className="animate-spin"
@@ -86,9 +107,9 @@ const Button = ({
       )}
 
       {/* Left Icon */}
-      {!loading && Icon && iconPosition === "left" && (
+      {!isBtnLoading && resolvedLeftIcon && (
         <span className="button-icon left" aria-hidden="true">
-          <Icon className="w-4 h-4 shrink-0" />
+          {renderIcon(resolvedLeftIcon)}
         </span>
       )}
 
@@ -96,9 +117,9 @@ const Button = ({
       {children && <span className="button-label">{children}</span>}
 
       {/* Right Icon */}
-      {!loading && Icon && iconPosition === "right" && (
+      {!isBtnLoading && resolvedRightIcon && (
         <span className="button-icon right" aria-hidden="true">
-          <Icon className="w-4 h-4 shrink-0" />
+          {renderIcon(resolvedRightIcon)}
         </span>
       )}
     </button>

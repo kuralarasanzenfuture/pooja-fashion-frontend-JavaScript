@@ -136,10 +136,11 @@ export default function UserDeleteModal({
           </Button>
           {!isProtected && (
             <Button
-              variant="danger"
+              variant="clip-four"
               size="md"
               loading={isDeleting}
               disabled={isDeleting}
+              icon={Trash2}
               onClick={() => onConfirm(user.id)}
             >
               Confirm Delete

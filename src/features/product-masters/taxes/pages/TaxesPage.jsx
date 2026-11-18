@@ -23,6 +23,7 @@ import {
 import PageHeader from "../../../../common/components/PageHeader.jsx";
 import { Button } from "../../../../common/components/ui/buttons/index.js";
 import Pagination from "../../../../common/components/ui/pagination/Pagination.jsx";
+import { toast } from "../../../../common/components/toast/index.js";
 import {
   useTaxes,
   useTaxStats,
@@ -82,7 +83,6 @@ export default function TaxesPage() {
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, data: null });
   const [calculatorModal, setCalculatorModal] = useState({ isOpen: false, tax: null });
   const [seedModalOpen, setSeedModalOpen] = useState(false);
-  const [notification, setNotification] = useState(null);
 
   // Recent Searches State
   const [recentSearches, setRecentSearches] = useState([]);
@@ -111,8 +111,10 @@ export default function TaxesPage() {
   }, []);
 
   const showNotification = (type, message) => {
-    setNotification({ type, message });
-    setTimeout(() => setNotification(null), 3500);
+    if (type === "success") toast.success(message);
+    else if (type === "error") toast.error(message);
+    else if (type === "warning") toast.warning(message);
+    else toast.help(message);
   };
 
   const handleAddRecentSearch = (queryOrItem) => {
@@ -416,33 +418,6 @@ export default function TaxesPage() {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Toast Notification Banner */}
-      {notification && (
-        <div className="fixed top-5 right-5 z-50 animate-in fade-in slide-in-from-top-4 duration-200">
-          <div
-            className={`px-4 py-3 rounded-2xl shadow-xl border flex items-center gap-3 text-xs font-bold ${
-              notification.type === "success"
-                ? "bg-emerald-500 text-white border-emerald-600 shadow-emerald-500/20"
-                : "bg-rose-500 text-white border-rose-600 shadow-rose-500/20"
-            }`}
-          >
-            {notification.type === "success" ? (
-              <CheckCircle2 className="w-4 h-4 shrink-0" />
-            ) : (
-              <AlertCircle className="w-4 h-4 shrink-0" />
-            )}
-            <span>{notification.message}</span>
-            <button
-              type="button"
-              onClick={() => setNotification(null)}
-              className="p-1 hover:bg-white/20 rounded-lg ml-2 cursor-pointer"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Page Header */}
       <PageHeader
         title="Tax Master (GST & Regimes)"

@@ -125,11 +125,12 @@ export default function SizeDeleteModal({
             Cancel
           </Button>
           <Button
-            variant="clip-six"
+            type="button"
+            variant="clip-four"
             size="sm"
             onClick={onConfirm}
             loading={isDeleting}
-            className="bg-rose-600 hover:bg-rose-700 text-white border-rose-700"
+            icon={Trash2}
           >
             Delete Size
           </Button>

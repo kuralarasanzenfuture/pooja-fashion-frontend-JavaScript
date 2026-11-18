@@ -18,6 +18,7 @@ import {
 import PageHeader from "../../../../common/components/PageHeader.jsx";
 import { Button } from "../../../../common/components/ui/buttons/index.js";
 import Pagination from "../../../../common/components/ui/pagination/Pagination.jsx";
+import { toast } from "../../../../common/components/toast/index.js";
 import { SlidingTabs, AnimatedTabContent } from "../../../../common/components/tabs/index.js";
 import {
   useMaterials,
@@ -71,7 +72,6 @@ export default function MaterialsPage() {
   const [deleting, setDeleting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [statusPendingId, setStatusPendingId] = useState(null);
-  const [notification, setNotification] = useState(null);
 
   // Recent Searches state
   const [recentSearches, setRecentSearches] = useState([]);
@@ -102,8 +102,10 @@ export default function MaterialsPage() {
   }, []);
 
   const showNotification = (type, message) => {
-    setNotification({ type, message });
-    setTimeout(() => setNotification(null), 3500);
+    if (type === "success") toast.success(message);
+    else if (type === "error") toast.error(message);
+    else if (type === "warning") toast.warning(message);
+    else toast.help(message);
   };
 
   const handleAddRecentSearch = (queryOrItem) => {
@@ -339,26 +341,6 @@ export default function MaterialsPage() {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Toast Notification Banner */}
-      {notification && (
-        <div className="fixed top-6 right-6 z-50 animate-in slide-in-from-top-3 fade-in duration-200">
-          <div
-            className={`flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-xl text-xs sm:text-sm font-semibold border ${
-              notification.type === "success"
-                ? "bg-emerald-500 text-white border-emerald-600 shadow-emerald-500/20"
-                : "bg-rose-600 text-white border-rose-700 shadow-rose-600/20"
-            }`}
-          >
-            {notification.type === "success" ? (
-              <CheckCircle2 className="w-4 h-4 shrink-0" />
-            ) : (
-              <AlertCircle className="w-4 h-4 shrink-0" />
-            )}
-            <span>{notification.message}</span>
-          </div>
-        </div>
-      )}
-
       {/* Page Header */}
       <PageHeader
         title="Materials Master"

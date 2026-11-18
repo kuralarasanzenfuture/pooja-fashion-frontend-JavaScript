@@ -129,7 +129,7 @@ export default function SizeGroupDeleteModal({
           </Button>
           <Button
             type="button"
-            variant="destructive"
+            variant="clip-four"
             size="sm"
             loading={isDeleting}
             icon={Trash2}

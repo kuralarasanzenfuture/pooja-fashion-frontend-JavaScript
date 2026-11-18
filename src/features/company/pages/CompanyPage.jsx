@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import PageHeader from "../../../common/components/PageHeader.jsx";
 import { Button } from "../../../common/components/ui/buttons/index.js";
+import { toast } from "../../../common/components/toast/index.js";
 import {
   CompanyStats,
   CompanyTable,
@@ -54,9 +55,6 @@ export default function CompanyPage() {
     region: "",
     gstinOnly: false,
   });
-
-  // Notification toast state
-  const [notification, setNotification] = useState(null);
 
   // Modals state
   const [modalMode, setModalMode] = useState(null); // 'create' | 'edit' | null
@@ -168,8 +166,10 @@ export default function CompanyPage() {
   };
 
   const showToast = (message, type = "success") => {
-    setNotification({ message, type });
-    setTimeout(() => setNotification(null), 4000);
+    if (type === "success") toast.success(message);
+    else if (type === "error") toast.error(message);
+    else if (type === "warning") toast.warning(message);
+    else toast.help(message);
   };
 
   // Handlers
@@ -256,23 +256,6 @@ export default function CompanyPage() {
 
   return (
     <div className="space-y-6">
-      {/* Toast Notification */}
-      {notification && (
-        <div
-          className={`fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-xl border text-sm font-semibold animate-in slide-in-from-bottom duration-200 ${notification.type === "error"
-            ? "bg-rose-50 text-rose-800 border-rose-200"
-            : "bg-emerald-50 text-emerald-800 border-emerald-200"
-            }`}
-        >
-          {notification.type === "error" ? (
-            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-          ) : (
-            <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-          )}
-          <span>{notification.message}</span>
-        </div>
-      )}
-
       {/* Top Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <PageHeader

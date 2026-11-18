@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import PageHeader from "../../../../common/components/PageHeader.jsx";
 import { Button } from "../../../../common/components/ui/buttons/index.js";
+import { toast } from "../../../../common/components/toast/index.js";
 import {
   useUnit,
   useUpdateUnit,
@@ -45,13 +46,14 @@ export default function UnitViewPage() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [copiedKey, setCopiedKey] = useState(null);
-  const [notification, setNotification] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   const showNotification = (type, message) => {
-    setNotification({ type, message });
-    setTimeout(() => setNotification(null), 3500);
+    if (type === "success") toast.success(message);
+    else if (type === "error") toast.error(message);
+    else if (type === "warning") toast.warning(message);
+    else toast.help(message);
   };
 
   const unit = unitResponse?.data || unitResponse || null;
@@ -161,26 +163,6 @@ export default function UnitViewPage() {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Toast Notification */}
-      {notification && (
-        <div className="fixed top-6 right-6 z-50 animate-in slide-in-from-top-3 fade-in duration-200">
-          <div
-            className={`flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-xl text-xs sm:text-sm font-semibold border ${
-              notification.type === "success"
-                ? "bg-emerald-500 text-white border-emerald-600 shadow-emerald-500/20"
-                : "bg-rose-600 text-white border-rose-700 shadow-rose-600/20"
-            }`}
-          >
-            {notification.type === "success" ? (
-              <CheckCircle2 className="w-4 h-4 shrink-0" />
-            ) : (
-              <AlertCircle className="w-4 h-4 shrink-0" />
-            )}
-            <span>{notification.message}</span>
-          </div>
-        </div>
-      )}
-
       {/* Back link */}
       <div>
         <Link
@@ -216,7 +198,7 @@ export default function UnitViewPage() {
               Edit Unit
             </Button>
             <Button
-              variant="danger"
+              variant="clip-four"
               size="sm"
               icon={Trash2}
               onClick={() => setIsDeleteOpen(true)}

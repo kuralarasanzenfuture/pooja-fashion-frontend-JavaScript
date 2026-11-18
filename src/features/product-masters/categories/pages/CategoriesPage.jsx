@@ -36,6 +36,7 @@ import PageHeader from "../../../../common/components/PageHeader.jsx";
 import { Button } from "../../../../common/components/ui/buttons/index.js";
 import Pagination from "../../../../common/components/ui/pagination/Pagination.jsx";
 import ImageViewerModal from "../../../../common/components/ui/ImageViewerModal.jsx";
+import { toast } from "../../../../common/components/toast/index.js";
 import { SlidingTabs, AnimatedTabContent } from "../../../../common/components/tabs/index.js";
 import { useCompanies } from "../../../company/hooks/useCompanies.js";
 import {
@@ -98,7 +99,6 @@ export default function CategoriesPage() {
   const [saving, setSaving] = useState(false);
   const [toDelete, setToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
-  const [notification, setNotification] = useState(null);
 
   // High-Quality Image Viewer Modal state
   const [imageViewer, setImageViewer] = useState({ isOpen: false, src: "", title: "" });
@@ -253,8 +253,10 @@ export default function CategoriesPage() {
   };
 
   const showNotification = (type, message) => {
-    setNotification({ type, message });
-    setTimeout(() => setNotification(null), 3500);
+    if (type === "success") toast.success(message);
+    else if (type === "error") toast.error(message);
+    else if (type === "warning") toast.warning(message);
+    else toast.help(message);
   };
 
   const handleOpenImageViewer = (src, title) => {
@@ -715,26 +717,6 @@ export default function CategoriesPage() {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Toast Notification */}
-      {notification && (
-        <div className="fixed top-6 right-6 z-50 animate-in slide-in-from-top-3 fade-in duration-200">
-          <div
-            className={`flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-xl text-xs sm:text-sm font-semibold border ${
-              notification.type === "success"
-                ? "bg-emerald-500 text-white border-emerald-600 shadow-emerald-500/20"
-                : "bg-rose-600 text-white border-rose-700 shadow-rose-600/20"
-            }`}
-          >
-            {notification.type === "success" ? (
-              <CheckCircle2 className="w-4 h-4 shrink-0" />
-            ) : (
-              <AlertCircle className="w-4 h-4 shrink-0" />
-            )}
-            <span>{notification.message}</span>
-          </div>
-        </div>
-      )}
-
       {/* Backend API Error Banner */}
       {isError && (
         <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-700 dark:text-rose-400 flex items-center justify-between gap-3 text-xs sm:text-sm font-medium animate-in fade-in duration-200">

@@ -75,7 +75,7 @@ export default function CompanyDeleteModal({
             </Button>
 
             <Button
-              variant="danger"
+              variant="clip-four"
               size="md"
               loading={isDeleting}
               onClick={() => onConfirm(company.id)}

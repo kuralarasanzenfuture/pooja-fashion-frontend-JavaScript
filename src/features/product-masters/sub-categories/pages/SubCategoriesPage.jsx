@@ -31,6 +31,7 @@ import PageHeader from "../../../../common/components/PageHeader.jsx";
 import { Button } from "../../../../common/components/ui/buttons/index.js";
 import Pagination from "../../../../common/components/ui/pagination/Pagination.jsx";
 import ImageViewerModal from "../../../../common/components/ui/ImageViewerModal.jsx";
+import { toast } from "../../../../common/components/toast/index.js";
 import { useCompanies } from "../../../company/hooks/useCompanies.js";
 import { useCategories } from "../../categories/hooks/useCategories.js";
 import {
@@ -175,12 +176,13 @@ export default function SubCategoriesPage() {
   const [detailsModal, setDetailsModal] = useState({ isOpen: false, data: null });
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, data: null });
   const [imageViewer, setImageViewer] = useState({ isOpen: false, src: "", title: "" });
-  const [notification, setNotification] = useState(null);
   const [copiedCode, setCopiedCode] = useState(null);
 
   const showNotification = (type, message) => {
-    setNotification({ type, message });
-    setTimeout(() => setNotification(null), 3500);
+    if (type === "success") toast.success(message);
+    else if (type === "error") toast.error(message);
+    else if (type === "warning") toast.warning(message);
+    else toast.help(message);
   };
 
   // Queries
@@ -616,31 +618,6 @@ export default function SubCategoriesPage() {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Toast Notification Banner */}
-      {notification && (
-        <div
-          className={`fixed bottom-6 right-6 z-50 px-4 py-3 rounded-2xl shadow-2xl border flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-200 text-xs sm:text-sm font-semibold ${
-            notification.type === "success"
-              ? "bg-emerald-600 text-white border-emerald-500 shadow-emerald-500/20"
-              : "bg-rose-600 text-white border-rose-500 shadow-rose-500/20"
-          }`}
-        >
-          {notification.type === "success" ? (
-            <CheckCircle2 className="size-4 shrink-0" />
-          ) : (
-            <AlertCircle className="size-4 shrink-0" />
-          )}
-          <span>{notification.message}</span>
-          <button
-            type="button"
-            onClick={() => setNotification(null)}
-            className="p-1 hover:bg-white/20 rounded-lg transition-colors ml-2"
-          >
-            <X className="size-3.5" />
-          </button>
-        </div>
-      )}
-
       {/* Page Header */}
       <PageHeader
         title="Subcategories Master"

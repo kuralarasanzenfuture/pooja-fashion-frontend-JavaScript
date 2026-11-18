@@ -293,7 +293,7 @@ export default function CompanyViewPage({ isProfileMode = false, initialTab = "o
           </Button>
 
           <Button
-            variant="danger"
+            variant="clip-four"
             size="sm"
             icon={Trash2}
             onClick={() => setIsDeleteModalOpen(true)}

@@ -83,12 +83,11 @@ export default function CompanyTaxDetailDeleteModal({
             Keep Record
           </Button>
           <Button
-            variant="danger"
+            variant="clip-four"
             size="md"
             icon={Trash2}
             loading={isDeleting}
             onClick={onConfirm}
-            className="shadow-md shadow-rose-600/25"
           >
             Confirm & Delete
           </Button>

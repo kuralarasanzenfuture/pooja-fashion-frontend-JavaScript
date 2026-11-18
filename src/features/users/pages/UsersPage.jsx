@@ -18,6 +18,7 @@ import {
 import PageHeader from "../../../common/components/PageHeader.jsx";
 import { Button } from "../../../common/components/ui/buttons/index.js";
 import Pagination from "../../../common/components/ui/pagination/Pagination.jsx";
+import { toast } from "../../../common/components/toast/index.js";
 import {
   useUsers,
   useCreateUser,
@@ -166,9 +167,6 @@ export default function UsersPage() {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
-  // Notification feedback state
-  const [feedback, setFeedback] = useState(null);
-
   // Roles query for filter dropdown (active roles)
   const { data: rolesResponse } = useRoles({ limit: 100, is_active: "true" });
   const rawRoles = rolesResponse?.data || rolesResponse?.roles || [];
@@ -211,8 +209,10 @@ export default function UsersPage() {
   const meta = response?.meta || { total: users.length, page: 1, limit: 10, totalPages: 1 };
 
   const showNotification = (type, message) => {
-    setFeedback({ type, message });
-    setTimeout(() => setFeedback(null), 4000);
+    if (type === "success") toast.success(message);
+    else if (type === "error") toast.error(message);
+    else if (type === "warning") toast.warning(message);
+    else toast.help(message);
   };
 
   // Handlers for Modals
@@ -412,32 +412,6 @@ export default function UsersPage() {
           </div>
         }
       />
-
-      {/* Floating feedback alert */}
-      {feedback && (
-        <div
-          className={`p-4 rounded-2xl flex items-center justify-between gap-3 text-sm animate-in fade-in slide-in-from-top-3 duration-300 shadow-md ${
-            feedback.type === "success"
-              ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300"
-              : "bg-rose-500/10 border border-rose-500/20 text-rose-800 dark:text-rose-300"
-          }`}
-        >
-          <div className="flex items-center gap-2.5">
-            {feedback.type === "success" ? (
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-            ) : (
-              <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
-            )}
-            <span>{feedback.message}</span>
-          </div>
-          <button
-            onClick={() => setFeedback(null)}
-            className="text-base-content/40 hover:text-base-content"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
 
       {/* Filter and Control Bar */}
       <div className="p-4 bg-base-100 rounded-2xl border border-base-300 shadow-xs space-y-3">

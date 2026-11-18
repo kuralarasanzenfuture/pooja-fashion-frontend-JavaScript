@@ -108,10 +108,11 @@ export default function ProductTypeDeleteModal({
           </Button>
           <Button
             type="button"
-            variant="danger"
+            variant="clip-four"
             size="sm"
             onClick={onConfirm}
             loading={isDeleting}
+            icon={Trash2}
           >
             Delete Product Type
           </Button>

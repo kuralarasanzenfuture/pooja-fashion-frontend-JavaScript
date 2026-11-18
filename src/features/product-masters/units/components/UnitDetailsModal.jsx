@@ -181,10 +181,10 @@ export default function UnitDetailsModal({
         {/* Footer */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-base-200 bg-base-200/30">
           <Button
-            variant="danger"
+            variant="clip-four"
             size="sm"
             onClick={() => onDelete?.(unit)}
-            leftIcon={<Trash2 className="w-4 h-4" />}
+            icon={Trash2}
           >
             Delete
           </Button>

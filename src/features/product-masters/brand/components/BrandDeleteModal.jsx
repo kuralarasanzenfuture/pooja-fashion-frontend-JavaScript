@@ -120,7 +120,7 @@ export default function BrandDeleteModal({
           </Button>
           <Button
             type="button"
-            variant="destructive"
+            variant="clip-four"
             size="sm"
             loading={isDeleting}
             icon={Trash2}

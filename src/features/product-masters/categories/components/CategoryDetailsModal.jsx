@@ -392,7 +392,7 @@ export default function CategoryDetailsModal({
               Edit
             </Button>
             <Button
-              variant="danger"
+              variant="clip-four"
               size="sm"
               icon={Trash2}
               onClick={() => {

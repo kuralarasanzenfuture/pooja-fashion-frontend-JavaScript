@@ -148,24 +148,16 @@ export default function CategoryDeleteModal({
             Cancel
           </Button>
 
-          <button
+          <Button
             type="button"
+            variant="clip-four"
+            size="md"
+            loading={isDeleting}
+            icon={Trash2}
             onClick={onConfirm}
-            disabled={isDeleting}
-            className="group inline-flex items-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl text-white bg-gradient-to-r from-rose-600 via-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 active:scale-95 shadow-md shadow-rose-600/30 transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
           >
-            {isDeleting ? (
-              <>
-                <span className="loading loading-spinner loading-xs text-white" />
-                <span>Deleting Category...</span>
-              </>
-            ) : (
-              <>
-                <Trash2 className="w-4 h-4 transition-transform group-hover:scale-110" />
-                <span>Delete Category</span>
-              </>
-            )}
-          </button>
+            Delete Category
+          </Button>
         </div>
       </div>
     </div>

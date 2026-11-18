@@ -161,22 +161,13 @@ export default function SubCategoryDeleteModal({
 
           <Button
             type="button"
-            variant="danger"
+            variant="clip-four"
+            size="sm"
             onClick={() => onConfirm?.(subcategory)}
-            disabled={isDeleting}
-            className="gap-2 text-xs font-bold shadow-md shadow-rose-500/20"
+            loading={isDeleting}
+            icon={Trash2}
           >
-            {isDeleting ? (
-              <>
-                <span className="loading loading-spinner loading-xs" />
-                <span>Deleting Subcategory...</span>
-              </>
-            ) : (
-              <>
-                <Trash2 className="w-4 h-4" />
-                <span>Confirm Permanent Delete</span>
-              </>
-            )}
+            Confirm Permanent Delete
           </Button>
         </div>
       </div>

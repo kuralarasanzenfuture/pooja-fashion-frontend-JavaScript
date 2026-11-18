@@ -329,12 +329,12 @@ export default function SubCategoryDetailsModal({
             {onDelete && (
               <Button
                 type="button"
-                variant="danger"
+                variant="clip-four"
+                size="sm"
+                icon={Trash2}
                 onClick={() => onDelete(subcategory)}
-                className="text-xs font-semibold gap-1.5"
               >
-                <Trash2 className="size-3.5" />
-                <span>Delete</span>
+                Delete
               </Button>
             )}
 

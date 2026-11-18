@@ -104,14 +104,13 @@ export default function TaxDeleteModal({
 
           <Button
             type="button"
-            variant="danger"
+            variant="clip-four"
             size="sm"
             onClick={() => onConfirm(tax.id || tax.tax_id)}
             loading={isDeleting}
-            className="rounded-xl text-xs font-bold px-5 bg-rose-600 hover:bg-rose-700 text-white gap-1.5 cursor-pointer shadow-md shadow-rose-600/20"
+            icon={Trash2}
           >
-            <Trash2 className="w-3.5 h-3.5" />
-            {isDeleting ? "Deleting..." : "Delete Tax Slab"}
+            Delete Tax Slab
           </Button>
         </div>
       </div>

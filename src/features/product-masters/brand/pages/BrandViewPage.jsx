@@ -20,6 +20,7 @@ import {
 import PageHeader from "../../../../common/components/PageHeader.jsx";
 import { Button } from "../../../../common/components/ui/buttons/index.js";
 import ImageViewerModal from "../../../../common/components/ui/ImageViewerModal.jsx";
+import { toast } from "../../../../common/components/toast/index.js";
 import {
   useBrand,
   useUpdateBrand,
@@ -54,12 +55,13 @@ export default function BrandViewPage() {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [imageViewer, setImageViewer] = useState({ isOpen: false, src: "", title: "" });
-  const [notification, setNotification] = useState(null);
   const [saving, setSaving] = useState(false);
 
   const showNotification = (type, message) => {
-    setNotification({ type, message });
-    setTimeout(() => setNotification(null), 3500);
+    if (type === "success") toast.success(message);
+    else if (type === "error") toast.error(message);
+    else if (type === "warning") toast.warning(message);
+    else toast.help(message);
   };
 
   const brand = brandResponse?.data || brandResponse || null;
@@ -193,26 +195,6 @@ export default function BrandViewPage() {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Toast Notification */}
-      {notification && (
-        <div className="fixed top-6 right-6 z-50 animate-in slide-in-from-top-3 fade-in duration-200">
-          <div
-            className={`flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-xl text-xs sm:text-sm font-semibold border ${
-              notification.type === "success"
-                ? "bg-emerald-500 text-white border-emerald-600 shadow-emerald-500/20"
-                : "bg-rose-600 text-white border-rose-700 shadow-rose-600/20"
-            }`}
-          >
-            {notification.type === "success" ? (
-              <CheckCircle2 className="w-4 h-4 shrink-0" />
-            ) : (
-              <AlertCircle className="w-4 h-4 shrink-0" />
-            )}
-            <span>{notification.message}</span>
-          </div>
-        </div>
-      )}
-
       {/* Breadcrumb Navigation */}
       <div className="flex items-center gap-2 text-xs font-semibold text-base-content/60">
         <Link to="/products/brands" className="hover:text-primary transition-colors flex items-center gap-1">

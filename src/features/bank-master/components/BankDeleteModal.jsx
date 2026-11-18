@@ -74,15 +74,16 @@ export default function BankDeleteModal({
             Cancel
           </Button>
 
-          <button
+          <Button
             type="button"
+            variant="clip-four"
+            size="md"
             onClick={onConfirm}
-            disabled={isDeleting}
-            className="group inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl text-white bg-rose-600 hover:bg-rose-700 active:scale-95 shadow-sm shadow-rose-600/30 transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+            loading={isDeleting}
+            icon={Trash2}
           >
-            <Trash2 className="w-4 h-4 transition-transform group-hover:scale-110" />
-            <span>{isDeleting ? "Deleting..." : "Delete Institution"}</span>
-          </button>
+            Delete Institution
+          </Button>
         </div>
       </div>
     </div>

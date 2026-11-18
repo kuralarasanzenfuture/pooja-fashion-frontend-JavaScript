@@ -117,11 +117,12 @@ export default function UnitDeleteModal({
             Cancel
           </Button>
           <Button
-            variant="danger"
+            type="button"
+            variant="clip-four"
             size="sm"
             onClick={() => onConfirm?.(id)}
-            isLoading={isDeleting}
-            leftIcon={<Trash2 className="w-4 h-4" />}
+            loading={isDeleting}
+            icon={Trash2}
           >
             Delete Unit
           </Button>

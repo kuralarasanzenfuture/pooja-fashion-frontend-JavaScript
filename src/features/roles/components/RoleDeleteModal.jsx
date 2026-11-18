@@ -99,10 +99,11 @@ export default function RoleDeleteModal({
           </Button>
           {!isSystem && (
             <Button
-              variant="danger"
+              variant="clip-four"
               size="md"
               loading={isDeleting}
               disabled={isDeleting}
+              icon={Trash2}
               onClick={() => onConfirm(role.id)}
             >
               Confirm Delete

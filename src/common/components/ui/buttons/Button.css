@@ -46,18 +46,24 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  z-index: 1;
   transition: transform 0.2s ease;
 }
 
 .button-label {
   display: inline-flex;
   align-items: center;
+  position: relative;
+  z-index: 1;
 }
 
 .button-spinner {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  z-index: 1;
 }
 
 .button-spinner svg {
@@ -194,9 +200,16 @@
 .common-button.gradient-two,
 .common-button.gradient-three,
 .common-button.clip-four,
+.common-button.destructive,
 .common-button.clip-five,
 .common-button.clip-six {
   position: relative;
+}
+
+.common-button.gradient-one,
+.common-button.gradient-two,
+.common-button.gradient-three,
+.common-button.clip-five {
   border: none;
 }
 
@@ -204,6 +217,7 @@
 .common-button.gradient-two::before,
 .common-button.gradient-three::before,
 .common-button.clip-four::before,
+.common-button.destructive::before,
 .common-button.clip-five::before,
 .common-button.clip-six::before {
   content: "";
@@ -288,27 +302,41 @@
   transform: scaleY(1);
 }
 
-/* ---------- Clip Path Four: Flame Orange Swipe ---------- */
-.common-button.clip-four {
-  background: #ffffff;
-  color: #0f1c3f;
-  border: 1px solid #fed7aa;
+/* ---------- Clip Path Four: Luxury Destructive Swipe (Flame Crimson) ---------- */
+.common-button.clip-four,
+.common-button.destructive {
+  background: var(--color-base-100, #ffffff);
+  color: #e11d48;
+  border: 1.5px solid rgba(225, 29, 72, 0.35);
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(225, 29, 72, 0.08);
 }
 
-.common-button.clip-four::before {
-  background: rgb(255, 90, 20);
+.common-button.clip-four::before,
+.common-button.destructive::before {
+  background: linear-gradient(135deg, #ff4d4d 0%, #e11d48 55%, #be123c 100%);
   clip-path: inset(0 100% 0 0);
   opacity: 1;
-  transition: 0.35s ease;
+  transition: clip-path 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease;
 }
 
-.common-button.clip-four:hover:not(:disabled) {
-  color: #ffffff;
-  box-shadow: 0 4px 15px rgba(255, 90, 20, 0.3);
+.common-button.clip-four:hover:not(:disabled),
+.common-button.destructive:hover:not(:disabled) {
+  color: #ffffff !important;
+  border-color: #be123c;
+  box-shadow: 0 6px 20px -2px rgba(225, 29, 72, 0.45);
+  transform: translateY(-1.5px);
 }
 
-.common-button.clip-four:hover:not(:disabled)::before {
+.common-button.clip-four:hover:not(:disabled)::before,
+.common-button.destructive:hover:not(:disabled)::before {
   clip-path: inset(0 0 0 0);
+}
+
+.common-button.clip-four:active:not(:disabled),
+.common-button.destructive:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(225, 29, 72, 0.25);
 }
 
 /* ---------- Clip Path Five: Sapphire Polygon ---------- */
@@ -412,3 +440,29 @@
 .common-button.full-width {
   width: 100%;
 }
+
+/* =========================================================
+   DARK THEME SPECIFIC ADAPTATIONS FOR DESTRUCTIVE CLIP-FOUR
+========================================================= */
+
+[data-theme="dark"] .common-button.clip-four,
+[data-theme="night"] .common-button.clip-four,
+[data-theme="luxury"] .common-button.clip-four,
+[data-theme="dracula"] .common-button.clip-four,
+[data-theme="halloween"] .common-button.clip-four,
+[data-theme="synthwave"] .common-button.clip-four,
+[data-theme="black"] .common-button.clip-four,
+[data-theme="business"] .common-button.clip-four,
+[data-theme="dark"] .common-button.destructive,
+[data-theme="night"] .common-button.destructive,
+[data-theme="luxury"] .common-button.destructive,
+[data-theme="dracula"] .common-button.destructive,
+[data-theme="halloween"] .common-button.destructive,
+[data-theme="synthwave"] .common-button.destructive,
+[data-theme="black"] .common-button.destructive,
+[data-theme="business"] .common-button.destructive {
+  background: rgba(225, 29, 72, 0.12);
+  border-color: rgba(244, 63, 94, 0.4);
+  color: #fb7185;
+}
+

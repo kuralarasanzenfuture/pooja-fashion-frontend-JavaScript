@@ -27,6 +27,7 @@ import PageHeader from "../../../common/components/PageHeader.jsx";
 import { Button } from "../../../common/components/ui/buttons/index.js";
 import { DropdownSelect } from "../../../common/components/ui/select/index.js";
 import Pagination from "../../../common/components/ui/pagination/Pagination.jsx";
+import { toast } from "../../../common/components/toast/index.js";
 import {
   useBanks,
   useCreateBank,
@@ -192,7 +193,6 @@ export default function BankMasterPage() {
   const [editingBank, setEditingBank] = useState(null);
   const [deletingBank, setDeletingBank] = useState(null);
   const [identifiersBank, setIdentifiersBank] = useState(null);
-  const [notification, setNotification] = useState(null);
 
   // Fetch full directory catalog (limit: 100 retrieves all official records in a single query)
   // This guarantees category counts, status badges, and directory statistics always reflect
@@ -396,8 +396,10 @@ export default function BankMasterPage() {
   };
 
   const showNotification = (type, message) => {
-    setNotification({ type, message });
-    setTimeout(() => setNotification(null), 3500);
+    if (type === "success") toast.success(message);
+    else if (type === "error") toast.error(message);
+    else if (type === "warning") toast.warning(message);
+    else toast.help(message);
   };
 
   const handleOpenCreate = () => {
@@ -466,26 +468,6 @@ export default function BankMasterPage() {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Toast Notification */}
-      {notification && (
-        <div className="fixed top-6 right-6 z-50 animate-in slide-in-from-top-3 fade-in duration-200">
-          <div
-            className={`flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-xl text-xs sm:text-sm font-semibold border ${
-              notification.type === "success"
-                ? "bg-emerald-500 text-white border-emerald-600 shadow-emerald-500/20"
-                : "bg-rose-600 text-white border-rose-700 shadow-rose-600/20"
-            }`}
-          >
-            {notification.type === "success" ? (
-              <CheckCircle2 className="w-4 h-4 shrink-0" />
-            ) : (
-              <AlertCircle className="w-4 h-4 shrink-0" />
-            )}
-            <span>{notification.message}</span>
-          </div>
-        </div>
-      )}
-
       {/* Backend API Error Banner */}
       {isError && (
         <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-700 dark:text-rose-400 flex items-center justify-between gap-3 text-xs sm:text-sm font-medium animate-in fade-in duration-200">
