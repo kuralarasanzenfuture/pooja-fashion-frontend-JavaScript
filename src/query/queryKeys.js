@@ -194,6 +194,16 @@ export const queryKeys = {
     list: (params) => ["users", "list", params],
     detail: (id) => ["users", "detail", id],
   },
+
+  taxes: {
+    all: ["taxes"],
+    list: (params) => ["taxes", "list", params],
+    allList: (params) => ["taxes", "allList", params],
+    stats: (params) => ["taxes", "stats", params],
+    detail: (id) => ["taxes", "detail", id],
+    byCompany: (companyId, params) => ["taxes", "byCompany", companyId, params],
+    byCode: (companyId, code) => ["taxes", "byCode", companyId, code],
+  },
 };
 
 

@@ -891,22 +891,20 @@ export default function ProductTypesPage() {
         />
       )}
 
-      {/* Pagination Footer */}
+      {/* Pagination Strip */}
       {!isLoading && productTypes.length > 0 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
-          <span className="text-xs text-base-content/60 font-medium">
-            Showing{" "}
-            <strong>
-              {(paginationMeta.page - 1) * paginationMeta.limit + 1} -{" "}
-              {Math.min(paginationMeta.page * paginationMeta.limit, paginationMeta.total)}
-            </strong>{" "}
-            of <strong>{paginationMeta.total}</strong> product types
-          </span>
-
+        <div className="pt-2">
           <Pagination
-            page={paginationMeta.page}
-            totalPages={paginationMeta.totalPages || 1}
-            onPageChange={(p) => setPage(p)}
+            currentPage={Number(paginationMeta.page) || page}
+            totalPages={Number(paginationMeta.totalPages) || 1}
+            totalItems={Number(paginationMeta.total) || productTypes.length}
+            pageSize={limit}
+            onPageChange={setPage}
+            onPageSizeChange={(newSize) => {
+              setLimit(newSize === "All" ? 1000 : Number(newSize));
+              setPage(1);
+            }}
+            pageSizeOptions={[10, 25, 50, "All"]}
           />
         </div>
       )}

@@ -48,6 +48,8 @@ export const ROUTES = {
   PRODUCT_TYPES_ALT: "/products/product-types",
   PRODUCT_TYPE_VIEW: "/products/types/:id",
   PRODUCT_TYPE_VIEW_ALT: "/products/product-types/:id",
+  TAXES: "/products/taxes",
+  TAX_VIEW: "/products/taxes/:id",
   ROLES: "/users/roles",
   ROLES_ALT: "/roles",
   USERS: "/users",

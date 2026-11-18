@@ -75,7 +75,7 @@ export default function ProductTypeCardsView({
                   )}
                 </div>
 
-                {/* Status Toggle Switch with Tooltip */}
+                {/* Status Toggle Switch with Tooltip (Matching Units Module) */}
                 <div
                   className="tooltip tooltip-left"
                   data-tip={isActive ? "Active in catalog" : "Hidden from catalog"}
@@ -86,15 +86,17 @@ export default function ProductTypeCardsView({
                       checked={isActive}
                       onChange={() => onToggleStatus?.(pt)}
                       disabled={isStatusPending}
-                      className="toggle toggle-success toggle-xs"
+                      className="toggle toggle-success toggle-sm"
                       aria-label={`Toggle active status for ${name}`}
                     />
                     <span
-                      className={`text-[11px] font-bold ${
-                        isActive ? "text-emerald-600 dark:text-emerald-400" : "text-base-content/40"
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+                        isActive
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/40"
+                          : "bg-rose-50 text-rose-700 border-rose-200/80 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800/40"
                       }`}
                     >
-                      {isActive ? "Active" : "Off"}
+                      {isActive ? "Active" : "Inactive"}
                     </span>
                   </label>
                 </div>

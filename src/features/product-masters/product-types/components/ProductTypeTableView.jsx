@@ -236,8 +236,8 @@ export default function ProductTypeTableView({
                       )}
                     </td>
 
-                    {/* 8. Catalog Status Toggle with Tooltip */}
-                    <td className="py-3.5 px-3 text-center whitespace-nowrap">
+                    {/* 8. Catalog Status Toggle with Tooltip (Matching Units Module) */}
+                    <td className="py-4 px-4 text-center whitespace-nowrap">
                       <div
                         className="tooltip tooltip-top"
                         data-tip={
@@ -246,23 +246,23 @@ export default function ProductTypeTableView({
                             : "Inactive: Click to make visible in product creation"
                         }
                       >
-                        <label className="inline-flex cursor-pointer items-center gap-1.5 select-none">
+                        <label className="inline-flex cursor-pointer items-center gap-2 select-none">
                           <input
                             type="checkbox"
                             checked={isActive}
                             onChange={() => onToggleStatus?.(pt)}
                             disabled={isStatusPending}
-                            className="toggle toggle-success toggle-xs"
+                            className="toggle toggle-success toggle-sm"
                             aria-label={`Toggle active status for ${name}`}
                           />
                           <span
-                            className={`text-[11px] font-bold transition-colors ${
+                            className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
                               isActive
-                                ? "text-emerald-600 dark:text-emerald-400"
-                                : "text-base-content/40"
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/40"
+                                : "bg-rose-50 text-rose-700 border-rose-200/80 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800/40"
                             }`}
                           >
-                            {isStatusPending ? "..." : isActive ? "Active" : "Off"}
+                            {isStatusPending ? "..." : isActive ? "Active" : "Inactive"}
                           </span>
                         </label>
                       </div>

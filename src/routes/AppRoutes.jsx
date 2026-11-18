@@ -41,6 +41,10 @@ import {
   ProductTypesPage,
   ProductTypeViewPage,
 } from "../features/product-masters/product-types/index.js";
+import {
+  TaxesPage,
+  TaxViewPage,
+} from "../features/product-masters/taxes/index.js";
 import RolesPage from "../features/roles/pages/RolesPage.jsx";
 import UsersPage from "../features/users/pages/UsersPage.jsx";
 import UserViewPage from "../features/users/pages/UserViewPage.jsx";
@@ -221,6 +225,12 @@ export default function AppRoutes() {
           <Route path="/products/types/:id" element={<ProductTypeViewPage />} />
           <Route path="/products/product-types/:id" element={<ProductTypeViewPage />} />
           <Route path="/product-types/:id" element={<ProductTypeViewPage />} />
+          <Route path={ROUTES.TAXES} element={<TaxesPage />} />
+          <Route path="/products/taxes" element={<TaxesPage />} />
+          <Route path="/taxes" element={<TaxesPage />} />
+          <Route path={ROUTES.TAX_VIEW} element={<TaxViewPage />} />
+          <Route path="/products/taxes/:id" element={<TaxViewPage />} />
+          <Route path="/taxes/:id" element={<TaxViewPage />} />
 
           {/* Users & Roles Management (Admin & SuperAdmin only) */}
           <Route element={<RoleProtectedRoute allowedRoles={["ADMIN", "SUPERADMIN"]} />}>
